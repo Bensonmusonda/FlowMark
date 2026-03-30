@@ -4,6 +4,15 @@ const fs = require('fs');
 
 let win;
 let currentFilePath = null;
+const recentFiles = [];
+const MAX_RECENTS = 10;
+
+function addRecent(filePath) {
+  const i = recentFiles.indexOf(filePath);
+  if (i !== -1) recentFiles.splice(i, 1);
+  recentFiles.unshift(filePath);
+  if (recentFiles.length > MAX_RECENTS) recentFiles.pop();
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -42,14 +51,12 @@ ipcMain.handle('dialog:save', async (_, content) => {
   if (canceled || !filePath) return { canceled: true };
   fs.writeFileSync(filePath, content, 'utf8');
   currentFilePath = filePath;
+  addRecent(filePath);
   return { canceled: false, filePath };
 });
 
 ipcMain.handle('file:save', async (_, content) => {
-  if (!currentFilePath) {
-    // No path yet — fall through to Save As
-    return { noPath: true };
-  }
+  if (!currentFilePath) return { noPath: true };
   fs.writeFileSync(currentFilePath, content, 'utf8');
   return { filePath: currentFilePath };
 });
@@ -64,16 +71,25 @@ ipcMain.handle('file:open', async () => {
   const filePath = filePaths[0];
   const content = fs.readFileSync(filePath, 'utf8');
   currentFilePath = filePath;
+  addRecent(filePath);
   return { canceled: false, filePath, content };
 });
 
-ipcMain.handle('file:clearPath', () => { currentFilePath = null; });
-
-ipcMain.on('window:refocus', () => {
-  win.focus();
-  win.webContents.focus();
+ipcMain.handle('file:openPath', async (_, filePath) => {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    currentFilePath = filePath;
+    addRecent(filePath);
+    return { canceled: false, filePath, content };
+  } catch (e) {
+    return { canceled: true, error: 'File not found' };
+  }
 });
 
+ipcMain.handle('file:clearPath', () => { currentFilePath = null; });
+ipcMain.handle('recents:get', () => recentFiles.filter(f => fs.existsSync(f)));
+
+ipcMain.on('window:refocus', () => { win.focus(); win.webContents.focus(); });
 ipcMain.on('window:minimize', () => win.minimize());
 ipcMain.on('window:maximize', () => win.isMaximized() ? win.unmaximize() : win.maximize());
 ipcMain.on('window:close',    () => win.close());

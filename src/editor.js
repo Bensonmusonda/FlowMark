@@ -305,6 +305,7 @@ async function confirmDiscard() {
 
 async function newFile() {
   if (!await confirmDiscard()) return;
+  hideWelcome();
   await window.fileAPI.clearPath();
   setContent('');
   isDirty = false;
@@ -316,6 +317,7 @@ async function newFile() {
 
 async function openFile() {
   if (!await confirmDiscard()) return;
+  hideWelcome();
   const result = await window.fileAPI.open();
   if (result.canceled) return;
   setContent(result.content);
@@ -369,10 +371,11 @@ const view = new EditorView({
       keymap.of([
         ...defaultKeymap,
         ...historyKeymap,
-        { key: 'Ctrl-n', run: () => { newFile();    return true; } },
-        { key: 'Ctrl-o', run: () => { openFile();   return true; } },
-        { key: 'Ctrl-s', run: () => { saveFile();   return true; } },
-        { key: 'Ctrl-Shift-s', run: () => { saveAsFile(); return true; } },
+        { key: 'Ctrl-n', run: () => { newFile();       return true; } },
+        { key: 'Ctrl-o', run: () => { openFile();      return true; } },
+        { key: 'Ctrl-s', run: () => { saveFile();      return true; } },
+        { key: 'Ctrl-Shift-s', run: () => { saveAsFile();  return true; } },
+        { key: 'Ctrl-p', run: () => { showQuickOpen(); return true; } },
       ]),
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
       syntaxHighlighting(flowHighlight),
@@ -415,12 +418,128 @@ dropdown.addEventListener('click', e => {
   if (!action) return;
   dropdown.classList.add('hidden');
   switch (action) {
-    case 'new':    newFile();    break;
-    case 'open':   openFile();   break;
-    case 'save':   saveFile();   break;
-    case 'saveAs': saveAsFile(); break;
+    case 'new':    newFile();       break;
+    case 'open':   openFile();      break;
+    case 'save':   saveFile();      break;
+    case 'saveAs': saveAsFile();    break;
+    case 'quickOpen': showQuickOpen(); break;
     case 'zen':    document.body.classList.toggle('zen'); break;
   }
+});
+
+// ── Welcome screen ────────────────────────────────────────────────────────────
+const welcome = document.getElementById('welcome');
+
+async function showWelcome() {
+  const recents = await window.fileAPI.getRecents();
+  const list  = document.getElementById('welcome-recents-list');
+  const empty = document.getElementById('welcome-recents-empty');
+  list.innerHTML = '';
+
+  if (recents.length === 0) {
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    recents.forEach(filePath => {
+      const name = filePath.split(/[\\/]/).pop();
+      const dir  = filePath.split(/[\\/]/).slice(0, -1).join('\\');
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="wr-name">${name}</span><span class="wr-path">${dir}</span>`;
+      li.addEventListener('click', () => openRecentFile(filePath));
+      list.appendChild(li);
+    });
+  }
+  welcome.classList.remove('hidden');
+}
+
+function hideWelcome() {
+  welcome.classList.add('hidden');
+}
+
+document.getElementById('welcome-actions').addEventListener('click', e => {
+  const action = e.target.closest('[data-action]')?.dataset.action;
+  if (!action) return;
+  hideWelcome();
+  if (action === 'new')  newFile();
+  if (action === 'open') openFile();
+});
+
+// ── Quick open ────────────────────────────────────────────────────────────────
+const quickOpen = document.getElementById('quick-open');
+let focusedRecentIndex = -1;
+
+async function showQuickOpen() {
+  const recents = await window.fileAPI.getRecents();
+  const list = document.getElementById('recents-list');
+  const empty = document.getElementById('recents-empty');
+  list.innerHTML = '';
+  focusedRecentIndex = -1;
+
+  if (recents.length === 0) {
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    recents.forEach((filePath, i) => {
+      const name = filePath.split(/[\\/]/).pop();
+      const dir  = filePath.split(/[\\/]/).slice(0, -1).join('/');
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="recent-name">${name}</span><span class="recent-path">${dir}</span>`;
+      li.addEventListener('click', () => openRecentFile(filePath));
+      list.appendChild(li);
+    });
+  }
+
+  quickOpen.classList.remove('hidden');
+}
+
+function hideQuickOpen() {
+  quickOpen.classList.add('hidden');
+  view.focus();
+}
+
+async function openRecentFile(filePath) {
+  hideWelcome();
+  hideQuickOpen();
+  if (!await confirmDiscard()) return;
+  const result = await window.fileAPI.openPath(filePath);
+  if (result.canceled) return;
+  setContent(result.content);
+  isDirty = false;
+  markClean(result.filePath);
+  updatePlaceholder();
+  updateWordCount();
+}
+
+// Action buttons inside overlay
+document.getElementById('quick-open-actions').addEventListener('click', e => {
+  const action = e.target.closest('[data-action]')?.dataset.action;
+  if (!action) return;
+  hideQuickOpen();
+  if (action === 'new')  newFile();
+  if (action === 'open') openFile();
+});
+
+// Dismiss on backdrop click
+quickOpen.addEventListener('click', e => {
+  if (e.target === quickOpen) hideQuickOpen();
+});
+
+// Keyboard nav inside overlay
+quickOpen.addEventListener('keydown', e => {
+  const items = [...document.querySelectorAll('#recents-list li')];
+  if (e.key === 'Escape') { hideQuickOpen(); return; }
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    focusedRecentIndex = Math.min(focusedRecentIndex + 1, items.length - 1);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    focusedRecentIndex = Math.max(focusedRecentIndex - 1, 0);
+  } else if (e.key === 'Enter' && focusedRecentIndex >= 0) {
+    items[focusedRecentIndex]?.click();
+    return;
+  }
+  items.forEach((li, i) => li.classList.toggle('focused', i === focusedRecentIndex));
+  items[focusedRecentIndex]?.scrollIntoView({ block: 'nearest' });
 });
 
 // ── Zen mode ──────────────────────────────────────────────────────────────────
@@ -447,4 +566,5 @@ function updateWordCount() {
 setFileName(null);
 updatePlaceholder();
 updateWordCount();
+showWelcome();
 view.focus();

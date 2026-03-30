@@ -14,6 +14,7 @@
         <div class="menu-section">
           <button data-action="new">New File <span class="shortcut">Ctrl+N</span></button>
           <button data-action="open">Open File <span class="shortcut">Ctrl+O</span></button>
+          <button data-action="quickOpen">Quick Open <span class="shortcut">Ctrl+P</span></button>
           <button data-action="save">Save <span class="shortcut">Ctrl+S</span></button>
           <button data-action="saveAs">Save As <span class="shortcut">Ctrl+Shift+S</span></button>
         </div>
@@ -33,7 +34,48 @@
     </div>
   </div>
 
+  <!-- Quick open / welcome overlay -->
+  <div id="quick-open" class="hidden">
+    <div id="quick-open-box">
+      <div id="quick-open-actions">
+        <button class="qa-btn" data-action="new">
+          <span class="qa-label">New File</span>
+          <span class="qa-shortcut">Ctrl+N</span>
+        </button>
+        <button class="qa-btn" data-action="open">
+          <span class="qa-label">Open File</span>
+          <span class="qa-shortcut">Ctrl+O</span>
+        </button>
+      </div>
+      <div id="quick-open-recents">
+        <div id="recents-label">Recent Files</div>
+        <ul id="recents-list"></ul>
+        <div id="recents-empty" class="hidden">No recent files</div>
+      </div>
+    </div>
+  </div>
+
   <div id="editor-wrap">
+    <div id="welcome">
+      <div id="welcome-inner">
+        <div id="welcome-logo">FlowMark</div>
+        <div id="welcome-actions">
+          <button class="wa-btn" data-action="new">
+            <span class="wa-label">New File</span>
+            <span class="wa-shortcut">Ctrl+N</span>
+          </button>
+          <button class="wa-btn" data-action="open">
+            <span class="wa-label">Open File</span>
+            <span class="wa-shortcut">Ctrl+O</span>
+          </button>
+        </div>
+        <div id="welcome-recents">
+          <div class="recents-heading">Recent</div>
+          <ul id="welcome-recents-list"></ul>
+          <div id="welcome-recents-empty" class="hidden">No recent files</div>
+        </div>
+      </div>
+    </div>
     <div id="editor"></div>
   </div>
   <div id="statusbar">

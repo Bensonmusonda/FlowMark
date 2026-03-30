@@ -314,3 +314,234 @@ body.zen #statusbar { display: none; }
   border-left: none;
   transform: rotate(45deg);
 }
+
+/* ── Quick open overlay ── */
+#quick-open {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+#quick-open.hidden { display: none; }
+
+#quick-open-box {
+  background: #222;
+  border: 1px solid #333;
+  border-radius: 10px;
+  width: 480px;
+  max-height: 520px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+#quick-open-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.qa-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 7px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: left;
+}
+.qa-btn:hover { background: #333; border-color: #444; }
+.qa-btn:focus { outline: none; background: #333; border-color: var(--accent); }
+
+.qa-icon { font-size: 15px; opacity: 0.7; }
+.qa-label { flex: 1; font-weight: 500; }
+.qa-shortcut { font-size: 11px; color: var(--muted); }
+
+#quick-open-recents {
+  padding: 12px 0 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+#recents-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 16px 8px;
+}
+
+#recents-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#recents-list li {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-radius: 4px;
+  margin: 0 6px;
+}
+#recents-list li:hover,
+#recents-list li.focused { background: #2a2a2a; }
+#recents-list li.focused { outline: none; }
+
+.recent-name {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-path {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  direction: rtl;
+}
+
+#recents-empty {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted);
+  padding: 16px;
+  text-align: center;
+  font-style: italic;
+}
+#recents-empty.hidden { display: none; }
+
+/* ── Welcome screen ── */
+#welcome {
+  display: flex;
+  justify-content: center;
+  padding: 80px 40px 0;
+  width: 100%;
+}
+#welcome.hidden { display: none; }
+
+#welcome-inner {
+  width: 100%;
+  max-width: 480px;
+}
+
+#welcome-logo {
+  font-family: var(--font-prose);
+  font-size: 28px;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+
+#welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 32px;
+}
+
+.wa-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  width: 100%;
+}
+.wa-btn:hover { background: rgba(255,255,255,0.05); }
+.wa-label { flex: 1; }
+.wa-shortcut { color: var(--muted); font-size: 12px; }
+
+.recents-heading {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 12px 8px;
+}
+
+#welcome-recents-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#welcome-recents-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+#welcome-recents-list li:hover { background: rgba(255,255,255,0.05); }
+
+.wr-name {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.wr-path {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  direction: rtl;
+  flex: 1;
+  min-width: 0;
+}
+
+#welcome-recents-empty {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 12px;
+  font-style: italic;
+}
+#welcome-recents-empty.hidden { display: none; }
+
+/* hide editor when welcome is shown, show editor when welcome hidden */
+#welcome.hidden ~ #editor { display: block; }
+#welcome:not(.hidden) ~ #editor { display: none; }

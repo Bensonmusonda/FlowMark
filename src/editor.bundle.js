@@ -58162,6 +58162,7 @@
   }
   async function newFile() {
     if (!await confirmDiscard()) return;
+    hideWelcome();
     await window.fileAPI.clearPath();
     setContent("");
     isDirty = false;
@@ -58172,6 +58173,7 @@
   }
   async function openFile() {
     if (!await confirmDiscard()) return;
+    hideWelcome();
     const result = await window.fileAPI.open();
     if (result.canceled) return;
     setContent(result.content);
@@ -58235,6 +58237,10 @@ Just start writing.
           { key: "Ctrl-Shift-s", run: () => {
             saveAsFile();
             return true;
+          } },
+          { key: "Ctrl-p", run: () => {
+            showQuickOpen();
+            return true;
           } }
         ]),
         markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
@@ -58285,10 +58291,112 @@ Just start writing.
       case "saveAs":
         saveAsFile();
         break;
+      case "quickOpen":
+        showQuickOpen();
+        break;
       case "zen":
         document.body.classList.toggle("zen");
         break;
     }
+  });
+  var welcome = document.getElementById("welcome");
+  async function showWelcome() {
+    const recents = await window.fileAPI.getRecents();
+    const list2 = document.getElementById("welcome-recents-list");
+    const empty = document.getElementById("welcome-recents-empty");
+    list2.innerHTML = "";
+    if (recents.length === 0) {
+      empty.classList.remove("hidden");
+    } else {
+      empty.classList.add("hidden");
+      recents.forEach((filePath) => {
+        const name2 = filePath.split(/[\\/]/).pop();
+        const dir = filePath.split(/[\\/]/).slice(0, -1).join("\\");
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="wr-name">${name2}</span><span class="wr-path">${dir}</span>`;
+        li.addEventListener("click", () => openRecentFile(filePath));
+        list2.appendChild(li);
+      });
+    }
+    welcome.classList.remove("hidden");
+  }
+  function hideWelcome() {
+    welcome.classList.add("hidden");
+  }
+  document.getElementById("welcome-actions").addEventListener("click", (e) => {
+    const action = e.target.closest("[data-action]")?.dataset.action;
+    if (!action) return;
+    hideWelcome();
+    if (action === "new") newFile();
+    if (action === "open") openFile();
+  });
+  var quickOpen = document.getElementById("quick-open");
+  var focusedRecentIndex = -1;
+  async function showQuickOpen() {
+    const recents = await window.fileAPI.getRecents();
+    const list2 = document.getElementById("recents-list");
+    const empty = document.getElementById("recents-empty");
+    list2.innerHTML = "";
+    focusedRecentIndex = -1;
+    if (recents.length === 0) {
+      empty.classList.remove("hidden");
+    } else {
+      empty.classList.add("hidden");
+      recents.forEach((filePath, i) => {
+        const name2 = filePath.split(/[\\/]/).pop();
+        const dir = filePath.split(/[\\/]/).slice(0, -1).join("/");
+        const li = document.createElement("li");
+        li.innerHTML = `<span class="recent-name">${name2}</span><span class="recent-path">${dir}</span>`;
+        li.addEventListener("click", () => openRecentFile(filePath));
+        list2.appendChild(li);
+      });
+    }
+    quickOpen.classList.remove("hidden");
+  }
+  function hideQuickOpen() {
+    quickOpen.classList.add("hidden");
+    view.focus();
+  }
+  async function openRecentFile(filePath) {
+    hideWelcome();
+    hideQuickOpen();
+    if (!await confirmDiscard()) return;
+    const result = await window.fileAPI.openPath(filePath);
+    if (result.canceled) return;
+    setContent(result.content);
+    isDirty = false;
+    markClean(result.filePath);
+    updatePlaceholder();
+    updateWordCount();
+  }
+  document.getElementById("quick-open-actions").addEventListener("click", (e) => {
+    const action = e.target.closest("[data-action]")?.dataset.action;
+    if (!action) return;
+    hideQuickOpen();
+    if (action === "new") newFile();
+    if (action === "open") openFile();
+  });
+  quickOpen.addEventListener("click", (e) => {
+    if (e.target === quickOpen) hideQuickOpen();
+  });
+  quickOpen.addEventListener("keydown", (e) => {
+    const items = [...document.querySelectorAll("#recents-list li")];
+    if (e.key === "Escape") {
+      hideQuickOpen();
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      focusedRecentIndex = Math.min(focusedRecentIndex + 1, items.length - 1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      focusedRecentIndex = Math.max(focusedRecentIndex - 1, 0);
+    } else if (e.key === "Enter" && focusedRecentIndex >= 0) {
+      items[focusedRecentIndex]?.click();
+      return;
+    }
+    items.forEach((li, i) => li.classList.toggle("focused", i === focusedRecentIndex));
+    items[focusedRecentIndex]?.scrollIntoView({ block: "nearest" });
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "F11") {
@@ -58311,5 +58419,6 @@ Just start writing.
   setFileName(null);
   updatePlaceholder();
   updateWordCount();
+  showWelcome();
   view.focus();
 })();
