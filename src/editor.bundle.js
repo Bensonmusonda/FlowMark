@@ -57884,7 +57884,62 @@
     // HR
     { tag: tags.contentSeparator, color: "#444" }
   ]);
-  var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark", "ListMark"]);
+  var bulletPlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.selectionSet || update.focusChanged) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50) || syntaxTree(view2.state);
+      if (!tree) return builder.finish();
+      const doc2 = view2.state.doc;
+      const activeLines = new Set(
+        view2.state.selection.ranges.map((r2) => doc2.lineAt(r2.head).number)
+      );
+      const taskLines = /* @__PURE__ */ new Set();
+      tree.iterate({ enter(node) {
+        if (node.type.name === "TaskMarker") taskLines.add(doc2.lineAt(node.from).number);
+      } });
+      const marks2 = [];
+      tree.iterate({ enter(node) {
+        if (node.type.name !== "ListMark") return;
+        if (taskLines.has(doc2.lineAt(node.from).number)) return;
+        marks2.push({
+          from: node.from,
+          to: node.to,
+          text: doc2.sliceString(node.from, node.to),
+          line: doc2.lineAt(node.from).number
+        });
+      } });
+      marks2.sort((a2, b) => a2.from - b.from);
+      for (const m of marks2) {
+        const visible = activeLines.has(m.line);
+        builder.add(m.from, m.to, Decoration.replace({
+          widget: new BulletWidget(m.text, visible)
+        }));
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
+  var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark"]);
+  var HiddenWidget = class extends WidgetType {
+    toDOM() {
+      const s = document.createElement("span");
+      s.style.display = "none";
+      return s;
+    }
+    eq() {
+      return true;
+    }
+    ignoreEvent() {
+      return false;
+    }
+  };
   var CheckboxWidget = class extends WidgetType {
     constructor(checked, from3) {
       super();
@@ -57923,21 +57978,31 @@
     }
     compute(view2) {
       const builder = new RangeSetBuilder();
-      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50);
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50) || syntaxTree(view2.state);
       if (!tree) return builder.finish();
+      const doc2 = view2.state.doc;
       const marks2 = [];
+      const taskLineMarks = /* @__PURE__ */ new Map();
       tree.iterate({
         enter(node) {
+          if (node.type.name === "ListMark") {
+            taskLineMarks.set(doc2.lineAt(node.from).number, { from: node.from, to: node.to });
+          }
           if (node.type.name !== "TaskMarker") return;
-          const text5 = view2.state.doc.sliceString(node.from, node.to);
-          marks2.push({ from: node.from, to: node.to, checked: text5.toLowerCase() === "[x]" });
+          const text5 = doc2.sliceString(node.from, node.to);
+          const lineNum = doc2.lineAt(node.from).number;
+          marks2.push({ from: node.from, to: node.to, checked: text5.toLowerCase() === "[x]", lineNum });
         }
       });
-      marks2.sort((a2, b) => a2.from - b.from);
+      const allRanges = [];
       for (const m of marks2) {
-        builder.add(m.from, m.to, Decoration.replace({
-          widget: new CheckboxWidget(m.checked, m.from)
-        }));
+        const listMark = taskLineMarks.get(m.lineNum);
+        if (listMark) allRanges.push({ from: listMark.from, to: listMark.to, widget: new HiddenWidget() });
+        allRanges.push({ from: m.from, to: m.to, widget: new CheckboxWidget(m.checked, m.from) });
+      }
+      allRanges.sort((a2, b) => a2.from - b.from);
+      for (const r2 of allRanges) {
+        builder.add(r2.from, r2.to, Decoration.replace({ widget: r2.widget }));
       }
       return builder.finish();
     }
@@ -58023,7 +58088,7 @@
             to: node.to,
             text: doc2.sliceString(node.from, node.to),
             line: doc2.lineAt(node.from).number,
-            isList: node.type.name === "ListMark"
+            isList: false
           });
         }
       });
@@ -58175,6 +58240,7 @@ Just start writing.
         markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
         syntaxHighlighting(flowHighlight),
         checkboxPlugin,
+        bulletPlugin,
         activeSyntaxPlugin,
         flowTheme,
         EditorView.lineWrapping,

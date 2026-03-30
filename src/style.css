@@ -282,32 +282,35 @@ body.zen #statusbar { display: none; }
 .cm-checkbox {
   appearance: none;
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border: 1.5px solid #555;
-  border-radius: 3px;
+  border-radius: 4px;
   background: transparent;
   cursor: pointer;
   vertical-align: middle;
-  margin-right: 6px;
+  margin-right: 8px;
   position: relative;
   top: -1px;
-  transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  transition: border-color 0.2s;
+}
+.cm-checkbox:hover {
+  border-color: #7cb8f0;
 }
 .cm-checkbox:checked {
-  background: #7cb8f0;
-  border-color: #7cb8f0;
+  background: transparent;
+  border-color: #555;
 }
 .cm-checkbox:checked::after {
   content: '';
   position: absolute;
-  left: 3px;
-  top: 0px;
+  left: 5px;
+  top: 2px;
   width: 5px;
-  height: 8px;
-  border: 2px solid #1a1a1a;
+  height: 9px;
+  border: 2.5px solid #7cb8f0;
   border-top: none;
   border-left: none;
   transform: rotate(45deg);
 }
-.cm-checkbox:hover { border-color: #7cb8f0; }

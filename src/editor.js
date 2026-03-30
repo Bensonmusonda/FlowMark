@@ -38,7 +38,45 @@ const flowHighlight = HighlightStyle.define([
   { tag: t.contentSeparator, color: '#444' },
 ]);
 
-// ── Active-line syntax reveal ─────────────────────────────────────────────────
+const bulletPlugin = ViewPlugin.fromClass(class {
+  constructor(view) { this.decorations = this.compute(view); }
+  update(update) {
+    if (update.docChanged || update.selectionSet || update.focusChanged) {
+      this.decorations = this.compute(update.view);
+    }
+  }
+  compute(view) {
+    const builder = new RangeSetBuilder();
+    const tree = ensureSyntaxTree(view.state, view.state.doc.length, 50)
+              || syntaxTree(view.state);
+    if (!tree) return builder.finish();
+    const doc = view.state.doc;
+    const activeLines = new Set(
+      view.state.selection.ranges.map(r => doc.lineAt(r.head).number)
+    );
+    // Find task lines to exclude
+    const taskLines = new Set();
+    tree.iterate({ enter(node) {
+      if (node.type.name === 'TaskMarker') taskLines.add(doc.lineAt(node.from).number);
+    }});
+    const marks = [];
+    tree.iterate({ enter(node) {
+      if (node.type.name !== 'ListMark') return;
+      if (taskLines.has(doc.lineAt(node.from).number)) return;
+      marks.push({ from: node.from, to: node.to,
+        text: doc.sliceString(node.from, node.to),
+        line: doc.lineAt(node.from).number });
+    }});
+    marks.sort((a, b) => a.from - b.from);
+    for (const m of marks) {
+      const visible = activeLines.has(m.line);
+      builder.add(m.from, m.to, Decoration.replace({
+        widget: new BulletWidget(m.text, visible)
+      }));
+    }
+    return builder.finish();
+  }
+}, { decorations: v => v.decorations });
 // EmphasisMark, HeaderMark, LinkMark, QuoteMark have no lezer highlight tags
 // so CM never creates spans for them — Decoration.mark can't attach.
 // Solution: replace them with widget spans we fully control.
@@ -46,9 +84,14 @@ const flowHighlight = HighlightStyle.define([
 import { syntaxTree, ensureSyntaxTree } from '@codemirror/language';
 import { WidgetType } from '@codemirror/view';
 
-const PUNCT = new Set(['HeaderMark','EmphasisMark','LinkMark','QuoteMark','URL','CodeMark','ListMark']);
+const PUNCT = new Set(['HeaderMark','EmphasisMark','LinkMark','QuoteMark','URL','CodeMark']);
 
 // ── Checkbox widget ───────────────────────────────────────────────────────────
+class HiddenWidget extends WidgetType {
+  toDOM() { const s = document.createElement('span'); s.style.display = 'none'; return s; }
+  eq() { return true; }
+  ignoreEvent() { return false; }
+}
 class CheckboxWidget extends WidgetType {
   constructor(checked, from) { super(); this.checked = checked; this.from = from; }
   eq(other) { return other.checked === this.checked; }
@@ -78,21 +121,36 @@ const checkboxPlugin = ViewPlugin.fromClass(class {
   }
   compute(view) {
     const builder = new RangeSetBuilder();
-    const tree = ensureSyntaxTree(view.state, view.state.doc.length, 50);
+    const tree = ensureSyntaxTree(view.state, view.state.doc.length, 50)
+              || syntaxTree(view.state);
     if (!tree) return builder.finish();
+    const doc = view.state.doc;
     const marks = [];
+    const taskLineMarks = new Map(); // lineNum -> ListMark range
+
     tree.iterate({
       enter(node) {
+        if (node.type.name === 'ListMark') {
+          taskLineMarks.set(doc.lineAt(node.from).number, { from: node.from, to: node.to });
+        }
         if (node.type.name !== 'TaskMarker') return;
-        const text = view.state.doc.sliceString(node.from, node.to);
-        marks.push({ from: node.from, to: node.to, checked: text.toLowerCase() === '[x]' });
+        const text = doc.sliceString(node.from, node.to);
+        const lineNum = doc.lineAt(node.from).number;
+        marks.push({ from: node.from, to: node.to, checked: text.toLowerCase() === '[x]', lineNum });
       }
     });
-    marks.sort((a, b) => a.from - b.from);
+
+    // Collect all ranges: hide the ListMark dash, replace TaskMarker with checkbox
+    const allRanges = [];
     for (const m of marks) {
-      builder.add(m.from, m.to, Decoration.replace({
-        widget: new CheckboxWidget(m.checked, m.from),
-      }));
+      // Hide the accompanying '-'
+      const listMark = taskLineMarks.get(m.lineNum);
+      if (listMark) allRanges.push({ from: listMark.from, to: listMark.to, widget: new HiddenWidget() });
+      allRanges.push({ from: m.from, to: m.to, widget: new CheckboxWidget(m.checked, m.from) });
+    }
+    allRanges.sort((a, b) => a.from - b.from);
+    for (const r of allRanges) {
+      builder.add(r.from, r.to, Decoration.replace({ widget: r.widget }));
     }
     return builder.finish();
   }
@@ -166,7 +224,7 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
           to: node.to,
           text: doc.sliceString(node.from, node.to),
           line: doc.lineAt(node.from).number,
-          isList: node.type.name === 'ListMark',
+          isList: false,
         });
       }
     });
@@ -319,6 +377,7 @@ const view = new EditorView({
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
       syntaxHighlighting(flowHighlight),
       checkboxPlugin,
+      bulletPlugin,
       activeSyntaxPlugin,
       flowTheme,
       EditorView.lineWrapping,
