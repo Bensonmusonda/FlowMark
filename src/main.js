@@ -28,8 +28,6 @@ function createWindow() {
     win.webContents.focus();
   });
 
-  win.webContents.openDevTools()
-
   Menu.setApplicationMenu(null);
 }
 
@@ -70,6 +68,11 @@ ipcMain.handle('file:open', async () => {
 });
 
 ipcMain.handle('file:clearPath', () => { currentFilePath = null; });
+
+ipcMain.on('window:refocus', () => {
+  win.focus();
+  win.webContents.focus();
+});
 
 ipcMain.on('window:minimize', () => win.minimize());
 ipcMain.on('window:maximize', () => win.isMaximized() ? win.unmaximize() : win.maximize());
