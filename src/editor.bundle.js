@@ -57883,7 +57883,7 @@
     // HR
     { tag: tags.contentSeparator, color: "#444" }
   ]);
-  var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark"]);
+  var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark", "ListMark"]);
   var SyntaxWidget = class extends WidgetType {
     constructor(text5, visible) {
       super();
@@ -57901,6 +57901,37 @@
       } else {
         span.textContent = "";
         span.style.display = "none";
+      }
+      return span;
+    }
+    ignoreEvent() {
+      return false;
+    }
+  };
+  var BulletWidget = class extends WidgetType {
+    constructor(text5, visible) {
+      super();
+      this.text = text5;
+      this.visible = visible;
+    }
+    eq(other) {
+      return other.text === this.text && other.visible === this.visible;
+    }
+    toDOM() {
+      const span = document.createElement("span");
+      if (this.visible) {
+        span.textContent = this.text;
+        span.style.color = "#666";
+      } else {
+        const isOrdered = /^\d/.test(this.text);
+        if (isOrdered) {
+          span.textContent = this.text;
+          span.style.color = "#666";
+        } else {
+          span.textContent = "\u2022";
+          span.style.color = "#888";
+          span.style.marginRight = "0.4em";
+        }
       }
       return span;
     }
@@ -57933,17 +57964,19 @@
             from: node.from,
             to: node.to,
             text: doc2.sliceString(node.from, node.to),
-            line: doc2.lineAt(node.from).number
+            line: doc2.lineAt(node.from).number,
+            isList: node.type.name === "ListMark"
           });
         }
       });
       marks2.sort((a2, b) => a2.from - b.from);
       for (const m of marks2) {
         const visible = activeLines.has(m.line);
+        const widget = m.isList ? new BulletWidget(m.text, visible) : new SyntaxWidget(m.text, visible);
         builder.add(
           m.from,
           m.to,
-          Decoration.replace({ widget: new SyntaxWidget(m.text, visible) })
+          Decoration.replace({ widget })
         );
       }
       return builder.finish();

@@ -47,7 +47,7 @@ const flowHighlight = HighlightStyle.define([
 import { syntaxTree, ensureSyntaxTree } from '@codemirror/language';
 import { WidgetType } from '@codemirror/view';
 
-const PUNCT = new Set(['HeaderMark','EmphasisMark','LinkMark','QuoteMark','URL','CodeMark']);
+const PUNCT = new Set(['HeaderMark','EmphasisMark','LinkMark','QuoteMark','URL','CodeMark','ListMark']);
 
 class SyntaxWidget extends WidgetType {
   constructor(text, visible) { super(); this.text = text; this.visible = visible; }
@@ -58,9 +58,34 @@ class SyntaxWidget extends WidgetType {
       span.textContent = this.text;
       span.style.color = '#666';
     } else {
-      // Zero-width — no text, no space taken
       span.textContent = '';
       span.style.display = 'none';
+    }
+    return span;
+  }
+  ignoreEvent() { return false; }
+}
+
+class BulletWidget extends WidgetType {
+  constructor(text, visible) { super(); this.text = text; this.visible = visible; }
+  eq(other) { return other.text === this.text && other.visible === this.visible; }
+  toDOM() {
+    const span = document.createElement('span');
+    if (this.visible) {
+      // Active line: show raw mark dimmed
+      span.textContent = this.text;
+      span.style.color = '#666';
+    } else {
+      // Inactive: unordered gets bullet, ordered keeps number
+      const isOrdered = /^\d/.test(this.text);
+      if (isOrdered) {
+        span.textContent = this.text;
+        span.style.color = '#666';
+      } else {
+        span.textContent = '•';
+        span.style.color = '#888';
+        span.style.marginRight = '0.4em';
+      }
     }
     return span;
   }
@@ -91,14 +116,18 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
           to: node.to,
           text: doc.sliceString(node.from, node.to),
           line: doc.lineAt(node.from).number,
+          isList: node.type.name === 'ListMark',
         });
       }
     });
     marks.sort((a, b) => a.from - b.from);
     for (const m of marks) {
       const visible = activeLines.has(m.line);
+      const widget = m.isList
+        ? new BulletWidget(m.text, visible)
+        : new SyntaxWidget(m.text, visible);
       builder.add(m.from, m.to,
-        Decoration.replace({ widget: new SyntaxWidget(m.text, visible) })
+        Decoration.replace({ widget })
       );
     }
     return builder.finish();
