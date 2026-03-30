@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlowMark</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="titlebar">
+    <div id="titlebar-left">
+      <button id="menu-btn" title="Menu">&#9776;</button>
+      <div id="dropdown" class="hidden">
+        <div class="menu-section">
+          <button data-action="new">New File <span class="shortcut">Ctrl+N</span></button>
+          <button data-action="open">Open File <span class="shortcut">Ctrl+O</span></button>
+          <button data-action="save">Save <span class="shortcut">Ctrl+S</span></button>
+          <button data-action="saveAs">Save As <span class="shortcut">Ctrl+Shift+S</span></button>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-section">
+          <button data-action="zen">Distraction-free <span class="shortcut">F11</span></button>
+        </div>
+      </div>
+    </div>
+
+    <span id="app-name">FlowMark</span>
+
+    <div id="window-controls">
+      <button id="btn-min"   title="Minimize">&#8211;</button>
+      <button id="btn-max"   title="Maximize">&#9633;</button>
+      <button id="btn-close" title="Close">&#10005;</button>
+    </div>
+  </div>
+
+  <div id="editor-wrap">
+    <div id="editor"></div>
+  </div>
+
+  <script src="editor.bundle.js"></script>
+</body>
+</html>
