@@ -277,3 +277,37 @@ body.zen #editor-wrap { height: 100vh; }
 }
 #statusbar:hover { opacity: 1; }
 body.zen #statusbar { display: none; }
+
+/* ── Checkboxes ── */
+.cm-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #555;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 6px;
+  position: relative;
+  top: -1px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cm-checkbox:checked {
+  background: #7cb8f0;
+  border-color: #7cb8f0;
+}
+.cm-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 5px;
+  height: 8px;
+  border: 2px solid #1a1a1a;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+.cm-checkbox:hover { border-color: #7cb8f0; }

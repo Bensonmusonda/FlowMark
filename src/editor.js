@@ -3,6 +3,7 @@ import { EditorView, keymap, drawSelection, dropCursor, Decoration, ViewPlugin }
 import { EditorSelection } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { GFM } from '@lezer/markdown';
 import { languages } from '@codemirror/language-data';
 import { syntaxHighlighting } from '@codemirror/language';
 import { HighlightStyle } from '@codemirror/language';
@@ -38,8 +39,6 @@ const flowHighlight = HighlightStyle.define([
 ]);
 
 // ── Active-line syntax reveal ─────────────────────────────────────────────────
-// Walk the syntax tree, find punctuation nodes, hide them on inactive lines only.
-// ── Active-line syntax reveal ─────────────────────────────────────────────────
 // EmphasisMark, HeaderMark, LinkMark, QuoteMark have no lezer highlight tags
 // so CM never creates spans for them — Decoration.mark can't attach.
 // Solution: replace them with widget spans we fully control.
@@ -49,6 +48,57 @@ import { WidgetType } from '@codemirror/view';
 
 const PUNCT = new Set(['HeaderMark','EmphasisMark','LinkMark','QuoteMark','URL','CodeMark','ListMark']);
 
+// ── Checkbox widget ───────────────────────────────────────────────────────────
+class CheckboxWidget extends WidgetType {
+  constructor(checked, from) { super(); this.checked = checked; this.from = from; }
+  eq(other) { return other.checked === this.checked; }
+  toDOM(view) {
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    box.checked = this.checked;
+    box.className = 'cm-checkbox';
+    box.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const pos = this.from;
+      const text = view.state.doc.sliceString(pos, pos + 3);
+      const replacement = text === '[ ]' ? '[x]' : '[ ]';
+      view.dispatch({ changes: { from: pos, to: pos + 3, insert: replacement } });
+    });
+    return box;
+  }
+  ignoreEvent() { return false; }
+}
+
+const checkboxPlugin = ViewPlugin.fromClass(class {
+  constructor(view) { this.decorations = this.compute(view); }
+  update(update) {
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = this.compute(update.view);
+    }
+  }
+  compute(view) {
+    const builder = new RangeSetBuilder();
+    const tree = ensureSyntaxTree(view.state, view.state.doc.length, 50);
+    if (!tree) return builder.finish();
+    const marks = [];
+    tree.iterate({
+      enter(node) {
+        if (node.type.name !== 'TaskMarker') return;
+        const text = view.state.doc.sliceString(node.from, node.to);
+        marks.push({ from: node.from, to: node.to, checked: text.toLowerCase() === '[x]' });
+      }
+    });
+    marks.sort((a, b) => a.from - b.from);
+    for (const m of marks) {
+      builder.add(m.from, m.to, Decoration.replace({
+        widget: new CheckboxWidget(m.checked, m.from),
+      }));
+    }
+    return builder.finish();
+  }
+}, { decorations: v => v.decorations });
+
+// ── Syntax hide/show widgets ──────────────────────────────────────────────────
 class SyntaxWidget extends WidgetType {
   constructor(text, visible) { super(); this.text = text; this.visible = visible; }
   eq(other) { return other.text === this.text && other.visible === this.visible; }
@@ -266,8 +316,9 @@ const view = new EditorView({
         { key: 'Ctrl-s', run: () => { saveFile();   return true; } },
         { key: 'Ctrl-Shift-s', run: () => { saveAsFile(); return true; } },
       ]),
-      markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true }),
+      markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
       syntaxHighlighting(flowHighlight),
+      checkboxPlugin,
       activeSyntaxPlugin,
       flowTheme,
       EditorView.lineWrapping,

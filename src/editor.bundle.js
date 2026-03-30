@@ -56826,6 +56826,7 @@
 
   // src/editor.js
   init_dist15();
+  init_dist7();
 
   // node_modules/@codemirror/language-data/dist/index.js
   init_dist5();
@@ -57884,6 +57885,63 @@
     { tag: tags.contentSeparator, color: "#444" }
   ]);
   var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark", "ListMark"]);
+  var CheckboxWidget = class extends WidgetType {
+    constructor(checked, from3) {
+      super();
+      this.checked = checked;
+      this.from = from3;
+    }
+    eq(other) {
+      return other.checked === this.checked;
+    }
+    toDOM(view2) {
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = this.checked;
+      box.className = "cm-checkbox";
+      box.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        const pos = this.from;
+        const text5 = view2.state.doc.sliceString(pos, pos + 3);
+        const replacement = text5 === "[ ]" ? "[x]" : "[ ]";
+        view2.dispatch({ changes: { from: pos, to: pos + 3, insert: replacement } });
+      });
+      return box;
+    }
+    ignoreEvent() {
+      return false;
+    }
+  };
+  var checkboxPlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50);
+      if (!tree) return builder.finish();
+      const marks2 = [];
+      tree.iterate({
+        enter(node) {
+          if (node.type.name !== "TaskMarker") return;
+          const text5 = view2.state.doc.sliceString(node.from, node.to);
+          marks2.push({ from: node.from, to: node.to, checked: text5.toLowerCase() === "[x]" });
+        }
+      });
+      marks2.sort((a2, b) => a2.from - b.from);
+      for (const m of marks2) {
+        builder.add(m.from, m.to, Decoration.replace({
+          widget: new CheckboxWidget(m.checked, m.from)
+        }));
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
   var SyntaxWidget = class extends WidgetType {
     constructor(text5, visible) {
       super();
@@ -58114,8 +58172,9 @@ Just start writing.
             return true;
           } }
         ]),
-        markdown({ base: markdownLanguage, codeLanguages: languages, addKeymap: true }),
+        markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
         syntaxHighlighting(flowHighlight),
+        checkboxPlugin,
         activeSyntaxPlugin,
         flowTheme,
         EditorView.lineWrapping,
