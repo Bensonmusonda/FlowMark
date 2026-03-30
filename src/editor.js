@@ -418,13 +418,46 @@ dropdown.addEventListener('click', e => {
   if (!action) return;
   dropdown.classList.add('hidden');
   switch (action) {
-    case 'new':    newFile();       break;
-    case 'open':   openFile();      break;
-    case 'save':   saveFile();      break;
-    case 'saveAs': saveAsFile();    break;
+    case 'new':       newFile();       break;
+    case 'open':      openFile();      break;
+    case 'save':      saveFile();      break;
+    case 'saveAs':    saveAsFile();    break;
     case 'quickOpen': showQuickOpen(); break;
+    case 'settings':  showSettings();  break;
     case 'zen':    document.body.classList.toggle('zen'); break;
   }
+});
+
+// ── Settings panel ────────────────────────────────────────────────────────────
+const settingsPanel = document.getElementById('settings-panel');
+
+function showSettings() {
+  // Mark active theme and accent
+  document.querySelectorAll('.theme-opt').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === currentTheme ||
+      (currentTheme === 'theme-dark' && b.dataset.theme === 'theme-dark'));
+  });
+  document.querySelectorAll('.accent-opt').forEach(b => {
+    b.classList.toggle('active', b.dataset.accent === currentAccent);
+  });
+  settingsPanel.classList.remove('hidden');
+}
+
+function hideSettings() {
+  settingsPanel.classList.add('hidden');
+  view.focus();
+}
+
+settingsPanel.addEventListener('click', e => {
+  if (e.target === settingsPanel) { hideSettings(); return; }
+  const theme = e.target.closest('[data-theme]')?.dataset.theme;
+  if (theme) { applyTheme(theme); showSettings(); return; }
+  const accent = e.target.closest('[data-accent]')?.dataset.accent;
+  if (accent) { applyAccent(accent); showSettings(); }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !settingsPanel.classList.contains('hidden')) hideSettings();
 });
 
 // ── Welcome screen ────────────────────────────────────────────────────────────
@@ -541,6 +574,43 @@ quickOpen.addEventListener('keydown', e => {
   items.forEach((li, i) => li.classList.toggle('focused', i === focusedRecentIndex));
   items[focusedRecentIndex]?.scrollIntoView({ block: 'nearest' });
 });
+
+// ── Theme ─────────────────────────────────────────────────────────────────────
+const THEMES = ['theme-dark', 'theme-light', 'theme-sepia'];
+let currentTheme = localStorage.getItem('fm-theme') || 'theme-dark';
+
+function applyTheme(theme) {
+  document.body.classList.remove(...THEMES);
+  if (theme !== 'theme-dark') document.body.classList.add(theme);
+  currentTheme = theme;
+  localStorage.setItem('fm-theme', theme);
+  applyAccent(currentAccent);
+}
+
+applyTheme(currentTheme);
+
+// ── Accent colors ─────────────────────────────────────────────────────────────
+const ACCENTS = {
+  blue:   { dark: '#7cb8f0', light: '#3a7bd5' },
+  rose:   { dark: '#f0a0b0', light: '#c0405a' },
+  sage:   { dark: '#90c8a0', light: '#3a7a50' },
+  peach:  { dark: '#f0b890', light: '#c06030' },
+  lavender: { dark: '#b8a8f0', light: '#6050c0' },
+  sky:    { dark: '#80d0e8', light: '#2080a8' },
+  sand:   { dark: '#d4b896', light: '#8a6040' },
+};
+
+let currentAccent = localStorage.getItem('fm-accent') || 'blue';
+
+function applyAccent(name) {
+  const isLight = currentTheme !== 'theme-dark';
+  const color = ACCENTS[name]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
+  document.documentElement.style.setProperty('--accent', color);
+  currentAccent = name;
+  localStorage.setItem('fm-accent', name);
+}
+
+applyAccent(currentAccent);
 
 // ── Zen mode ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {

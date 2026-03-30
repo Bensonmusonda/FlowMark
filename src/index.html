@@ -20,6 +20,7 @@
         </div>
         <div class="menu-divider"></div>
         <div class="menu-section">
+          <button data-action="settings">Settings <span class="shortcut">Theme &amp; Colors</span></button>
           <button data-action="zen">Distraction-free <span class="shortcut">F11</span></button>
         </div>
       </div>
@@ -31,6 +32,28 @@
       <button id="btn-min"   title="Minimize">&#8211;</button>
       <button id="btn-max"   title="Maximize">&#9633;</button>
       <button id="btn-close" title="Close">&#10005;</button>
+    </div>
+  </div>
+
+  <!-- Settings panel -->
+  <div id="settings-panel" class="hidden">
+    <div id="settings-box">
+      <div class="settings-heading">Base Theme</div>
+      <div id="theme-options">
+        <button class="theme-opt" data-theme="theme-dark">Dark</button>
+        <button class="theme-opt" data-theme="theme-light">Light</button>
+        <button class="theme-opt" data-theme="theme-sepia">Sepia</button>
+      </div>
+      <div class="settings-heading">Accent Color</div>
+      <div id="accent-options">
+        <button class="accent-opt" data-accent="blue"     style="--c:#7cb8f0"></button>
+        <button class="accent-opt" data-accent="rose"     style="--c:#f0a0b0"></button>
+        <button class="accent-opt" data-accent="sage"     style="--c:#90c8a0"></button>
+        <button class="accent-opt" data-accent="peach"    style="--c:#f0b890"></button>
+        <button class="accent-opt" data-accent="lavender" style="--c:#b8a8f0"></button>
+        <button class="accent-opt" data-accent="sky"      style="--c:#80d0e8"></button>
+        <button class="accent-opt" data-accent="sand"     style="--c:#d4b896"></button>
+      </div>
     </div>
   </div>
 

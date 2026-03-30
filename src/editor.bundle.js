@@ -58294,10 +58294,47 @@ Just start writing.
       case "quickOpen":
         showQuickOpen();
         break;
+      case "settings":
+        showSettings();
+        break;
       case "zen":
         document.body.classList.toggle("zen");
         break;
     }
+  });
+  var settingsPanel = document.getElementById("settings-panel");
+  function showSettings() {
+    document.querySelectorAll(".theme-opt").forEach((b) => {
+      b.classList.toggle("active", b.dataset.theme === currentTheme || currentTheme === "theme-dark" && b.dataset.theme === "theme-dark");
+    });
+    document.querySelectorAll(".accent-opt").forEach((b) => {
+      b.classList.toggle("active", b.dataset.accent === currentAccent);
+    });
+    settingsPanel.classList.remove("hidden");
+  }
+  function hideSettings() {
+    settingsPanel.classList.add("hidden");
+    view.focus();
+  }
+  settingsPanel.addEventListener("click", (e) => {
+    if (e.target === settingsPanel) {
+      hideSettings();
+      return;
+    }
+    const theme2 = e.target.closest("[data-theme]")?.dataset.theme;
+    if (theme2) {
+      applyTheme(theme2);
+      showSettings();
+      return;
+    }
+    const accent = e.target.closest("[data-accent]")?.dataset.accent;
+    if (accent) {
+      applyAccent(accent);
+      showSettings();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !settingsPanel.classList.contains("hidden")) hideSettings();
   });
   var welcome = document.getElementById("welcome");
   async function showWelcome() {
@@ -58398,6 +58435,34 @@ Just start writing.
     items.forEach((li, i) => li.classList.toggle("focused", i === focusedRecentIndex));
     items[focusedRecentIndex]?.scrollIntoView({ block: "nearest" });
   });
+  var THEMES = ["theme-dark", "theme-light", "theme-sepia"];
+  var currentTheme = localStorage.getItem("fm-theme") || "theme-dark";
+  function applyTheme(theme2) {
+    document.body.classList.remove(...THEMES);
+    if (theme2 !== "theme-dark") document.body.classList.add(theme2);
+    currentTheme = theme2;
+    localStorage.setItem("fm-theme", theme2);
+    applyAccent(currentAccent);
+  }
+  applyTheme(currentTheme);
+  var ACCENTS = {
+    blue: { dark: "#7cb8f0", light: "#3a7bd5" },
+    rose: { dark: "#f0a0b0", light: "#c0405a" },
+    sage: { dark: "#90c8a0", light: "#3a7a50" },
+    peach: { dark: "#f0b890", light: "#c06030" },
+    lavender: { dark: "#b8a8f0", light: "#6050c0" },
+    sky: { dark: "#80d0e8", light: "#2080a8" },
+    sand: { dark: "#d4b896", light: "#8a6040" }
+  };
+  var currentAccent = localStorage.getItem("fm-accent") || "blue";
+  function applyAccent(name2) {
+    const isLight = currentTheme !== "theme-dark";
+    const color = ACCENTS[name2]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+    document.documentElement.style.setProperty("--accent", color);
+    currentAccent = name2;
+    localStorage.setItem("fm-accent", name2);
+  }
+  applyAccent(currentAccent);
   document.addEventListener("keydown", (e) => {
     if (e.key === "F11") {
       e.preventDefault();
