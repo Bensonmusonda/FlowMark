@@ -58123,6 +58123,7 @@ Just start writing.
           if (update.docChanged) {
             markDirty();
             updatePlaceholder();
+            updateWordCount();
           }
         })
       ]
@@ -58175,7 +58176,15 @@ Just start writing.
       view.focus();
     }
   });
+  function updateWordCount() {
+    const text5 = view.state.doc.toString();
+    const words22 = text5.trim() === "" ? 0 : text5.trim().split(/\s+/).length;
+    const mins = Math.ceil(words22 / 200);
+    const label = words22 === 0 ? "" : `${words22.toLocaleString()} words \xB7 ${mins} min read`;
+    document.getElementById("word-count").textContent = label;
+  }
   setFileName(null);
   updatePlaceholder();
+  updateWordCount();
   view.focus();
 })();

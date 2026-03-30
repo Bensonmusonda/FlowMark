@@ -272,7 +272,7 @@ const view = new EditorView({
       flowTheme,
       EditorView.lineWrapping,
       EditorView.updateListener.of(update => {
-        if (update.docChanged) { markDirty(); updatePlaceholder(); }
+        if (update.docChanged) { markDirty(); updatePlaceholder(); updateWordCount(); }
       }),
     ],
   }),
@@ -325,6 +325,16 @@ document.getElementById('editor-wrap').addEventListener('click', e => {
   }
 });
 
+// ── Word / reading time count ─────────────────────────────────────────────────
+function updateWordCount() {
+  const text = view.state.doc.toString();
+  const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+  const mins  = Math.ceil(words / 200);
+  const label = words === 0 ? '' : `${words.toLocaleString()} words · ${mins} min read`;
+  document.getElementById('word-count').textContent = label;
+}
+
 setFileName(null);
 updatePlaceholder();
+updateWordCount();
 view.focus();
