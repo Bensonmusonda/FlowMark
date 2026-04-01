@@ -35,6 +35,17 @@
     </div>
   </div>
 
+  <!-- Custom confirm dialog -->
+  <div id="confirm-overlay" class="hidden">
+    <div id="confirm-box">
+      <div id="confirm-message"></div>
+      <div id="confirm-buttons">
+        <button id="confirm-cancel">Cancel</button>
+        <button id="confirm-ok"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- Settings panel -->
   <div id="settings-panel" class="hidden">
     <div id="settings-box">
@@ -46,13 +57,22 @@
       </div>
       <div class="settings-heading">Accent Color</div>
       <div id="accent-options">
-        <button class="accent-opt" data-accent="blue"     style="--c:#7cb8f0"></button>
-        <button class="accent-opt" data-accent="rose"     style="--c:#f0a0b0"></button>
-        <button class="accent-opt" data-accent="sage"     style="--c:#90c8a0"></button>
-        <button class="accent-opt" data-accent="peach"    style="--c:#f0b890"></button>
-        <button class="accent-opt" data-accent="lavender" style="--c:#b8a8f0"></button>
-        <button class="accent-opt" data-accent="sky"      style="--c:#80d0e8"></button>
-        <button class="accent-opt" data-accent="sand"     style="--c:#d4b896"></button>
+        <button class="accent-opt" data-accent="blue"     style="--c:#7cb8f0" title="Blue"></button>
+        <button class="accent-opt" data-accent="steel"    style="--c:#90aac8" title="Steel"></button>
+        <button class="accent-opt" data-accent="sky"      style="--c:#80d0e8" title="Sky"></button>
+        <button class="accent-opt" data-accent="sage"     style="--c:#90c8a0" title="Sage"></button>
+        <button class="accent-opt" data-accent="mint"     style="--c:#80e0c0" title="Mint"></button>
+        <button class="accent-opt" data-accent="olive"    style="--c:#b0c880" title="Olive"></button>
+        <button class="accent-opt" data-accent="rose"     style="--c:#f0a0b0" title="Rose"></button>
+        <button class="accent-opt" data-accent="coral"    style="--c:#f0907a" title="Coral"></button>
+        <button class="accent-opt" data-accent="blush"    style="--c:#e8b0c8" title="Blush"></button>
+        <button class="accent-opt" data-accent="lavender" style="--c:#b8a8f0" title="Lavender"></button>
+        <button class="accent-opt" data-accent="mauve"    style="--c:#d0a0d0" title="Mauve"></button>
+        <button class="accent-opt" data-accent="violet"   style="--c:#c0a0e8" title="Violet"></button>
+        <button class="accent-opt" data-accent="peach"    style="--c:#f0b890" title="Peach"></button>
+        <button class="accent-opt" data-accent="sand"     style="--c:#d4b896" title="Sand"></button>
+        <button class="accent-opt" data-accent="amber"    style="--c:#e8c870" title="Amber"></button>
+        <button class="accent-opt" data-accent="slate"    style="--c:#a0b8c8" title="Slate"></button>
       </div>
     </div>
   </div>

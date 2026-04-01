@@ -77,12 +77,29 @@ ipcMain.handle('file:open', async () => {
 
 ipcMain.handle('file:openPath', async (_, filePath) => {
   try {
-    const content = fs.readFileSync(filePath, 'utf8');
-    currentFilePath = filePath;
-    addRecent(filePath);
-    return { canceled: false, filePath, content };
+    const resolved = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(currentFilePath ? path.dirname(currentFilePath) : app.getPath('documents'), filePath);
+    const content = fs.readFileSync(resolved, 'utf8');
+    currentFilePath = resolved;
+    addRecent(resolved);
+    return { canceled: false, filePath: resolved, content };
   } catch (e) {
     return { canceled: true, error: 'File not found' };
+  }
+});
+
+ipcMain.handle('file:createAndOpen', async (_, filePath) => {
+  try {
+    const resolved = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(currentFilePath ? path.dirname(currentFilePath) : app.getPath('documents'), filePath);
+    fs.writeFileSync(resolved, '', 'utf8');
+    currentFilePath = resolved;
+    addRecent(resolved);
+    return { canceled: false, filePath: resolved, content: '' };
+  } catch (e) {
+    return { canceled: true, error: e.message };
   }
 });
 

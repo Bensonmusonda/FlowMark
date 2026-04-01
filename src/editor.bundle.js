@@ -57862,28 +57862,34 @@
   init_dist4();
   init_dist5();
   init_dist2();
-  var flowHighlight = HighlightStyle.define([
-    // Headings — size + weight, no underline
-    { tag: tags.heading1, fontSize: "2em", fontWeight: "700", color: "#f0f0f0", textDecoration: "none" },
-    { tag: tags.heading2, fontSize: "1.5em", fontWeight: "700", color: "#ebebeb", textDecoration: "none" },
-    { tag: tags.heading3, fontSize: "1.2em", fontWeight: "700", color: "#e0e0e0", textDecoration: "none" },
-    // Inline formatting
-    { tag: tags.strong, fontWeight: "700", color: "#f0f0f0" },
-    { tag: tags.emphasis, fontStyle: "italic", color: "#c8b8f8" },
-    { tag: tags.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace", fontSize: "0.87em", color: "#f0a97c" },
-    // Links
-    { tag: tags.link, color: "#7cb8f0", textDecoration: "underline" },
-    { tag: tags.url, color: "#555", fontSize: "0.85em" },
-    // Blockquote
-    { tag: tags.quote, color: "#7a7a7a", fontStyle: "italic" },
-    // Code block contents
-    { tag: tags.keyword, color: "#c678dd", fontFamily: "'Cascadia Code','Consolas',monospace" },
-    { tag: tags.string, color: "#98c379" },
-    { tag: tags.comment, color: "#5c6370", fontStyle: "italic" },
-    { tag: tags.variableName, color: "#61afef" },
-    // HR
-    { tag: tags.contentSeparator, color: "#444" }
-  ]);
+  var highlightCompartment = new Compartment();
+  function makeHighlight(isDark, accentColor) {
+    const accent = accentColor || (isDark ? "#7cb8f0" : "#3a7bd5");
+    const h1 = isDark ? "#f0f0f0" : "#111111";
+    const h2 = isDark ? "#ebebeb" : "#1a1a1a";
+    const h3 = isDark ? "#e0e0e0" : "#222222";
+    const bold = isDark ? "#f0f0f0" : "#111111";
+    const em = isDark ? "#c8b8f8" : "#5a4fcf";
+    const quot = isDark ? "#7a7a7a" : "#888866";
+    const sep = isDark ? "#444" : "#cccccc";
+    const url = isDark ? "#555" : "#aaaaaa";
+    return syntaxHighlighting(HighlightStyle.define([
+      { tag: tags.heading1, fontSize: "2em", fontWeight: "700", color: h1, textDecoration: "none" },
+      { tag: tags.heading2, fontSize: "1.5em", fontWeight: "700", color: h2, textDecoration: "none" },
+      { tag: tags.heading3, fontSize: "1.2em", fontWeight: "700", color: h3, textDecoration: "none" },
+      { tag: tags.strong, fontWeight: "700", color: bold },
+      { tag: tags.emphasis, fontStyle: "italic", color: em },
+      { tag: tags.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace", fontSize: "0.87em", color: "#f0a97c" },
+      { tag: tags.link, color: accent, textDecoration: "underline" },
+      { tag: tags.url, color: url, fontSize: "0.85em" },
+      { tag: tags.quote, color: quot, fontStyle: "italic" },
+      { tag: tags.keyword, color: "#c678dd", fontFamily: "'Cascadia Code','Consolas',monospace" },
+      { tag: tags.string, color: "#98c379" },
+      { tag: tags.comment, color: "#5c6370", fontStyle: "italic" },
+      { tag: tags.variableName, color: "#61afef" },
+      { tag: tags.contentSeparator, color: sep }
+    ]));
+  }
   var bulletPlugin = ViewPlugin.fromClass(class {
     constructor(view2) {
       this.decorations = this.compute(view2);
@@ -57961,6 +57967,7 @@
         const replacement = text5 === "[ ]" ? "[x]" : "[ ]";
         view2.dispatch({ changes: { from: pos, to: pos + 3, insert: replacement } });
       });
+      box.style.setProperty("--cb-accent", "var(--accent)");
       return box;
     }
     ignoreEvent() {
@@ -58007,6 +58014,116 @@
       return builder.finish();
     }
   }, { decorations: (v) => v.decorations });
+  var noteLinkMark = Decoration.mark({ class: "cm-note-link" });
+  var NoteBracketWidget = class extends WidgetType {
+    constructor(text5, visible) {
+      super();
+      this.text = text5;
+      this.visible = visible;
+    }
+    eq(other) {
+      return other.text === this.text && other.visible === this.visible;
+    }
+    toDOM() {
+      const span = document.createElement("span");
+      span.textContent = this.visible ? this.text : "";
+      span.style.display = this.visible ? "" : "none";
+      span.style.color = "var(--muted)";
+      span.style.opacity = "0.5";
+      return span;
+    }
+    ignoreEvent() {
+      return false;
+    }
+  };
+  var noteLinkPlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.viewportChanged || update.selectionSet) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const re = /\[\[([^\]]+)\]\]/g;
+      const doc2 = view2.state.doc;
+      const activeLines = new Set(
+        view2.state.selection.ranges.map((r2) => doc2.lineAt(r2.head).number)
+      );
+      const ranges = [];
+      for (const { from: from3, to } of view2.visibleRanges) {
+        const text5 = view2.state.doc.sliceString(from3, to);
+        let m;
+        re.lastIndex = 0;
+        while ((m = re.exec(text5)) !== null) {
+          const start2 = from3 + m.index;
+          const end2 = start2 + m[0].length;
+          const lineNum = doc2.lineAt(start2).number;
+          const visible = activeLines.has(lineNum);
+          ranges.push(
+            { from: start2, to: start2 + 2, type: "bracket", visible },
+            { from: start2 + 2, to: end2 - 2, type: "link" },
+            { from: end2 - 2, to: end2, type: "bracket", visible }
+          );
+        }
+      }
+      ranges.sort((a2, b) => a2.from - b.from);
+      for (const r2 of ranges) {
+        if (r2.type === "link") {
+          builder.add(r2.from, r2.to, noteLinkMark);
+        } else {
+          builder.add(r2.from, r2.to, Decoration.replace({
+            widget: new NoteBracketWidget(r2.from < r2.to ? view2.state.doc.sliceString(r2.from, r2.to) : "[[", r2.visible)
+          }));
+        }
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
+  async function handleNoteLinkClick(e, view2) {
+    if (!e.ctrlKey) return;
+    const pos = view2.posAtCoords({ x: e.clientX, y: e.clientY });
+    if (pos == null) return;
+    const text5 = view2.state.doc.toString();
+    const before = text5.lastIndexOf("[[", pos);
+    const after = text5.indexOf("]]", pos);
+    if (before === -1 || after === -1 || after < before) return;
+    const name2 = text5.slice(before + 2, after).trim();
+    if (!name2) return;
+    e.preventDefault();
+    const target = name2.endsWith(".md") ? name2 : name2 + ".md";
+    const result = await window.fileAPI.openPath(target);
+    if (!result.canceled) {
+      if (!await confirmDiscard()) {
+        view2.focus();
+        return;
+      }
+      setContent(result.content);
+      isDirty = false;
+      markClean(result.filePath);
+      updatePlaceholder();
+      updateWordCount();
+      view2.focus();
+      return;
+    }
+    const shouldCreate = await showConfirm(`"${target}" doesn't exist. Create it?`, "Create");
+    if (!shouldCreate) return;
+    if (!await confirmDiscard()) {
+      view2.focus();
+      return;
+    }
+    const created = await window.fileAPI.createAndOpen(target);
+    if (!created.canceled) {
+      setContent("");
+      isDirty = false;
+      markClean(created.filePath);
+      updatePlaceholder();
+      updateWordCount();
+      view2.focus();
+    }
+  }
   var SyntaxWidget = class extends WidgetType {
     constructor(text5, visible) {
       super();
@@ -58105,30 +58222,35 @@
       return builder.finish();
     }
   }, { decorations: (v) => v.decorations });
-  var flowTheme = EditorView.theme({
-    "&": {
-      background: "transparent",
-      color: "#d4d4d4",
-      fontSize: "17px",
-      fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif"
-    },
-    "&.cm-focused": { outline: "none" },
-    ".cm-scroller": {
-      fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif",
-      lineHeight: "1.9",
-      overflow: "visible"
-    },
-    ".cm-content": {
-      padding: "0",
-      caretColor: "#7cb8f0",
-      wordBreak: "break-word"
-    },
-    ".cm-line": { padding: "0" },
-    ".cm-gutters": { display: "none" },
-    ".cm-selectionBackground": { background: "rgba(124,184,240,0.18) !important" },
-    "&.cm-focused .cm-selectionBackground": { background: "rgba(124,184,240,0.22) !important" },
-    ".cm-cursor": { borderLeftColor: "#7cb8f0", borderLeftWidth: "2px" }
-  }, { dark: true });
+  var themeCompartment = new Compartment();
+  function makeTheme(accentColor) {
+    const sel = accentColor + "30";
+    return EditorView.theme({
+      "&": {
+        background: "transparent",
+        color: "#d4d4d4",
+        fontSize: "17px",
+        fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif"
+      },
+      "&.cm-focused": { outline: "none" },
+      ".cm-scroller": {
+        fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif",
+        lineHeight: "1.9",
+        overflow: "visible"
+      },
+      ".cm-content": {
+        padding: "0",
+        caretColor: accentColor,
+        wordBreak: "break-word"
+      },
+      ".cm-line": { padding: "0" },
+      ".cm-gutters": { display: "none" },
+      ".cm-selectionBackground": { background: `${accentColor}30 !important` },
+      "&.cm-focused .cm-selectionBackground": { background: `${accentColor}40 !important` },
+      ".cm-cursor": { borderLeftColor: accentColor, borderLeftWidth: "2px" },
+      ".cm-syntax-show": { color: accentColor, opacity: "0.6" }
+    }, { dark: true });
+  }
   var isDirty = false;
   var currentFileName = null;
   function setFileName(filePath) {
@@ -58148,6 +58270,32 @@
     if (filePath) currentFileName = filePath.split(/[\\/]/).pop();
     setFileName(filePath ? filePath.split(/[\\/]/).pop() : null);
   }
+  function showConfirm(message, okLabel = "OK") {
+    return new Promise((resolve) => {
+      const overlay = document.getElementById("confirm-overlay");
+      document.getElementById("confirm-message").textContent = message;
+      document.getElementById("confirm-ok").textContent = okLabel;
+      overlay.classList.remove("hidden");
+      const ok = document.getElementById("confirm-ok");
+      const cancel = document.getElementById("confirm-cancel");
+      function finish(result) {
+        overlay.classList.add("hidden");
+        ok.removeEventListener("click", onOk);
+        cancel.removeEventListener("click", onCancel);
+        view.focus();
+        resolve(result);
+      }
+      function onOk() {
+        finish(true);
+      }
+      function onCancel() {
+        finish(false);
+      }
+      ok.addEventListener("click", onOk);
+      cancel.addEventListener("click", onCancel);
+      ok.focus();
+    });
+  }
   function getContent() {
     return view.state.doc.toString();
   }
@@ -58156,9 +58304,7 @@
   }
   async function confirmDiscard() {
     if (!isDirty) return true;
-    const ok = window.confirm("You have unsaved changes. Discard them?");
-    setTimeout(() => view.focus(), 50);
-    return ok;
+    return await showConfirm("You have unsaved changes. Discard them?", "Discard");
   }
   async function newFile() {
     if (!await confirmDiscard()) return;
@@ -58244,11 +58390,12 @@ Just start writing.
           } }
         ]),
         markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
-        syntaxHighlighting(flowHighlight),
+        highlightCompartment.of(makeHighlight(true)),
         checkboxPlugin,
         bulletPlugin,
+        noteLinkPlugin,
         activeSyntaxPlugin,
-        flowTheme,
+        themeCompartment.of(makeTheme("#7cb8f0")),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -58437,22 +58584,29 @@ Just start writing.
   });
   var THEMES = ["theme-dark", "theme-light", "theme-sepia"];
   var currentTheme = localStorage.getItem("fm-theme") || "theme-dark";
-  function applyTheme(theme2) {
-    document.body.classList.remove(...THEMES);
-    if (theme2 !== "theme-dark") document.body.classList.add(theme2);
-    currentTheme = theme2;
-    localStorage.setItem("fm-theme", theme2);
-    applyAccent(currentAccent);
-  }
-  applyTheme(currentTheme);
   var ACCENTS = {
-    blue: { dark: "#7cb8f0", light: "#3a7bd5" },
-    rose: { dark: "#f0a0b0", light: "#c0405a" },
-    sage: { dark: "#90c8a0", light: "#3a7a50" },
-    peach: { dark: "#f0b890", light: "#c06030" },
-    lavender: { dark: "#b8a8f0", light: "#6050c0" },
-    sky: { dark: "#80d0e8", light: "#2080a8" },
-    sand: { dark: "#d4b896", light: "#8a6040" }
+    // Blues
+    blue: { dark: "#7cb8f0", light: "#2970c8" },
+    steel: { dark: "#90aac8", light: "#3a5878" },
+    sky: { dark: "#80d0e8", light: "#1888a8" },
+    // Greens
+    sage: { dark: "#90c8a0", light: "#2a7a48" },
+    mint: { dark: "#80e0c0", light: "#0a8060" },
+    olive: { dark: "#b0c880", light: "#506820" },
+    // Reds / Pinks
+    rose: { dark: "#f0a0b0", light: "#b83050" },
+    coral: { dark: "#f0907a", light: "#c04030" },
+    blush: { dark: "#e8b0c8", light: "#a03870" },
+    // Purples
+    lavender: { dark: "#b8a8f0", light: "#5040b8" },
+    mauve: { dark: "#d0a0d0", light: "#883888" },
+    violet: { dark: "#c0a0e8", light: "#6030b0" },
+    // Warm neutrals
+    peach: { dark: "#f0b890", light: "#b05820" },
+    sand: { dark: "#d4b896", light: "#7a5030" },
+    amber: { dark: "#e8c870", light: "#987010" },
+    // Cool neutral
+    slate: { dark: "#a0b8c8", light: "#305068" }
   };
   var currentAccent = localStorage.getItem("fm-accent") || "blue";
   function applyAccent(name2) {
@@ -58461,8 +58615,20 @@ Just start writing.
     document.documentElement.style.setProperty("--accent", color);
     currentAccent = name2;
     localStorage.setItem("fm-accent", name2);
+    if (typeof view !== "undefined") {
+      view.dispatch({ effects: [
+        themeCompartment.reconfigure(makeTheme(color)),
+        highlightCompartment.reconfigure(makeHighlight(!isLight, color))
+      ] });
+    }
   }
-  applyAccent(currentAccent);
+  function applyTheme(theme2) {
+    document.body.classList.remove(...THEMES);
+    if (theme2 !== "theme-dark") document.body.classList.add(theme2);
+    currentTheme = theme2;
+    localStorage.setItem("fm-theme", theme2);
+    applyAccent(currentAccent);
+  }
   document.addEventListener("keydown", (e) => {
     if (e.key === "F11") {
       e.preventDefault();
@@ -58470,6 +58636,10 @@ Just start writing.
     }
   });
   document.getElementById("editor-wrap").addEventListener("click", (e) => {
+    if (e.ctrlKey) {
+      handleNoteLinkClick(e, view);
+      return;
+    }
     if (e.target === e.currentTarget || e.target === document.getElementById("editor")) {
       view.focus();
     }
@@ -58484,6 +58654,7 @@ Just start writing.
   setFileName(null);
   updatePlaceholder();
   updateWordCount();
+  applyTheme(currentTheme);
   showWelcome();
   view.focus();
 })();

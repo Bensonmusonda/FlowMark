@@ -88,7 +88,7 @@ body.zen #editor-wrap { height: 100vh; }
   background: transparent;
   border-radius: 3px;
 }
-#editor-wrap::-webkit-scrollbar-thumb:hover { background: #444; }
+#editor-wrap::-webkit-scrollbar-thumb:hover { background: var(--accent); opacity: 0.5; }
 
 /* ── Editor column ── */
 #editor {
@@ -104,11 +104,11 @@ body.zen #editor-wrap { height: 100vh; }
   position: absolute;
   top: 0;
   left: 0;
-  color: var(--muted);
+  color: var(--accent);
   font-family: var(--font-prose);
   font-size: 17px;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.35;
   font-style: italic;
 }
 
@@ -321,7 +321,7 @@ body.zen #statusbar { display: none; }
   transition: border-color 0.2s;
 }
 .cm-checkbox:hover {
-  border-color: #7cb8f0;
+  border-color: var(--accent);
 }
 .cm-checkbox:checked {
   background: transparent;
@@ -334,7 +334,7 @@ body.zen #statusbar { display: none; }
   top: 2px;
   width: 5px;
   height: 9px;
-  border: 2.5px solid #7cb8f0;
+  border: 2.5px solid var(--accent);
   border-top: none;
   border-left: none;
   transform: rotate(45deg);
@@ -478,7 +478,7 @@ body.zen #statusbar { display: none; }
   font-family: var(--font-prose);
   font-size: 28px;
   font-weight: 700;
-  color: #f0f0f0;
+  color: var(--heading);
   margin-bottom: 32px;
   letter-spacing: -0.01em;
 }
@@ -662,9 +662,9 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
 .theme-opt.active { border-color: var(--accent); color: var(--accent); }
 
 #accent-options {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(8, 28px);
   gap: 10px;
-  flex-wrap: wrap;
 }
 
 .accent-opt {
@@ -678,3 +678,79 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
 }
 .accent-opt:hover { transform: scale(1.15); }
 .accent-opt.active { border-color: var(--text); }
+
+
+/* ── Note links ── */
+.cm-note-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  cursor: pointer;
+}
+.cm-note-bracket {
+  color: var(--muted);
+  opacity: 0.6;
+}
+.cm-note-link:hover { opacity: 0.8; }
+
+/* ── Custom confirm dialog ── */
+#confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(2px);
+}
+#confirm-overlay.hidden { display: none; }
+
+#confirm-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px 28px 22px;
+  width: 340px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
+#confirm-message {
+  font-family: var(--font-prose);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+#confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+#confirm-buttons button {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s, opacity 0.12s;
+  letter-spacing: 0.01em;
+}
+
+#confirm-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+#confirm-cancel:hover { background: rgba(128,128,128,0.1); border-color: var(--muted); }
+
+#confirm-ok {
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  color: var(--accent);
+}
+#confirm-ok:hover { background: var(--accent); color: var(--bg); }

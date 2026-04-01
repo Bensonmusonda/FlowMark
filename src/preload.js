@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('fileAPI', {
   saveAs:    (content)  => ipcRenderer.invoke('dialog:save', content),
   open:      ()         => ipcRenderer.invoke('file:open'),
   openPath:  (filePath) => ipcRenderer.invoke('file:openPath', filePath),
+  createAndOpen: (filePath) => ipcRenderer.invoke('file:createAndOpen', filePath),
   clearPath: ()         => ipcRenderer.invoke('file:clearPath'),
   getRecents: ()        => ipcRenderer.invoke('recents:get'),
 });

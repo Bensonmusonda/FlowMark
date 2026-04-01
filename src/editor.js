@@ -1,4 +1,4 @@
-import { EditorState, RangeSetBuilder } from '@codemirror/state';
+import { EditorState, RangeSetBuilder, Compartment } from '@codemirror/state';
 import { EditorView, keymap, drawSelection, dropCursor, Decoration, ViewPlugin } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
@@ -9,34 +9,36 @@ import { syntaxHighlighting } from '@codemirror/language';
 import { HighlightStyle } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 
-// ── Highlight style — applied via CM's own scoped class system ────────────────
-const flowHighlight = HighlightStyle.define([
-  // Headings — size + weight, no underline
-  { tag: t.heading1, fontSize: '2em',   fontWeight: '700', color: '#f0f0f0', textDecoration: 'none' },
-  { tag: t.heading2, fontSize: '1.5em', fontWeight: '700', color: '#ebebeb', textDecoration: 'none' },
-  { tag: t.heading3, fontSize: '1.2em', fontWeight: '700', color: '#e0e0e0', textDecoration: 'none' },
+// ── Highlight style — theme-aware via Compartment ─────────────────────────────
+const highlightCompartment = new Compartment();
 
-  // Inline formatting
-  { tag: t.strong,   fontWeight: '700', color: '#f0f0f0' },
-  { tag: t.emphasis, fontStyle: 'italic', color: '#c8b8f8' },
-  { tag: t.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace", fontSize: '0.87em', color: '#f0a97c' },
-
-  // Links
-  { tag: t.link, color: '#7cb8f0', textDecoration: 'underline' },
-  { tag: t.url,  color: '#555', fontSize: '0.85em' },
-
-  // Blockquote
-  { tag: t.quote, color: '#7a7a7a', fontStyle: 'italic' },
-
-  // Code block contents
-  { tag: t.keyword,  color: '#c678dd', fontFamily: "'Cascadia Code','Consolas',monospace" },
-  { tag: t.string,   color: '#98c379' },
-  { tag: t.comment,  color: '#5c6370', fontStyle: 'italic' },
-  { tag: t.variableName, color: '#61afef' },
-
-  // HR
-  { tag: t.contentSeparator, color: '#444' },
-]);
+function makeHighlight(isDark, accentColor) {
+  const accent = accentColor || (isDark ? '#7cb8f0' : '#3a7bd5');
+  const h1   = isDark ? '#f0f0f0' : '#111111';
+  const h2   = isDark ? '#ebebeb' : '#1a1a1a';
+  const h3   = isDark ? '#e0e0e0' : '#222222';
+  const bold = isDark ? '#f0f0f0' : '#111111';
+  const em   = isDark ? '#c8b8f8' : '#5a4fcf';
+  const quot = isDark ? '#7a7a7a' : '#888866';
+  const sep  = isDark ? '#444'    : '#cccccc';
+  const url  = isDark ? '#555'    : '#aaaaaa';
+  return syntaxHighlighting(HighlightStyle.define([
+    { tag: t.heading1, fontSize: '2em',   fontWeight: '700', color: h1, textDecoration: 'none' },
+    { tag: t.heading2, fontSize: '1.5em', fontWeight: '700', color: h2, textDecoration: 'none' },
+    { tag: t.heading3, fontSize: '1.2em', fontWeight: '700', color: h3, textDecoration: 'none' },
+    { tag: t.strong,   fontWeight: '700', color: bold },
+    { tag: t.emphasis, fontStyle: 'italic', color: em },
+    { tag: t.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace", fontSize: '0.87em', color: '#f0a97c' },
+    { tag: t.link, color: accent, textDecoration: 'underline' },
+    { tag: t.url,  color: url, fontSize: '0.85em' },
+    { tag: t.quote, color: quot, fontStyle: 'italic' },
+    { tag: t.keyword,     color: '#c678dd', fontFamily: "'Cascadia Code','Consolas',monospace" },
+    { tag: t.string,      color: '#98c379' },
+    { tag: t.comment,     color: '#5c6370', fontStyle: 'italic' },
+    { tag: t.variableName,color: '#61afef' },
+    { tag: t.contentSeparator, color: sep },
+  ]));
+}
 
 const bulletPlugin = ViewPlugin.fromClass(class {
   constructor(view) { this.decorations = this.compute(view); }
@@ -107,6 +109,8 @@ class CheckboxWidget extends WidgetType {
       const replacement = text === '[ ]' ? '[x]' : '[ ]';
       view.dispatch({ changes: { from: pos, to: pos + 3, insert: replacement } });
     });
+    // Apply current accent color via CSS variable (already set on :root)
+    box.style.setProperty('--cb-accent', 'var(--accent)');
     return box;
   }
   ignoreEvent() { return false; }
@@ -155,6 +159,106 @@ const checkboxPlugin = ViewPlugin.fromClass(class {
     return builder.finish();
   }
 }, { decorations: v => v.decorations });
+
+// ── Note linking — [[filename]] ───────────────────────────────────────────────
+const noteLinkMark = Decoration.mark({ class: 'cm-note-link' });
+
+class NoteBracketWidget extends WidgetType {
+  constructor(text, visible) { super(); this.text = text; this.visible = visible; }
+  eq(other) { return other.text === this.text && other.visible === this.visible; }
+  toDOM() {
+    const span = document.createElement('span');
+    span.textContent = this.visible ? this.text : '';
+    span.style.display = this.visible ? '' : 'none';
+    span.style.color = 'var(--muted)';
+    span.style.opacity = '0.5';
+    return span;
+  }
+  ignoreEvent() { return false; }
+}
+
+const noteLinkPlugin = ViewPlugin.fromClass(class {
+  constructor(view) { this.decorations = this.compute(view); }
+  update(update) {
+    if (update.docChanged || update.viewportChanged || update.selectionSet) {
+      this.decorations = this.compute(update.view);
+    }
+  }
+  compute(view) {
+    const builder = new RangeSetBuilder();
+    const re = /\[\[([^\]]+)\]\]/g;
+    const doc = view.state.doc;
+    const activeLines = new Set(
+      view.state.selection.ranges.map(r => doc.lineAt(r.head).number)
+    );
+    const ranges = [];
+    for (const { from, to } of view.visibleRanges) {
+      const text = view.state.doc.sliceString(from, to);
+      let m;
+      re.lastIndex = 0;
+      while ((m = re.exec(text)) !== null) {
+        const start   = from + m.index;
+        const end     = start + m[0].length;
+        const lineNum = doc.lineAt(start).number;
+        const visible = activeLines.has(lineNum);
+        ranges.push(
+          { from: start,     to: start + 2, type: 'bracket', visible },
+          { from: start + 2, to: end - 2,   type: 'link'             },
+          { from: end - 2,   to: end,        type: 'bracket', visible },
+        );
+      }
+    }
+    ranges.sort((a, b) => a.from - b.from);
+    for (const r of ranges) {
+      if (r.type === 'link') {
+        builder.add(r.from, r.to, noteLinkMark);
+      } else {
+        builder.add(r.from, r.to, Decoration.replace({
+          widget: new NoteBracketWidget(r.from < r.to ? view.state.doc.sliceString(r.from, r.to) : '[[', r.visible)
+        }));
+      }
+    }
+    return builder.finish();
+  }
+}, { decorations: v => v.decorations });
+
+async function handleNoteLinkClick(e, view) {
+  if (!e.ctrlKey) return;
+  const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+  if (pos == null) return;
+  const text = view.state.doc.toString();
+  const before = text.lastIndexOf('[[', pos);
+  const after  = text.indexOf(']]', pos);
+  if (before === -1 || after === -1 || after < before) return;
+  const name = text.slice(before + 2, after).trim();
+  if (!name) return;
+  e.preventDefault();
+  const target = name.endsWith('.md') ? name : name + '.md';
+  const result = await window.fileAPI.openPath(target);
+  if (!result.canceled) {
+    if (!await confirmDiscard()) { view.focus(); return; }
+    setContent(result.content);
+    isDirty = false;
+    markClean(result.filePath);
+    updatePlaceholder();
+    updateWordCount();
+    view.focus();
+    return;
+  }
+  // File not found — offer to create
+  const shouldCreate = await showConfirm(`"${target}" doesn't exist. Create it?`, 'Create');
+  if (!shouldCreate) return;
+  if (!await confirmDiscard()) { view.focus(); return; }
+  const created = await window.fileAPI.createAndOpen(target);
+  if (!created.canceled) {
+    setContent('');
+    isDirty = false;
+    markClean(created.filePath);
+    updatePlaceholder();
+    updateWordCount();
+    view.focus();
+  }
+}
 
 // ── Syntax hide/show widgets ──────────────────────────────────────────────────
 class SyntaxWidget extends WidgetType {
@@ -243,30 +347,36 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
 }, { decorations: v => v.decorations });
 
 // ── Visual theme ──────────────────────────────────────────────────────────────
-const flowTheme = EditorView.theme({
-  '&': {
-    background: 'transparent',
-    color: '#d4d4d4',
-    fontSize: '17px',
-    fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif",
-  },
-  '&.cm-focused': { outline: 'none' },
-  '.cm-scroller': {
-    fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif",
-    lineHeight: '1.9',
-    overflow: 'visible',
-  },
-  '.cm-content': {
-    padding: '0',
-    caretColor: '#7cb8f0',
-    wordBreak: 'break-word',
-  },
-  '.cm-line': { padding: '0' },
-  '.cm-gutters': { display: 'none' },
-  '.cm-selectionBackground': { background: 'rgba(124,184,240,0.18) !important' },
-  '&.cm-focused .cm-selectionBackground': { background: 'rgba(124,184,240,0.22) !important' },
-  '.cm-cursor': { borderLeftColor: '#7cb8f0', borderLeftWidth: '2px' },
-}, { dark: true });
+const themeCompartment = new Compartment();
+
+function makeTheme(accentColor) {
+  const sel = accentColor + '30'; // 30 = ~19% opacity in hex
+  return EditorView.theme({
+    '&': {
+      background: 'transparent',
+      color: '#d4d4d4',
+      fontSize: '17px',
+      fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif",
+    },
+    '&.cm-focused': { outline: 'none' },
+    '.cm-scroller': {
+      fontFamily: "'Merriweather', 'Georgia', 'Cambria', serif",
+      lineHeight: '1.9',
+      overflow: 'visible',
+    },
+    '.cm-content': {
+      padding: '0',
+      caretColor: accentColor,
+      wordBreak: 'break-word',
+    },
+    '.cm-line': { padding: '0' },
+    '.cm-gutters': { display: 'none' },
+    '.cm-selectionBackground': { background: `${accentColor}30 !important` },
+    '&.cm-focused .cm-selectionBackground': { background: `${accentColor}40 !important` },
+    '.cm-cursor': { borderLeftColor: accentColor, borderLeftWidth: '2px' },
+    '.cm-syntax-show': { color: accentColor, opacity: '0.6' },
+  }, { dark: true });
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let isDirty = false;
@@ -289,6 +399,33 @@ function markClean(filePath) {
   setFileName(filePath ? filePath.split(/[\\/]/).pop() : null);
 }
 
+// ── Custom confirm dialog ─────────────────────────────────────────────────────
+function showConfirm(message, okLabel = 'OK') {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('confirm-overlay');
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-ok').textContent = okLabel;
+    overlay.classList.remove('hidden');
+
+    const ok     = document.getElementById('confirm-ok');
+    const cancel = document.getElementById('confirm-cancel');
+
+    function finish(result) {
+      overlay.classList.add('hidden');
+      ok.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      view.focus();
+      resolve(result);
+    }
+    function onOk()     { finish(true);  }
+    function onCancel() { finish(false); }
+
+    ok.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    ok.focus();
+  });
+}
+
 // ── File ops ──────────────────────────────────────────────────────────────────
 function getContent() { return view.state.doc.toString(); }
 
@@ -298,9 +435,7 @@ function setContent(text) {
 
 async function confirmDiscard() {
   if (!isDirty) return true;
-  const ok = window.confirm('You have unsaved changes. Discard them?');
-  setTimeout(() => view.focus(), 50);
-  return ok;
+  return await showConfirm('You have unsaved changes. Discard them?', 'Discard');
 }
 
 async function newFile() {
@@ -378,11 +513,12 @@ const view = new EditorView({
         { key: 'Ctrl-p', run: () => { showQuickOpen(); return true; } },
       ]),
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
-      syntaxHighlighting(flowHighlight),
+      highlightCompartment.of(makeHighlight(true)),
       checkboxPlugin,
       bulletPlugin,
+      noteLinkPlugin,
       activeSyntaxPlugin,
-      flowTheme,
+      themeCompartment.of(makeTheme('#7cb8f0')),
       EditorView.lineWrapping,
       EditorView.updateListener.of(update => {
         if (update.docChanged) { markDirty(); updatePlaceholder(); updateWordCount(); }
@@ -575,29 +711,33 @@ quickOpen.addEventListener('keydown', e => {
   items[focusedRecentIndex]?.scrollIntoView({ block: 'nearest' });
 });
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
+// ── Theme & Accent ───────────────────────────────────────────────────────────
 const THEMES = ['theme-dark', 'theme-light', 'theme-sepia'];
 let currentTheme = localStorage.getItem('fm-theme') || 'theme-dark';
 
-function applyTheme(theme) {
-  document.body.classList.remove(...THEMES);
-  if (theme !== 'theme-dark') document.body.classList.add(theme);
-  currentTheme = theme;
-  localStorage.setItem('fm-theme', theme);
-  applyAccent(currentAccent);
-}
-
-applyTheme(currentTheme);
-
-// ── Accent colors ─────────────────────────────────────────────────────────────
 const ACCENTS = {
-  blue:   { dark: '#7cb8f0', light: '#3a7bd5' },
-  rose:   { dark: '#f0a0b0', light: '#c0405a' },
-  sage:   { dark: '#90c8a0', light: '#3a7a50' },
-  peach:  { dark: '#f0b890', light: '#c06030' },
-  lavender: { dark: '#b8a8f0', light: '#6050c0' },
-  sky:    { dark: '#80d0e8', light: '#2080a8' },
-  sand:   { dark: '#d4b896', light: '#8a6040' },
+  // Blues
+  blue:       { dark: '#7cb8f0', light: '#2970c8' },
+  steel:      { dark: '#90aac8', light: '#3a5878' },
+  sky:        { dark: '#80d0e8', light: '#1888a8' },
+  // Greens
+  sage:       { dark: '#90c8a0', light: '#2a7a48' },
+  mint:       { dark: '#80e0c0', light: '#0a8060' },
+  olive:      { dark: '#b0c880', light: '#506820' },
+  // Reds / Pinks
+  rose:       { dark: '#f0a0b0', light: '#b83050' },
+  coral:      { dark: '#f0907a', light: '#c04030' },
+  blush:      { dark: '#e8b0c8', light: '#a03870' },
+  // Purples
+  lavender:   { dark: '#b8a8f0', light: '#5040b8' },
+  mauve:      { dark: '#d0a0d0', light: '#883888' },
+  violet:     { dark: '#c0a0e8', light: '#6030b0' },
+  // Warm neutrals
+  peach:      { dark: '#f0b890', light: '#b05820' },
+  sand:       { dark: '#d4b896', light: '#7a5030' },
+  amber:      { dark: '#e8c870', light: '#987010' },
+  // Cool neutral
+  slate:      { dark: '#a0b8c8', light: '#305068' },
 };
 
 let currentAccent = localStorage.getItem('fm-accent') || 'blue';
@@ -608,17 +748,30 @@ function applyAccent(name) {
   document.documentElement.style.setProperty('--accent', color);
   currentAccent = name;
   localStorage.setItem('fm-accent', name);
+  if (typeof view !== 'undefined') {
+    view.dispatch({ effects: [
+      themeCompartment.reconfigure(makeTheme(color)),
+      highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
+    ]});
+  }
 }
 
-applyAccent(currentAccent);
+function applyTheme(theme) {
+  document.body.classList.remove(...THEMES);
+  if (theme !== 'theme-dark') document.body.classList.add(theme);
+  currentTheme = theme;
+  localStorage.setItem('fm-theme', theme);
+  applyAccent(currentAccent);
+}
 
 // ── Zen mode ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === 'F11') { e.preventDefault(); document.body.classList.toggle('zen'); }
 });
 
-// ── Click-to-focus ────────────────────────────────────────────────────────────
+// ── Click-to-focus / note link ────────────────────────────────────────────────
 document.getElementById('editor-wrap').addEventListener('click', e => {
+  if (e.ctrlKey) { handleNoteLinkClick(e, view); return; }
   if (e.target === e.currentTarget || e.target === document.getElementById('editor')) {
     view.focus();
   }
@@ -636,5 +789,7 @@ function updateWordCount() {
 setFileName(null);
 updatePlaceholder();
 updateWordCount();
+// Re-apply theme now that view exists (fixes highlight on non-dark startup)
+applyTheme(currentTheme);
 showWelcome();
 view.focus();
