@@ -2,6 +2,7 @@ import { EditorState, RangeSetBuilder, Compartment } from '@codemirror/state';
 import { EditorView, keymap, drawSelection, dropCursor, Decoration, ViewPlugin } from '@codemirror/view';
 import { EditorSelection } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { search, searchKeymap, openSearchPanel, closeSearchPanel, searchPanelOpen } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { GFM } from '@lezer/markdown';
 import { languages } from '@codemirror/language-data';
@@ -474,6 +475,15 @@ async function saveAsFile() {
   markClean(result.filePath);
 }
 
+// ── Find & Replace ────────────────────────────────────────────────────────────
+function toggleSearchPanel() {
+  if (searchPanelOpen(view.state)) {
+    closeSearchPanel(view);
+  } else {
+    openSearchPanel(view);
+  }
+}
+
 // ── Editor ────────────────────────────────────────────────────────────────────
 const startDoc = `# Welcome to FlowMark
 
@@ -511,8 +521,12 @@ const view = new EditorView({
         { key: 'Ctrl-s', run: () => { saveFile();      return true; } },
         { key: 'Ctrl-Shift-s', run: () => { saveAsFile();  return true; } },
         { key: 'Ctrl-p', run: () => { showQuickOpen(); return true; } },
+        { key: 'Ctrl-f', run: () => { toggleSearchPanel(); return true; } },
+        { key: 'Ctrl-h', run: () => { toggleSearchPanel(); return true; } },
+        ...searchKeymap,
       ]),
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
+      search({ top: true }),
       highlightCompartment.of(makeHighlight(true)),
       checkboxPlugin,
       bulletPlugin,
@@ -559,6 +573,7 @@ dropdown.addEventListener('click', e => {
     case 'save':      saveFile();      break;
     case 'saveAs':    saveAsFile();    break;
     case 'quickOpen': showQuickOpen(); break;
+    case 'find':      view.focus(); toggleSearchPanel(); break;
     case 'settings':  showSettings();  break;
     case 'zen':    document.body.classList.toggle('zen'); break;
   }
