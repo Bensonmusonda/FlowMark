@@ -59273,6 +59273,7 @@
       { tag: tags.strong, fontWeight: "700", color: bold },
       { tag: tags.emphasis, fontStyle: "italic", color: em },
       { tag: tags.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace", fontSize: "0.87em", color: "#f0a97c" },
+      { tag: tags.strikethrough, textDecoration: "line-through", opacity: "0.7" },
       { tag: tags.link, color: accent, textDecoration: "underline" },
       { tag: tags.url, color: url, fontSize: "0.85em" },
       { tag: tags.quote, color: quot, fontStyle: "italic" },
@@ -59325,7 +59326,7 @@
       return builder.finish();
     }
   }, { decorations: (v) => v.decorations });
-  var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark"]);
+  var PUNCT = /* @__PURE__ */ new Set(["HeaderMark", "EmphasisMark", "LinkMark", "QuoteMark", "URL", "CodeMark", "CodeInfo", "StrikethroughMark"]);
   var HiddenWidget = class extends WidgetType {
     toDOM() {
       const s = document.createElement("span");
@@ -59572,6 +59573,237 @@
       return false;
     }
   };
+  var blockIndentPlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50) || syntaxTree(view2.state);
+      if (!tree) return builder.finish();
+      const doc2 = view2.state.doc;
+      const listDepthByLine = /* @__PURE__ */ new Map();
+      const codeLines = /* @__PURE__ */ new Set();
+      tree.iterate({
+        enter(node) {
+          if (node.type.name === "BulletList" || node.type.name === "OrderedList") {
+            const first = doc2.lineAt(node.from).number;
+            const last = doc2.lineAt(node.to).number;
+            for (let ln = first; ln <= last; ln++) {
+              listDepthByLine.set(ln, (listDepthByLine.get(ln) || 0) + 1);
+            }
+          }
+          if (node.type.name === "FencedCode" || node.type.name === "CodeBlock") {
+            const first = doc2.lineAt(node.from).number;
+            const last = doc2.lineAt(node.to).number;
+            for (let ln = first; ln <= last; ln++) codeLines.add(ln);
+          }
+        }
+      });
+      const allLines = /* @__PURE__ */ new Set([...listDepthByLine.keys(), ...codeLines]);
+      const lines = [...allLines].sort((a2, b) => a2 - b);
+      for (const ln of lines) {
+        const depth = listDepthByLine.get(ln) || 0;
+        const isCode = codeLines.has(ln);
+        let style2 = "";
+        if (depth > 1) style2 += `margin-left:${(depth - 1) * 22}px;`;
+        if (isCode) style2 += `padding-left:16px;border-left:3px solid var(--border);background:rgba(128,128,128,0.06);`;
+        if (!style2) continue;
+        builder.add(doc2.line(ln).from, doc2.line(ln).from, Decoration.line({ attributes: { style: style2 } }));
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
+  var blockquotePlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50) || syntaxTree(view2.state);
+      if (!tree) return builder.finish();
+      const doc2 = view2.state.doc;
+      const depthByLine = /* @__PURE__ */ new Map();
+      tree.iterate({
+        enter(node) {
+          if (node.type.name !== "Blockquote") return;
+          const first = doc2.lineAt(node.from).number;
+          const last = doc2.lineAt(node.to).number;
+          for (let ln = first; ln <= last; ln++) {
+            depthByLine.set(ln, (depthByLine.get(ln) || 0) + 1);
+          }
+        }
+      });
+      const lines = [...depthByLine.keys()].sort((a2, b) => a2 - b);
+      for (const ln of lines) {
+        const depth = depthByLine.get(ln);
+        const line = doc2.line(ln);
+        const indent6 = (depth - 1) * 18;
+        builder.add(line.from, line.from, Decoration.line({
+          attributes: {
+            style: `margin-left:${indent6}px; padding-left:14px; border-left:3px solid var(--border);`
+          }
+        }));
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
+  var HrWidget = class extends WidgetType {
+    toDOM() {
+      const div = document.createElement("div");
+      div.className = "cm-hr-rule";
+      return div;
+    }
+    eq() {
+      return true;
+    }
+    ignoreEvent() {
+      return false;
+    }
+  };
+  var hrPlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.selectionSet || update.viewportChanged) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50) || syntaxTree(view2.state);
+      if (!tree) return builder.finish();
+      const doc2 = view2.state.doc;
+      const activeLines = new Set(
+        view2.state.selection.ranges.map((r2) => doc2.lineAt(r2.head).number)
+      );
+      const marks2 = [];
+      tree.iterate({
+        enter(node) {
+          if (node.type.name !== "HorizontalRule") return;
+          marks2.push({ from: node.from, to: node.to, line: doc2.lineAt(node.from).number });
+        }
+      });
+      for (const m of marks2) {
+        if (activeLines.has(m.line)) continue;
+        builder.add(m.from, m.to, Decoration.replace({ widget: new HrWidget() }));
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
+  var TableWidget = class extends WidgetType {
+    constructor(raw3, from3) {
+      super();
+      this.raw = raw3;
+      this.from = from3;
+    }
+    eq(other) {
+      return other.raw === this.raw;
+    }
+    toDOM(view2) {
+      const splitRow = (r2) => {
+        let s = r2.trim();
+        if (s.startsWith("|")) s = s.slice(1);
+        if (s.endsWith("|")) s = s.slice(0, -1);
+        return s.split("|").map((c2) => c2.trim());
+      };
+      const lines = this.raw.replace(/\n$/, "").split("\n");
+      const wrap = document.createElement("div");
+      wrap.className = "cm-md-table-wrap";
+      if (lines.length < 2) {
+        wrap.textContent = this.raw;
+        return wrap;
+      }
+      const headerCells = splitRow(lines[0]);
+      const delimCells = splitRow(lines[1]);
+      const aligns = delimCells.map((c2) => {
+        const l = c2.startsWith(":"), r2 = c2.endsWith(":");
+        return l && r2 ? "center" : r2 ? "right" : l ? "left" : "";
+      });
+      const bodyRows = lines.slice(2).map(splitRow);
+      const table = document.createElement("table");
+      table.className = "cm-md-table";
+      const thead = document.createElement("thead");
+      const htr = document.createElement("tr");
+      headerCells.forEach((c2, i) => {
+        const th = document.createElement("th");
+        th.textContent = c2;
+        if (aligns[i]) th.style.textAlign = aligns[i];
+        htr.appendChild(th);
+      });
+      thead.appendChild(htr);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      bodyRows.forEach((cells) => {
+        const tr = document.createElement("tr");
+        cells.forEach((c2, i) => {
+          const td = document.createElement("td");
+          td.textContent = c2;
+          if (aligns[i]) td.style.textAlign = aligns[i];
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      wrap.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        view2.dispatch({ selection: { anchor: this.from } });
+        view2.focus();
+      });
+      return wrap;
+    }
+    ignoreEvent() {
+      return false;
+    }
+  };
+  var tablePlugin = ViewPlugin.fromClass(class {
+    constructor(view2) {
+      this.decorations = this.compute(view2);
+    }
+    update(update) {
+      if (update.docChanged || update.selectionSet || update.viewportChanged) {
+        this.decorations = this.compute(update.view);
+      }
+    }
+    compute(view2) {
+      const builder = new RangeSetBuilder();
+      const tree = ensureSyntaxTree(view2.state, view2.state.doc.length, 50) || syntaxTree(view2.state);
+      if (!tree) return builder.finish();
+      const doc2 = view2.state.doc;
+      const sel = view2.state.selection.main;
+      const tables = [];
+      tree.iterate({
+        enter(node) {
+          if (node.type.name === "Table") tables.push({ from: node.from, to: node.to });
+        }
+      });
+      tables.sort((a2, b) => a2.from - b.from);
+      for (const tbl of tables) {
+        const cursorInside = sel.from <= tbl.to && sel.to >= tbl.from;
+        if (cursorInside) continue;
+        const fromLine = doc2.lineAt(tbl.from);
+        const toLine = doc2.lineAt(tbl.to);
+        const raw3 = doc2.sliceString(fromLine.from, toLine.to);
+        builder.add(fromLine.from, toLine.to, Decoration.replace({
+          widget: new TableWidget(raw3, tbl.from),
+          block: true
+        }));
+      }
+      return builder.finish();
+    }
+  }, { decorations: (v) => v.decorations });
   var activeSyntaxPlugin = ViewPlugin.fromClass(class {
     constructor(view2) {
       this.decorations = this.compute(view2);
@@ -59593,10 +59825,14 @@
       tree.iterate({
         enter(node) {
           if (!PUNCT.has(node.type.name)) return;
+          let to = node.to;
+          if (node.type.name === "HeaderMark") {
+            while (to < doc2.length && doc2.sliceString(to, to + 1) === " ") to++;
+          }
           marks2.push({
             from: node.from,
-            to: node.to,
-            text: doc2.sliceString(node.from, node.to),
+            to,
+            text: doc2.sliceString(node.from, to),
             line: doc2.lineAt(node.from).number,
             isList: false
           });
@@ -59796,6 +60032,10 @@ Just start writing.
             toggleSearchPanel();
             return true;
           } },
+          { key: "Ctrl-Shift-e", run: () => {
+            window.fileAPI.exportPDF(getContent());
+            return true;
+          } },
           ...searchKeymap
         ]),
         markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
@@ -59805,6 +60045,10 @@ Just start writing.
         bulletPlugin,
         noteLinkPlugin,
         activeSyntaxPlugin,
+        blockquotePlugin,
+        blockIndentPlugin,
+        hrPlugin,
+        tablePlugin,
         themeCompartment.of(makeTheme("#7cb8f0")),
         EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
@@ -59831,22 +60075,22 @@ Just start writing.
     dropdown.classList.toggle("hidden");
   });
   document.addEventListener("click", () => dropdown.classList.add("hidden"));
-  dropdown.addEventListener("click", (e) => {
+  dropdown.addEventListener("click", async (e) => {
     const action = e.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     dropdown.classList.add("hidden");
     switch (action) {
       case "new":
-        newFile();
+        await newFile();
         break;
       case "open":
-        openFile();
+        await openFile();
         break;
       case "save":
-        saveFile();
+        await saveFile();
         break;
       case "saveAs":
-        saveAsFile();
+        await saveAsFile();
         break;
       case "quickOpen":
         showQuickOpen();
@@ -59860,6 +60104,25 @@ Just start writing.
         break;
       case "zen":
         document.body.classList.toggle("zen");
+        break;
+      // --- NEW export cases ---
+      case "exportPDF": {
+        const result = await window.fileAPI.exportPDF(getContent());
+        if (result.canceled && result.error) {
+          alert(`Export failed: ${result.error}`);
+        } else if (!result.canceled) {
+          console.log("PDF saved");
+        }
+        break;
+      }
+      case "exportHTML": {
+        const result = await window.fileAPI.exportHTML(getContent());
+        if (!result.canceled) {
+          console.log("HTML saved to", result.filePath);
+        }
+        break;
+      }
+      default:
         break;
     }
   });
