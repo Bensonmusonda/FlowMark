@@ -3002,6 +3002,18 @@ document.addEventListener('keydown', e => {
   if (e.key === 'F11') { e.preventDefault(); document.body.classList.toggle('zen'); }
 });
 
+// Find & Replace must work from anywhere, including a focused table-cell or
+// math-overlay input where CodeMirror's own keymap never sees the event.
+window.addEventListener('keydown', (e) => {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+  const key = e.key.toLowerCase();
+  if (key !== 'f' && key !== 'h') return;
+  e.preventDefault();
+  e.stopPropagation();
+  view.focus();
+  toggleSearchPanel();
+}, true);
+
 // ── Click-to-focus / note link ────────────────────────────────────────────────
 document.getElementById('editor-wrap').addEventListener('click', e => {
   if (e.ctrlKey) { handleNoteLinkClick(e, view); return; }

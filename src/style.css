@@ -1356,9 +1356,9 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
 }
 .cm-panels-top { border-bottom: none !important; }
 .cm-panel.cm-search {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 20;
+  flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
   align-items: center;

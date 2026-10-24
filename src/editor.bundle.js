@@ -75935,6 +75935,15 @@ Just start writing.
       document.body.classList.toggle("zen");
     }
   });
+  window.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const key = e.key.toLowerCase();
+    if (key !== "f" && key !== "h") return;
+    e.preventDefault();
+    e.stopPropagation();
+    view.focus();
+    toggleSearchPanel();
+  }, true);
   document.getElementById("editor-wrap").addEventListener("click", (e) => {
     if (e.ctrlKey) {
       handleNoteLinkClick(e, view);

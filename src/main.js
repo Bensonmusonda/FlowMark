@@ -27,7 +27,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      devTools: false,
+      devTools: Boolean(process.env.FLOWMARK_DEBUG),
     },
   });
 
