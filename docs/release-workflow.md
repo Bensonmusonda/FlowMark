@@ -69,3 +69,24 @@ point `win.icon` at it before a public release.
 - [ ] Resize the window — no black gutter on the right/bottom.
 - [ ] Themes: dark, light, sepia; window background follows the theme.
 - [ ] DevTools do not open.
+
+## Automated releases (GitHub Actions)
+
+`.github/workflows/release.yml` runs on tags matching `v*` (and can be triggered
+manually):
+
+1. `windows-latest`, Node 22, `npm ci`.
+2. `npm run dist` → portable + NSIS installer in `dist/`.
+3. `softprops/action-gh-release` attaches every `dist/*.exe` to the release for
+   that tag, with generated release notes.
+
+Publish with:
+
+```cmd
+git push origin main --tags
+```
+
+Keep the local `npm run dist` for testing; CI is the source of the published
+artifacts. The workflow sets `CSC_IDENTITY_AUTO_DISCOVERY=false` and the app
+keeps `signAndEditExecutable: false`, so no signing or symlink privileges are
+required.

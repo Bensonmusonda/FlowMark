@@ -1947,6 +1947,7 @@ function makeHighlight(isDark, accentColor) {
     { tag: t.heading3, fontSize: '1.2em', lineHeight: '1.4',  fontWeight: '700', color: h3, textDecoration: 'none' },
     { tag: t.strong,   fontWeight: '700', color: bold },
     { tag: t.emphasis, fontStyle: 'italic' },
+    { tag: t.strikethrough, textDecoration: 'line-through', opacity: '0.7' },
     { tag: t.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" },
     { tag: t.link, color: accent, textDecoration: 'underline' },
     { tag: t.url,  color: url, fontSize: '0.85em' },

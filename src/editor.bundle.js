@@ -75010,6 +75010,7 @@
       { tag: tags.heading3, fontSize: "1.2em", lineHeight: "1.4", fontWeight: "700", color: h3, textDecoration: "none" },
       { tag: tags.strong, fontWeight: "700", color: bold },
       { tag: tags.emphasis, fontStyle: "italic" },
+      { tag: tags.strikethrough, textDecoration: "line-through", opacity: "0.7" },
       { tag: tags.monospace, fontFamily: "'Cascadia Code','Fira Code','Consolas',monospace" },
       { tag: tags.link, color: accent2, textDecoration: "underline" },
       { tag: tags.url, color: url, fontSize: "0.85em" },

@@ -138,6 +138,7 @@ Must land before Phase 4 so properties and dirty state are per tab.
 - Image paste/drag, image resize, code-block language picker.
 - Large-document performance pass (document-wide scans per keystroke).
 - Undo grouping for multi-step structural table operations.
+- Export fidelity: KaTeX math (currently raw TeX) and document-relative images.
 
 ---
 
@@ -149,3 +150,5 @@ Must land before Phase 4 so properties and dirty state are per tab.
 | 2026-10-24 | Plugin system restricted to commands/transforms/CSS | Full plugin API is a platform-sized effort with no current consumer. |
 | 2026-10-24 | Metadata is per file, not per vault | FlowMark opens arbitrary files; there is no vault root. |
 | 2026-10-24 | Release packaging uses electron-builder with `portable` + `nsis` targets | One binary to run without installing, one conventional installer. |
+| 2026-10-24 | Exports use a dedicated print stylesheet, not the app stylesheet | The app CSS brings `height:100%`/dark `:root` variables, producing a black trailing page and screen-sized typography. |
+| 2026-10-24 | Releases are built by GitHub Actions on `v*` tags | Local builds stay for testing; CI builds the artifacts attached to the tag's release. |
