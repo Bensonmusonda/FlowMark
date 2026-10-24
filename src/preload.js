@@ -7,8 +7,6 @@ contextBridge.exposeInMainWorld('fileAPI', {
   openPath:  (filePath) => ipcRenderer.invoke('file:openPath', filePath),
   createAndOpen: (filePath) => ipcRenderer.invoke('file:createAndOpen', filePath),
   clearPath: ()         => ipcRenderer.invoke('file:clearPath'),
-  exportPDF:  (content) => ipcRenderer.invoke('export:pdf', content),
-  exportHTML: (content) => ipcRenderer.invoke('export:html', content),
   getRecents: ()        => ipcRenderer.invoke('recents:get'),
 });
 
@@ -17,4 +15,5 @@ contextBridge.exposeInMainWorld('windowAPI', {
   maximize: () => ipcRenderer.send('window:maximize'),
   close:    () => ipcRenderer.send('window:close'),
   refocus:  () => ipcRenderer.send('window:refocus'),
+  setBackgroundColor: (color) => ipcRenderer.send('window:setBackground', color),
 });
