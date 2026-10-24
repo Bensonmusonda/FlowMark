@@ -69,6 +69,7 @@ point `win.icon` at it before a public release.
 - [ ] Resize the window — no black gutter on the right/bottom.
 - [ ] Themes: dark, light, sepia; window background follows the theme.
 - [ ] DevTools do not open.
+- [ ] Export PDF is a white paper document in every app theme (no sepia/dark page).
 
 ## Automated releases (GitHub Actions)
 

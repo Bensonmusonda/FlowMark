@@ -6,42 +6,18 @@
 
 const { marked } = require('marked');
 
-const THEMES = {
-  'theme-light': {
-    bg: '#ffffff',
-    text: '#222222',
-    heading: '#000000',
-    muted: '#6f6f6f',
-    border: '#dcdcdc',
-    accent: '#2f6fd0',
-    codeBg: 'rgba(0, 0, 0, 0.055)',
-  },
-  'theme-sepia': {
-    bg: '#f4efe4',
-    text: '#3b3020',
-    heading: '#1e1812',
-    muted: '#7d6d55',
-    border: '#ddd5c0',
-    accent: '#8a6620',
-    codeBg: 'rgba(100, 70, 20, 0.08)',
-  },
-  dark: {
-    bg: '#1a1a1a',
-    text: '#d4d4d4',
-    heading: '#f0f0f0',
-    muted: '#9a9a9a',
-    border: '#333333',
-    accent: '#7cb8f0',
-    codeBg: 'rgba(255, 255, 255, 0.07)',
-  },
+// Exports are intentionally theme-independent: a PDF or standalone HTML should
+// look like a normal paper document (white page, dark text), not inherit the
+// app's dark/sepia theme.
+const PRINT_THEME = {
+  bg: '#ffffff',
+  text: '#1f1f1f',
+  heading: '#000000',
+  muted: '#555555',
+  border: '#d9d9d9',
+  accent: '#264f8f',
+  codeBg: 'rgba(0, 0, 0, 0.05)',
 };
-
-function themeOf(className) {
-  const classes = String(className || '').split(/\s+/);
-  if (classes.includes('theme-light')) return THEMES['theme-light'];
-  if (classes.includes('theme-sepia')) return THEMES['theme-sepia'];
-  return THEMES.dark;
-}
 
 /**
  * Obsidian callout headers are not markdown. Turn `> [!NOTE] rest` into a
@@ -58,8 +34,10 @@ function preprocessCallouts(markdown) {
   }).join('\n');
 }
 
-function buildExportDocument(markdown, themeClassName) {
-  const theme = themeOf(themeClassName);
+function buildExportDocument(markdown, _themeClassName) {
+  // The theme argument is accepted for call compatibility but deliberately
+  // ignored: exports are always a plain white paper document.
+  const theme = PRINT_THEME;
   const html = marked.parse(preprocessCallouts(markdown), { gfm: true, breaks: false });
 
   return `<!DOCTYPE html>
@@ -68,7 +46,7 @@ function buildExportDocument(markdown, themeClassName) {
 <meta charset="UTF-8">
 <title>FlowMark export</title>
 <style>
-  :root { color-scheme: ${theme === THEMES.dark ? 'dark' : 'light'}; }
+  :root { color-scheme: light; }
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
@@ -173,4 +151,4 @@ function buildExportDocument(markdown, themeClassName) {
 </html>`;
 }
 
-module.exports = { buildExportDocument, preprocessCallouts, themeOf };
+module.exports = { buildExportDocument, preprocessCallouts };

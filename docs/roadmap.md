@@ -152,3 +152,4 @@ Must land before Phase 4 so properties and dirty state are per tab.
 | 2026-10-24 | Release packaging uses electron-builder with `portable` + `nsis` targets | One binary to run without installing, one conventional installer. |
 | 2026-10-24 | Exports use a dedicated print stylesheet, not the app stylesheet | The app CSS brings `height:100%`/dark `:root` variables, producing a black trailing page and screen-sized typography. |
 | 2026-10-24 | Releases are built by GitHub Actions on `v*` tags | Local builds stay for testing; CI builds the artifacts attached to the tag's release. |
+| 2026-10-24 | Exports ignore the app theme and are always paper-white | A PDF/HTML export should look like a normal document, not inherit dark/sepia page colours. |

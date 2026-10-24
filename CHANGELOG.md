@@ -32,4 +32,5 @@ Release one: a stable live-preview markdown editor.
 - Electron upgraded to 39.8.10 (Chromium DirectComposition resize fix).
 - DevTools disabled (`devTools: false`).
 - File new/open/save/save-as, recent files, word count and reading time.
+- Export to PDF/HTML as a plain white paper document (app theme not applied).
 - Vendored KaTeX CSS + woff2 fonts for fully offline math.
