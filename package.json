@@ -9,6 +9,7 @@
     "build": "esbuild src/editor.js --bundle --outfile=src/editor.bundle.js --format=iife --platform=browser",
     "start": "npm run build && electron .",
     "dist": "npm run build && electron-builder --win",
+    "dist:ci": "npm run build && electron-builder --win --publish never",
     "dist:portable": "npm run build && electron-builder --win portable",
     "dist:installer": "npm run build && electron-builder --win nsis"
   },

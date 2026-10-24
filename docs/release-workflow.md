@@ -77,15 +77,24 @@ point `win.icon` at it before a public release.
 manually):
 
 1. `windows-latest`, Node 22, `npm ci`.
-2. `npm run dist` → portable + NSIS installer in `dist/`.
+2. `npm run dist:ci` → portable + NSIS installer in `dist/`. The script passes
+   `--publish never`: electron-builder otherwise tries to publish on a tag and
+   fails with `GitHub Personal Access Token is not set` because CI publishes
+   through the release action instead.
 3. `softprops/action-gh-release` attaches every `dist/*.exe` to the release for
    that tag, with generated release notes.
 
 Publish with:
 
 ```cmd
-git push origin main --tags
+git push origin main
+git push origin v1.0.0 --force
 ```
+
+A tag pushed for the first time triggers the workflow automatically. If the tag
+already existed before the workflow was registered (or was force-updated
+without producing a run), open Actions → Release → Run workflow and select the
+tag.
 
 Keep the local `npm run dist` for testing; CI is the source of the published
 artifacts. The workflow sets `CSC_IDENTITY_AUTO_DISCOVERY=false` and the app

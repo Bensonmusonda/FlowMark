@@ -24,7 +24,10 @@ jobs:
         run: npm ci
 
       - name: Build portable and installer
-        run: npm run dist
+        # `dist:ci` passes --publish never: electron-builder would otherwise
+        # try to publish the release itself on a tag and fail without GH_TOKEN.
+        # Publishing is handled by the release action below.
+        run: npm run dist:ci
         env:
           # No signing certificate in CI; and the winCodeSign cache contains
           # macOS symlinks that need privileges Windows runners may not have.
