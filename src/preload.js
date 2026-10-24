@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('fileAPI', {
   openPath:  (filePath) => ipcRenderer.invoke('file:openPath', filePath),
   createAndOpen: (filePath) => ipcRenderer.invoke('file:createAndOpen', filePath),
   clearPath: ()         => ipcRenderer.invoke('file:clearPath'),
+  exportPDF:  (content, theme) => ipcRenderer.invoke('export:pdf', content, theme),
+  exportHTML: (content, theme) => ipcRenderer.invoke('export:html', content, theme),
   getRecents: ()        => ipcRenderer.invoke('recents:get'),
 });
 

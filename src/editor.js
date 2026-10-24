@@ -1,6 +1,7 @@
 import { EditorState, Compartment, StateEffect, StateField } from '@codemirror/state';
 import { EditorView, keymap, drawSelection, dropCursor, Decoration, ViewPlugin, WidgetType } from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { search, searchKeymap, openSearchPanel, closeSearchPanel, searchPanelOpen } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { GFM } from '@lezer/markdown';
 import { languages } from '@codemirror/language-data';
@@ -2655,6 +2656,12 @@ async function saveAsFile() {
   markClean(result.filePath);
 }
 
+// ── Find & Replace ────────────────────────────────────────────────────────────
+function toggleSearchPanel() {
+  if (searchPanelOpen(view.state)) closeSearchPanel(view);
+  else openSearchPanel(view);
+}
+
 // ── Editor ────────────────────────────────────────────────────────────────────
 const startDoc = `# Welcome to FlowMark
 
@@ -2692,8 +2699,12 @@ const view = new EditorView({
         { key: 'Ctrl-s', run: () => { saveFile();      return true; } },
         { key: 'Ctrl-Shift-s', run: () => { saveAsFile();  return true; } },
         { key: 'Ctrl-p', run: () => { showQuickOpen(); return true; } },
+        { key: 'Ctrl-f', run: () => { toggleSearchPanel(); return true; } },
+        { key: 'Ctrl-h', run: () => { toggleSearchPanel(); return true; } },
+        ...searchKeymap,
       ]),
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
+      search({ top: true }),
       highlightCompartment.of(makeHighlight(true)),
       lineHeightProbe,
       tableMenuDismiss,
@@ -2749,7 +2760,7 @@ menuBtn.addEventListener('click', e => {
 
 document.addEventListener('click', () => dropdown.classList.add('hidden'));
 
-dropdown.addEventListener('click', e => {
+dropdown.addEventListener('click', async e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (!action) return;
   dropdown.classList.add('hidden');
@@ -2759,6 +2770,19 @@ dropdown.addEventListener('click', e => {
     case 'save':      saveFile();      break;
     case 'saveAs':    saveAsFile();    break;
     case 'quickOpen': showQuickOpen(); break;
+    case 'find':      view.focus(); toggleSearchPanel(); break;
+    case 'exportPDF': {
+      const result = await window.fileAPI.exportPDF(
+        view.state.doc.toString(), document.body.className);
+      if (result && result.error) alert('Export failed: ' + result.error);
+      break;
+    }
+    case 'exportHTML': {
+      const result = await window.fileAPI.exportHTML(
+        view.state.doc.toString(), document.body.className);
+      if (result && result.error) alert('Export failed: ' + result.error);
+      break;
+    }
     case 'settings':  showSettings();  break;
     case 'zen':    document.body.classList.toggle('zen'); break;
   }

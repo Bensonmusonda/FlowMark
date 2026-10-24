@@ -25,6 +25,7 @@
       "README.md"
     ],
     "win": {
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "portable",
@@ -57,6 +58,7 @@
     "@codemirror/lang-markdown": "^6.3.2",
     "@codemirror/language": "^6.10.8",
     "@codemirror/language-data": "^6.5.1",
+    "@codemirror/search": "^6.7.1",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.36.3",
     "katex": "^0.19.1",

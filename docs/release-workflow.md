@@ -19,6 +19,14 @@ electron-builder, configured in `package.json` under `"build"`:
 Both are unsigned. Windows SmartScreen will warn on first run until a code
 signing certificate is added (future work).
 
+`win.signAndEditExecutable` is `false` on purpose: electron-builder otherwise
+extracts the `winCodeSign` cache, which contains macOS symlinks and fails on
+Windows without Developer Mode/admin (`Cannot create symbolic link: A required
+privilege is not held by the client`). The cost is that the exe keeps the
+default Electron icon and metadata. To enable icon/signing later, run on a
+machine with symlink privileges (or enable Windows Developer Mode) and remove
+that flag.
+
 The app icon is still the Electron default; add `build/icon.ico` (256×256) and
 point `win.icon` at it before a public release.
 
