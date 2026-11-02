@@ -63,7 +63,7 @@ body {
   border-bottom: 1px solid var(--border);
   user-select: none;
   transition: opacity 0.3s ease;
-  padding: 0 4px 0 8px;
+  padding: 0 0 0 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1035,21 +1035,48 @@ body.theme-sepia .cm-inline-code {
 }
 
 /* ── Window controls ── */
+#window-controls {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  flex-shrink: 0;
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+}
+
 #window-controls button {
   background: none;
   border: none;
-  color: var(--muted);
-  font-size: 13px;
-  width: 42px;
-  height: 36px;
+  color: var(--text);
+  opacity: 0.75;
+  width: 46px;
+  height: 100%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.12s, color 0.12s;
+  transition: background 0.12s, color 0.12s, opacity 0.12s;
+  -webkit-app-region: no-drag;
+  padding: 0;
 }
-#window-controls button:hover       { background: rgba(255,255,255,0.07); color: var(--text); }
-#btn-close:hover                    { background: #c0392b !important; color: #fff !important; }
+#window-controls button svg {
+  display: block;
+  pointer-events: none;
+}
+#window-controls button:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+}
+body.theme-light #window-controls button:hover,
+body.theme-sepia #window-controls button:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+#btn-close:hover {
+  background: #e81123 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
 
 /* ── Status bar ── */
 #statusbar {

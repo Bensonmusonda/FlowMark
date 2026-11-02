@@ -30,4 +30,7 @@ contextBridge.exposeInMainWorld('windowAPI', {
   close:    () => ipcRenderer.send('window:close'),
   refocus:  () => ipcRenderer.send('window:refocus'),
   setBackgroundColor: (color) => ipcRenderer.send('window:setBackground', color),
+  onMaximizedChange: (callback) => {
+    ipcRenderer.on('window:maximized-change', (_, isMax) => callback(isMax));
+  },
 });

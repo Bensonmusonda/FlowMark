@@ -47,6 +47,13 @@ function createWindow() {
     }
   });
 
+  win.on('maximize', () => {
+    if (!win.isDestroyed()) win.webContents.send('window:maximized-change', true);
+  });
+  win.on('unmaximize', () => {
+    if (!win.isDestroyed()) win.webContents.send('window:maximized-change', false);
+  });
+
   Menu.setApplicationMenu(null);
 }
 

@@ -78486,6 +78486,18 @@ Just start writing.
   document.getElementById("btn-min").addEventListener("click", () => window.windowAPI.minimize());
   document.getElementById("btn-max").addEventListener("click", () => window.windowAPI.maximize());
   document.getElementById("btn-close").addEventListener("click", () => window.windowAPI.close());
+  if (window.windowAPI?.onMaximizedChange) {
+    const maxIcon = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path fill="currentColor" d="M1,1 L9,1 L9,9 L1,9 L1,1 Z M2,2 L8,2 L8,8 L2,8 L2,2 Z"/></svg>';
+    const restoreIcon = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path fill="currentColor" d="M2.5,0 L10,0 L10,7.5 L8.5,7.5 L8.5,1.5 L2.5,1.5 Z M0,2.5 L7.5,2.5 L7.5,10 L0,10 Z M1.5,4 L6,4 L6,8.5 L1.5,8.5 Z"/></svg>';
+    window.windowAPI.onMaximizedChange((isMax) => {
+      const btnMax = document.getElementById("btn-max");
+      if (btnMax) {
+        btnMax.innerHTML = isMax ? restoreIcon : maxIcon;
+        btnMax.title = isMax ? "Restore" : "Maximize";
+        btnMax.setAttribute("aria-label", isMax ? "Restore" : "Maximize");
+      }
+    });
+  }
   registry_default.registerCommand("file:new", {
     label: "New File",
     shortcut: "Ctrl+N",
