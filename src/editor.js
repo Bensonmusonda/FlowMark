@@ -1,6 +1,6 @@
 import { EditorState, Compartment, StateEffect, StateField } from '@codemirror/state';
 import { EditorView, keymap, drawSelection, dropCursor, Decoration, ViewPlugin, WidgetType } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, undo, redo, selectAll } from '@codemirror/commands';
 import { search, searchKeymap, openSearchPanel, closeSearchPanel, searchPanelOpen } from '@codemirror/search';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { GFM } from '@lezer/markdown';
@@ -8,6 +8,20 @@ import { languages } from '@codemirror/language-data';
 import { syntaxHighlighting, HighlightStyle, syntaxTree, ensureSyntaxTree } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 import katex from 'katex';
+import CommandRegistry from './commands/registry.js';
+import {
+  wrapSelection,
+  insertLink,
+  insertImage,
+  insertCodeBlock,
+  insertTable,
+  insertCallout,
+  insertMathBlock,
+  insertHorizontalRule,
+  toggleLinePrefix,
+  toggleHeading,
+} from './commands/insert.js';
+import { appendInlineMarkdown } from './commands/inlineRenderer.js';
 
 // ── Live-preview stability primitives ────────────────────────────────────────
 //
@@ -207,38 +221,6 @@ function parseTableAlignments(text) {
   });
 }
 
-const TABLE_INLINE_RE = /(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g;
-
-/** Minimal inline markdown for table cells (code / strong / em), DOM-only. */
-function appendInlineMarkdown(parent, text) {
-  let last = 0;
-  TABLE_INLINE_RE.lastIndex = 0;
-  let match;
-  while ((match = TABLE_INLINE_RE.exec(text)) !== null) {
-    if (match.index > last) {
-      parent.appendChild(document.createTextNode(text.slice(last, match.index)));
-    }
-    const token = match[0];
-    if (token.startsWith('`')) {
-      const code = document.createElement('code');
-      code.textContent = token.slice(1, -1);
-      parent.appendChild(code);
-    } else if (token.startsWith('**') || token.startsWith('__')) {
-      const strong = document.createElement('strong');
-      strong.textContent = token.slice(2, -2);
-      parent.appendChild(strong);
-    } else {
-      const em = document.createElement('em');
-      em.textContent = token.slice(1, -1);
-      parent.appendChild(em);
-    }
-    last = match.index + token.length;
-  }
-  if (last < text.length) {
-    parent.appendChild(document.createTextNode(text.slice(last)));
-  }
-}
-
 const CALLOUT_ICON_ALIASES = {
   note: 'info', info: 'info', todo: 'check',
   tip: 'bulb', hint: 'bulb',
@@ -340,7 +322,7 @@ class CalloutBlockWidget extends WidgetType {
         const text = para.replace(/\n/g, ' ').trim();
         if (!text) continue;
         const pEl = document.createElement('p');
-        pEl.textContent = text;
+        appendInlineMarkdown(pEl, text);
         contentEl.appendChild(pEl);
       }
       if (contentEl.childNodes.length > 0) card.appendChild(contentEl);
@@ -2695,13 +2677,22 @@ const view = new EditorView({
       keymap.of([
         ...defaultKeymap,
         ...historyKeymap,
-        { key: 'Ctrl-n', run: () => { newFile();       return true; } },
-        { key: 'Ctrl-o', run: () => { openFile();      return true; } },
-        { key: 'Ctrl-s', run: () => { saveFile();      return true; } },
-        { key: 'Ctrl-Shift-s', run: () => { saveAsFile();  return true; } },
-        { key: 'Ctrl-p', run: () => { showQuickOpen(); return true; } },
-        { key: 'Ctrl-f', run: () => { toggleSearchPanel(); return true; } },
-        { key: 'Ctrl-h', run: () => { toggleSearchPanel(); return true; } },
+        { key: 'Ctrl-n', run: () => { CommandRegistry.execute('file:new', view, view.state); return true; } },
+        { key: 'Ctrl-o', run: () => { CommandRegistry.execute('file:open', view, view.state); return true; } },
+        { key: 'Ctrl-s', run: () => { CommandRegistry.execute('file:save', view, view.state); return true; } },
+        { key: 'Ctrl-Shift-s', run: () => { CommandRegistry.execute('file:saveAs', view, view.state); return true; } },
+        { key: 'Ctrl-p', run: () => { CommandRegistry.execute('file:quickOpen', view, view.state); return true; } },
+        { key: 'Ctrl-f', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
+        { key: 'Ctrl-h', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
+        { key: 'F11', run: () => { CommandRegistry.execute('view:zen', view, view.state); return true; } },
+        { key: 'Ctrl-b', run: () => CommandRegistry.execute('insert:bold', view, view.state), preventDefault: true },
+        { key: 'Ctrl-i', run: () => CommandRegistry.execute('insert:italic', view, view.state), preventDefault: true },
+        { key: 'Ctrl-Shift-x', run: () => CommandRegistry.execute('insert:strikethrough', view, view.state), preventDefault: true },
+        { key: 'Ctrl-`', run: () => CommandRegistry.execute('insert:inlineCode', view, view.state), preventDefault: true },
+        { key: 'Ctrl-Shift-c', run: () => CommandRegistry.execute('insert:codeBlock', view, view.state), preventDefault: true },
+        { key: 'Ctrl-k', run: () => CommandRegistry.execute('insert:link', view, view.state), preventDefault: true },
+        { key: 'Ctrl-Shift-i', run: () => CommandRegistry.execute('insert:image', view, view.state), preventDefault: true },
+        { key: 'Ctrl-Shift-m', run: () => CommandRegistry.execute('insert:mathInline', view, view.state), preventDefault: true },
         ...searchKeymap,
       ]),
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
@@ -2750,6 +2741,303 @@ document.getElementById('btn-min').addEventListener('click', () => window.window
 document.getElementById('btn-max').addEventListener('click', () => window.windowAPI.maximize());
 document.getElementById('btn-close').addEventListener('click', () => window.windowAPI.close());
 
+// ── Command Registry ──────────────────────────────────────────────────────────
+// File commands
+CommandRegistry.registerCommand('file:new', {
+  label: 'New File',
+  shortcut: 'Ctrl+N',
+  run: () => newFile(),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('file:open', {
+  label: 'Open File',
+  shortcut: 'Ctrl+O',
+  run: () => openFile(),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('file:save', {
+  label: 'Save',
+  shortcut: 'Ctrl+S',
+  run: () => saveFile(),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('file:saveAs', {
+  label: 'Save As',
+  shortcut: 'Ctrl+Shift+S',
+  run: () => saveAsFile(),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('file:quickOpen', {
+  label: 'Quick Open',
+  shortcut: 'Ctrl+P',
+  run: () => showQuickOpen(),
+  enabled: () => true,
+});
+
+// Edit commands
+CommandRegistry.registerCommand('edit:undo', {
+  label: 'Undo',
+  shortcut: 'Ctrl+Z',
+  run: () => {
+    view.focus();
+    undo(view);
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('edit:redo', {
+  label: 'Redo',
+  shortcut: 'Ctrl+Y',
+  run: () => {
+    view.focus();
+    redo(view);
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('edit:cut', {
+  label: 'Cut',
+  shortcut: 'Ctrl+X',
+  run: async () => {
+    view.focus();
+    if (!document.execCommand('cut')) {
+      const { from, to } = view.state.selection.main;
+      if (from !== to) {
+        const text = view.state.sliceDoc(from, to);
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        }
+        view.dispatch({
+          changes: { from, to, insert: '' },
+          selection: { anchor: from },
+        });
+      }
+    }
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('edit:copy', {
+  label: 'Copy',
+  shortcut: 'Ctrl+C',
+  run: async () => {
+    view.focus();
+    if (!document.execCommand('copy')) {
+      const { from, to } = view.state.selection.main;
+      if (from !== to) {
+        const text = view.state.sliceDoc(from, to);
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        }
+      }
+    }
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('edit:paste', {
+  label: 'Paste',
+  shortcut: 'Ctrl+V',
+  run: async () => {
+    view.focus();
+    if (!document.execCommand('paste')) {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            const { from, to } = view.state.selection.main;
+            view.dispatch({
+              changes: { from, to, insert: text },
+              selection: { anchor: from + text.length },
+            });
+          }
+        } catch (err) {
+          console.warn('Clipboard read failed:', err);
+        }
+      }
+    }
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('edit:selectAll', {
+  label: 'Select All',
+  shortcut: 'Ctrl+A',
+  run: () => {
+    view.focus();
+    selectAll(view);
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('edit:find', {
+  label: 'Find & Replace',
+  shortcut: 'Ctrl+F',
+  run: () => {
+    view.focus();
+    toggleSearchPanel();
+  },
+  enabled: () => true,
+});
+
+// Insert commands
+CommandRegistry.registerCommand('insert:bold', {
+  label: 'Bold',
+  shortcut: 'Ctrl+B',
+  run: () => wrapSelection(view, { open: '**', close: '**', placeholder: 'bold text' }),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:italic', {
+  label: 'Italic',
+  shortcut: 'Ctrl+I',
+  run: () => wrapSelection(view, { open: '*', close: '*', placeholder: 'italic text' }),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:strikethrough', {
+  label: 'Strikethrough',
+  shortcut: 'Ctrl+Shift+X',
+  run: () => wrapSelection(view, { open: '~~', close: '~~', placeholder: 'strikethrough text' }),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:inlineCode', {
+  label: 'Inline Code',
+  shortcut: 'Ctrl+`',
+  run: () => wrapSelection(view, { open: '`', close: '`', placeholder: 'code' }),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:codeBlock', {
+  label: 'Code Block',
+  shortcut: 'Ctrl+Shift+C',
+  run: () => insertCodeBlock(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:link', {
+  label: 'Link',
+  shortcut: 'Ctrl+K',
+  run: () => insertLink(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:image', {
+  label: 'Image',
+  shortcut: 'Ctrl+Shift+I',
+  run: () => insertImage(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:table', {
+  label: 'Table',
+  run: () => insertTable(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:callout', {
+  label: 'Callout',
+  run: () => insertCallout(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:mathInline', {
+  label: 'Math (Inline)',
+  shortcut: 'Ctrl+Shift+M',
+  run: () => wrapSelection(view, { open: '$', close: '$', placeholder: 'x' }),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:mathBlock', {
+  label: 'Math (Block)',
+  run: () => insertMathBlock(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:footnote', {
+  label: 'Footnote',
+  run: () => wrapSelection(view, { open: '[^', close: ']', placeholder: '1' }),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:hr', {
+  label: 'Horizontal Rule',
+  run: () => insertHorizontalRule(view),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:quote', {
+  label: 'Quote',
+  run: () => toggleLinePrefix(view, '> '),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:taskList', {
+  label: 'Task List',
+  run: () => toggleLinePrefix(view, '- [ ] '),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:heading1', {
+  label: 'Heading 1',
+  run: () => toggleHeading(view, 1),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:heading2', {
+  label: 'Heading 2',
+  run: () => toggleHeading(view, 2),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('insert:heading3', {
+  label: 'Heading 3',
+  run: () => toggleHeading(view, 3),
+  enabled: () => true,
+});
+
+// Export commands
+CommandRegistry.registerCommand('export:pdf', {
+  label: 'Export PDF',
+  run: async () => {
+    const result = await window.fileAPI.exportPDF(
+      view.state.doc.toString(), document.body.className);
+    if (result && result.error) alert('Export failed: ' + result.error);
+  },
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('export:html', {
+  label: 'Export HTML',
+  run: async () => {
+    const result = await window.fileAPI.exportHTML(
+      view.state.doc.toString(), document.body.className);
+    if (result && result.error) alert('Export failed: ' + result.error);
+  },
+  enabled: () => true,
+});
+
+// View commands
+CommandRegistry.registerCommand('view:settings', {
+  label: 'Settings',
+  run: () => showSettings(),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('view:zen', {
+  label: 'Distraction-free',
+  shortcut: 'F11',
+  run: () => {
+    document.body.classList.toggle('zen');
+  },
+  enabled: () => true,
+});
+
 // ── Dropdown menu ─────────────────────────────────────────────────────────────
 const menuBtn  = document.getElementById('menu-btn');
 const dropdown = document.getElementById('dropdown');
@@ -2761,32 +3049,25 @@ menuBtn.addEventListener('click', e => {
 
 document.addEventListener('click', () => dropdown.classList.add('hidden'));
 
-dropdown.addEventListener('click', async e => {
+const dropdownActionToCommand = {
+  new: 'file:new',
+  open: 'file:open',
+  save: 'file:save',
+  saveAs: 'file:saveAs',
+  quickOpen: 'file:quickOpen',
+  find: 'edit:find',
+  exportPDF: 'export:pdf',
+  exportHTML: 'export:html',
+  settings: 'view:settings',
+  zen: 'view:zen',
+};
+
+dropdown.addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (!action) return;
   dropdown.classList.add('hidden');
-  switch (action) {
-    case 'new':       newFile();       break;
-    case 'open':      openFile();      break;
-    case 'save':      saveFile();      break;
-    case 'saveAs':    saveAsFile();    break;
-    case 'quickOpen': showQuickOpen(); break;
-    case 'find':      view.focus(); toggleSearchPanel(); break;
-    case 'exportPDF': {
-      const result = await window.fileAPI.exportPDF(
-        view.state.doc.toString(), document.body.className);
-      if (result && result.error) alert('Export failed: ' + result.error);
-      break;
-    }
-    case 'exportHTML': {
-      const result = await window.fileAPI.exportHTML(
-        view.state.doc.toString(), document.body.className);
-      if (result && result.error) alert('Export failed: ' + result.error);
-      break;
-    }
-    case 'settings':  showSettings();  break;
-    case 'zen':    document.body.classList.toggle('zen'); break;
-  }
+  const commandId = dropdownActionToCommand[action] || action;
+  CommandRegistry.execute(commandId, view, view.state);
 });
 
 // ── Settings panel ────────────────────────────────────────────────────────────
@@ -3000,7 +3281,8 @@ function applyTheme(theme) {
 
 // ── Zen mode ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (e.key === 'F11') { e.preventDefault(); document.body.classList.toggle('zen'); }
+  if (e.defaultPrevented) return;
+  if (e.key === 'F11') { e.preventDefault(); CommandRegistry.execute('view:zen', view, view.state); }
 });
 
 // Find & Replace must work from anywhere, including a focused table-cell or
@@ -3011,8 +3293,7 @@ window.addEventListener('keydown', (e) => {
   if (key !== 'f' && key !== 'h') return;
   e.preventDefault();
   e.stopPropagation();
-  view.focus();
-  toggleSearchPanel();
+  CommandRegistry.execute('edit:find', view, view.state);
 }, true);
 
 // ── Click-to-focus / note link ────────────────────────────────────────────────

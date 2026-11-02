@@ -73383,6 +73383,430 @@
     __domTree
   };
 
+  // src/commands/registry.js
+  var commands = /* @__PURE__ */ new Map();
+  function normalizeShortcut(shortcut) {
+    if (!shortcut) return shortcut;
+    const isMac = navigator.platform.startsWith("Mac");
+    if (isMac) {
+      return shortcut.replace(/^Ctrl\+/, "Cmd+").replace(/\+Ctrl\+/, "+Cmd+");
+    }
+    return shortcut.replace(/^Cmd\+/, "Ctrl+").replace(/\+Cmd\+/, "+Ctrl+");
+  }
+  function registerCommand(id3, def) {
+    if (!id3 || typeof id3 !== "string") {
+      throw new Error("Command id must be a non-empty string");
+    }
+    if (!def || typeof def !== "object") {
+      throw new Error("Command definition must be an object");
+    }
+    if (typeof def.run !== "function") {
+      throw new Error("Command must have a run function");
+    }
+    if (typeof def.enabled !== "function") {
+      throw new Error("Command must have an enabled function");
+    }
+    if (typeof def.label !== "string" || !def.label.trim()) {
+      throw new Error("Command must have a non-empty label");
+    }
+    const normalizedShortcut = def.shortcut ? normalizeShortcut(def.shortcut) : void 0;
+    const command3 = {
+      id: id3,
+      label: def.label.trim(),
+      shortcut: normalizedShortcut,
+      run: def.run,
+      enabled: def.enabled,
+      icon: def.icon,
+      section: def.section
+    };
+    commands.set(id3, command3);
+  }
+  function getCommand(id3) {
+    return commands.get(id3);
+  }
+  function getAllCommands() {
+    return Array.from(commands.values());
+  }
+  function execute(id3, view2, state) {
+    const cmd2 = commands.get(id3);
+    if (!cmd2) return false;
+    if (!cmd2.enabled(view2, state)) return false;
+    try {
+      cmd2.run(view2, state);
+      return true;
+    } catch (err) {
+      console.error(`Command "${id3}" failed:`, err);
+      return false;
+    }
+  }
+  function hasCommand(id3) {
+    return commands.has(id3);
+  }
+  function unregisterCommand(id3) {
+    return commands.delete(id3);
+  }
+  function clearCommands() {
+    commands.clear();
+  }
+  function getCommandsBySection(section2) {
+    return getAllCommands().filter((cmd2) => cmd2.section === section2);
+  }
+  function parseShortcut(shortcut) {
+    if (!shortcut) return { modifiers: [], key: "" };
+    const parts = shortcut.split("+").map((s) => s.trim());
+    const key = parts.pop() || "";
+    return { modifiers: parts, key: key.toLowerCase() };
+  }
+  function matchesShortcut(event, shortcut) {
+    const { modifiers: modifiers2, key } = parseShortcut(shortcut);
+    const eventKey = event.key.toLowerCase();
+    const keyMap = {
+      " ": "space",
+      escape: "esc",
+      arrowup: "up",
+      arrowdown: "down",
+      arrowleft: "left",
+      arrowright: "right"
+    };
+    const normalizedEventKey = keyMap[eventKey] || eventKey;
+    const normalizedShortcutKey = keyMap[key] || key;
+    if (normalizedEventKey !== normalizedShortcutKey) return false;
+    const requiredModifiers = new Set(modifiers2.map((m) => m.toLowerCase()));
+    const hasModifiers = {
+      ctrl: event.ctrlKey || event.metaKey,
+      // treat Cmd as Ctrl for matching
+      shift: event.shiftKey,
+      alt: event.altKey,
+      meta: event.metaKey
+    };
+    for (const mod of requiredModifiers) {
+      if (!hasModifiers[mod]) return false;
+    }
+    for (const [mod, pressed] of Object.entries(hasModifiers)) {
+      if (pressed && !requiredModifiers.has(mod)) return false;
+    }
+    return true;
+  }
+  var registry_default = {
+    registerCommand,
+    getCommand,
+    getAllCommands,
+    execute,
+    hasCommand,
+    unregisterCommand,
+    clearCommands,
+    getCommandsBySection,
+    normalizeShortcut,
+    parseShortcut,
+    matchesShortcut
+  };
+
+  // src/commands/insert.js
+  init_dist();
+  function wrapSelection(view2, { open: open2, close: close2 = open2, placeholder = "", toggle = true }) {
+    const { state } = view2;
+    const tr = state.changeByRange((range) => {
+      const selectedText = state.sliceDoc(range.from, range.to);
+      if (toggle) {
+        if (selectedText.length >= open2.length + close2.length && selectedText.startsWith(open2) && selectedText.endsWith(close2)) {
+          const inner2 = selectedText.slice(open2.length, -close2.length);
+          return {
+            changes: { from: range.from, to: range.to, insert: inner2 },
+            range: EditorSelection.range(range.from, range.from + inner2.length)
+          };
+        }
+        const before = state.sliceDoc(Math.max(0, range.from - open2.length), range.from);
+        const after = state.sliceDoc(range.to, range.to + close2.length);
+        if (before === open2 && after === close2) {
+          return {
+            changes: [
+              { from: range.from - open2.length, to: range.from, insert: "" },
+              { from: range.to, to: range.to + close2.length, insert: "" }
+            ],
+            range: EditorSelection.range(range.from - open2.length, range.to - open2.length)
+          };
+        }
+      }
+      if (selectedText) {
+        return {
+          changes: { from: range.from, to: range.to, insert: open2 + selectedText + close2 },
+          range: EditorSelection.range(range.from + open2.length, range.to + open2.length)
+        };
+      }
+      const insert2 = open2 + placeholder + close2;
+      const selFrom = range.from + open2.length;
+      const selTo = selFrom + placeholder.length;
+      return {
+        changes: { from: range.from, to: range.from, insert: insert2 },
+        range: EditorSelection.range(selFrom, selTo)
+      };
+    });
+    view2.focus();
+    view2.dispatch({ ...tr, userEvent: "input.insert" });
+  }
+  function insertLink(view2) {
+    const { state } = view2;
+    const tr = state.changeByRange((range) => {
+      const text6 = state.sliceDoc(range.from, range.to);
+      if (!text6) {
+        const insert3 = "[link text](url)";
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from + 1, range.from + 10)
+        };
+      }
+      if (/^https?:\/\//i.test(text6.trim())) {
+        const insert3 = `[title](${text6.trim()})`;
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from + 1, range.from + 6)
+        };
+      }
+      const insert2 = `[${text6}](url)`;
+      const urlStart = range.from + text6.length + 3;
+      return {
+        changes: { from: range.from, to: range.to, insert: insert2 },
+        range: EditorSelection.range(urlStart, urlStart + 3)
+      };
+    });
+    view2.focus();
+    view2.dispatch({ ...tr, userEvent: "input.link" });
+  }
+  function insertImage(view2) {
+    const { state } = view2;
+    const tr = state.changeByRange((range) => {
+      const text6 = state.sliceDoc(range.from, range.to);
+      if (!text6) {
+        const insert3 = "![alt text](url)";
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from + 2, range.from + 10)
+        };
+      }
+      if (/^https?:\/\//i.test(text6.trim())) {
+        const insert3 = `![alt text](${text6.trim()})`;
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from + 2, range.from + 10)
+        };
+      }
+      const insert2 = `![${text6}](url)`;
+      const urlStart = range.from + text6.length + 4;
+      return {
+        changes: { from: range.from, to: range.to, insert: insert2 },
+        range: EditorSelection.range(urlStart, urlStart + 3)
+      };
+    });
+    view2.focus();
+    view2.dispatch({ ...tr, userEvent: "input.image" });
+  }
+  function insertCodeBlock(view2) {
+    const { state } = view2;
+    const tr = state.changeByRange((range) => {
+      const text6 = state.sliceDoc(range.from, range.to);
+      if (text6) {
+        const insert3 = `
+\`\`\`
+${text6}
+\`\`\`
+`;
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from + 5, range.from + 5 + text6.length)
+        };
+      }
+      const insert2 = "```js\n// code\n```\n";
+      return {
+        changes: { from: range.from, to: range.to, insert: insert2 },
+        range: EditorSelection.range(range.from + 3, range.from + 5)
+      };
+    });
+    view2.focus();
+    view2.dispatch({ ...tr, userEvent: "input.codeblock" });
+  }
+  function insertTable(view2) {
+    const { state } = view2;
+    const pos = state.selection.main.from;
+    const line = state.doc.lineAt(pos);
+    const prefix2 = line.text.trim().length > 0 ? "\n\n" : "";
+    const table = `${prefix2}| Column 1 | Column 2 | Column 3 |
+| --- | --- | --- |
+| Item 1 | Item 2 | Item 3 |
+`;
+    view2.focus();
+    view2.dispatch({
+      changes: { from: pos, to: pos, insert: table },
+      selection: { anchor: pos + prefix2.length + 2, head: pos + prefix2.length + 10 },
+      userEvent: "input.table"
+    });
+  }
+  function insertCallout(view2, type7 = "NOTE") {
+    const { state } = view2;
+    const tr = state.changeByRange((range) => {
+      const text6 = state.sliceDoc(range.from, range.to);
+      if (text6) {
+        const lines = text6.split("\n").map((l) => `> ${l}`).join("\n");
+        const insert3 = `> [!${type7}]
+${lines}
+`;
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from, range.from + insert3.length)
+        };
+      }
+      const insert2 = `> [!${type7}]
+> Content
+`;
+      const selFrom = range.from + `> [!${type7}]
+> `.length;
+      return {
+        changes: { from: range.from, to: range.from, insert: insert2 },
+        range: EditorSelection.range(selFrom, selFrom + "Content".length)
+      };
+    });
+    view2.focus();
+    view2.dispatch({ ...tr, userEvent: "input.callout" });
+  }
+  function insertMathBlock(view2) {
+    const { state } = view2;
+    const tr = state.changeByRange((range) => {
+      const text6 = state.sliceDoc(range.from, range.to);
+      if (text6) {
+        const insert3 = `
+$$
+${text6}
+$$
+`;
+        return {
+          changes: { from: range.from, to: range.to, insert: insert3 },
+          range: EditorSelection.range(range.from + 4, range.from + 4 + text6.length)
+        };
+      }
+      const insert2 = "$$\nformula\n$$\n";
+      return {
+        changes: { from: range.from, to: range.to, insert: insert2 },
+        range: EditorSelection.range(range.from + 3, range.from + 10)
+      };
+    });
+    view2.focus();
+    view2.dispatch({ ...tr, userEvent: "input.math" });
+  }
+  function insertHorizontalRule(view2) {
+    const { state } = view2;
+    const pos = state.selection.main.from;
+    const line = state.doc.lineAt(pos);
+    const prefix2 = line.text.trim().length > 0 ? "\n\n" : "";
+    const insert2 = `${prefix2}---
+
+`;
+    view2.focus();
+    view2.dispatch({
+      changes: { from: pos, to: pos, insert: insert2 },
+      selection: { anchor: pos + insert2.length },
+      userEvent: "input.hr"
+    });
+  }
+  function toggleLinePrefix(view2, prefix2) {
+    const { state } = view2;
+    const lineNumbers = /* @__PURE__ */ new Set();
+    for (const range of state.selection.ranges) {
+      const fromLine = state.doc.lineAt(range.from).number;
+      const toLine = state.doc.lineAt(range.to).number;
+      for (let l = fromLine; l <= toLine; l++) lineNumbers.add(l);
+    }
+    const lines = Array.from(lineNumbers).map((n) => state.doc.line(n));
+    const hasPrefix = (l) => l.text.startsWith(prefix2);
+    const allHave = lines.every(hasPrefix);
+    const changes = [];
+    for (const line of lines) {
+      if (allHave) {
+        changes.push({ from: line.from, to: line.from + prefix2.length, insert: "" });
+      } else if (!hasPrefix(line)) {
+        changes.push({ from: line.from, to: line.from, insert: prefix2 });
+      }
+    }
+    if (changes.length) {
+      view2.focus();
+      view2.dispatch({ changes, userEvent: "input.prefix" });
+    }
+  }
+  function toggleHeading(view2, level) {
+    const { state } = view2;
+    const targetPrefix = "#".repeat(level) + " ";
+    const lineNumbers = /* @__PURE__ */ new Set();
+    for (const range of state.selection.ranges) {
+      const fromLine = state.doc.lineAt(range.from).number;
+      const toLine = state.doc.lineAt(range.to).number;
+      for (let l = fromLine; l <= toLine; l++) lineNumbers.add(l);
+    }
+    const changes = [];
+    for (const lineNum of lineNumbers) {
+      const line = state.doc.line(lineNum);
+      const m = line.text.match(/^(#{1,6}\s+)/);
+      if (m) {
+        if (m[1] === targetPrefix) {
+          changes.push({ from: line.from, to: line.from + m[1].length, insert: "" });
+        } else {
+          changes.push({ from: line.from, to: line.from + m[1].length, insert: targetPrefix });
+        }
+      } else {
+        changes.push({ from: line.from, to: line.from, insert: targetPrefix });
+      }
+    }
+    if (changes.length) {
+      view2.focus();
+      view2.dispatch({ changes, userEvent: "input.heading" });
+    }
+  }
+
+  // src/commands/inlineRenderer.js
+  var INLINE_MARKDOWN_SOURCE = "(`[^`]+`|\\*\\*[^*]+\\*\\*|__[^_]+__|~~[^~]+~~|\\[[^\\]]+\\]\\([^)]+\\)|\\*[^*]+\\*|_[^_]+_)";
+  function appendInlineMarkdown(parent, text6) {
+    if (!text6) return;
+    const re = new RegExp(INLINE_MARKDOWN_SOURCE, "g");
+    let last = 0;
+    let match2;
+    while ((match2 = re.exec(text6)) !== null) {
+      if (match2.index > last) {
+        parent.appendChild(document.createTextNode(text6.slice(last, match2.index)));
+      }
+      const token = match2[0];
+      if (token.startsWith("`")) {
+        const code2 = document.createElement("code");
+        code2.textContent = token.slice(1, -1);
+        parent.appendChild(code2);
+      } else if (token.startsWith("**") || token.startsWith("__")) {
+        const strong = document.createElement("strong");
+        appendInlineMarkdown(strong, token.slice(2, -2));
+        parent.appendChild(strong);
+      } else if (token.startsWith("~~")) {
+        const del = document.createElement("del");
+        appendInlineMarkdown(del, token.slice(2, -2));
+        parent.appendChild(del);
+      } else if (token.startsWith("[")) {
+        const linkMatch = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (linkMatch) {
+          const a2 = document.createElement("a");
+          a2.href = linkMatch[2];
+          a2.target = "_blank";
+          a2.rel = "noopener noreferrer";
+          appendInlineMarkdown(a2, linkMatch[1]);
+          parent.appendChild(a2);
+        } else {
+          parent.appendChild(document.createTextNode(token));
+        }
+      } else {
+        const em = document.createElement("em");
+        appendInlineMarkdown(em, token.slice(1, -1));
+        parent.appendChild(em);
+      }
+      last = match2.index + token.length;
+    }
+    if (last < text6.length) {
+      parent.appendChild(document.createTextNode(text6.slice(last)));
+    }
+  }
+
   // src/editor.js
   var HIDE = Decoration.replace({});
   var refreshEffect = StateEffect.define();
@@ -73516,35 +73940,6 @@
       return "left";
     });
   }
-  var TABLE_INLINE_RE = /(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g;
-  function appendInlineMarkdown(parent, text6) {
-    let last = 0;
-    TABLE_INLINE_RE.lastIndex = 0;
-    let match2;
-    while ((match2 = TABLE_INLINE_RE.exec(text6)) !== null) {
-      if (match2.index > last) {
-        parent.appendChild(document.createTextNode(text6.slice(last, match2.index)));
-      }
-      const token = match2[0];
-      if (token.startsWith("`")) {
-        const code2 = document.createElement("code");
-        code2.textContent = token.slice(1, -1);
-        parent.appendChild(code2);
-      } else if (token.startsWith("**") || token.startsWith("__")) {
-        const strong = document.createElement("strong");
-        strong.textContent = token.slice(2, -2);
-        parent.appendChild(strong);
-      } else {
-        const em = document.createElement("em");
-        em.textContent = token.slice(1, -1);
-        parent.appendChild(em);
-      }
-      last = match2.index + token.length;
-    }
-    if (last < text6.length) {
-      parent.appendChild(document.createTextNode(text6.slice(last)));
-    }
-  }
   var CALLOUT_ICON_ALIASES = {
     note: "info",
     info: "info",
@@ -73635,7 +74030,7 @@
           const text6 = para.replace(/\n/g, " ").trim();
           if (!text6) continue;
           const pEl = document.createElement("p");
-          pEl.textContent = text6;
+          appendInlineMarkdown(pEl, text6);
           contentEl.appendChild(pEl);
         }
         if (contentEl.childNodes.length > 0) card.appendChild(contentEl);
@@ -75619,33 +76014,45 @@ Just start writing.
           ...defaultKeymap,
           ...historyKeymap,
           { key: "Ctrl-n", run: () => {
-            newFile();
+            registry_default.execute("file:new", view, view.state);
             return true;
           } },
           { key: "Ctrl-o", run: () => {
-            openFile();
+            registry_default.execute("file:open", view, view.state);
             return true;
           } },
           { key: "Ctrl-s", run: () => {
-            saveFile();
+            registry_default.execute("file:save", view, view.state);
             return true;
           } },
           { key: "Ctrl-Shift-s", run: () => {
-            saveAsFile();
+            registry_default.execute("file:saveAs", view, view.state);
             return true;
           } },
           { key: "Ctrl-p", run: () => {
-            showQuickOpen();
+            registry_default.execute("file:quickOpen", view, view.state);
             return true;
           } },
           { key: "Ctrl-f", run: () => {
-            toggleSearchPanel();
+            registry_default.execute("edit:find", view, view.state);
             return true;
           } },
           { key: "Ctrl-h", run: () => {
-            toggleSearchPanel();
+            registry_default.execute("edit:find", view, view.state);
             return true;
           } },
+          { key: "F11", run: () => {
+            registry_default.execute("view:zen", view, view.state);
+            return true;
+          } },
+          { key: "Ctrl-b", run: () => registry_default.execute("insert:bold", view, view.state), preventDefault: true },
+          { key: "Ctrl-i", run: () => registry_default.execute("insert:italic", view, view.state), preventDefault: true },
+          { key: "Ctrl-Shift-x", run: () => registry_default.execute("insert:strikethrough", view, view.state), preventDefault: true },
+          { key: "Ctrl-`", run: () => registry_default.execute("insert:inlineCode", view, view.state), preventDefault: true },
+          { key: "Ctrl-Shift-c", run: () => registry_default.execute("insert:codeBlock", view, view.state), preventDefault: true },
+          { key: "Ctrl-k", run: () => registry_default.execute("insert:link", view, view.state), preventDefault: true },
+          { key: "Ctrl-Shift-i", run: () => registry_default.execute("insert:image", view, view.state), preventDefault: true },
+          { key: "Ctrl-Shift-m", run: () => registry_default.execute("insert:mathInline", view, view.state), preventDefault: true },
           ...searchKeymap
         ]),
         markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
@@ -75688,6 +76095,267 @@ Just start writing.
   document.getElementById("btn-min").addEventListener("click", () => window.windowAPI.minimize());
   document.getElementById("btn-max").addEventListener("click", () => window.windowAPI.maximize());
   document.getElementById("btn-close").addEventListener("click", () => window.windowAPI.close());
+  registry_default.registerCommand("file:new", {
+    label: "New File",
+    shortcut: "Ctrl+N",
+    run: () => newFile(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("file:open", {
+    label: "Open File",
+    shortcut: "Ctrl+O",
+    run: () => openFile(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("file:save", {
+    label: "Save",
+    shortcut: "Ctrl+S",
+    run: () => saveFile(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("file:saveAs", {
+    label: "Save As",
+    shortcut: "Ctrl+Shift+S",
+    run: () => saveAsFile(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("file:quickOpen", {
+    label: "Quick Open",
+    shortcut: "Ctrl+P",
+    run: () => showQuickOpen(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:undo", {
+    label: "Undo",
+    shortcut: "Ctrl+Z",
+    run: () => {
+      view.focus();
+      undo(view);
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:redo", {
+    label: "Redo",
+    shortcut: "Ctrl+Y",
+    run: () => {
+      view.focus();
+      redo(view);
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:cut", {
+    label: "Cut",
+    shortcut: "Ctrl+X",
+    run: async () => {
+      view.focus();
+      if (!document.execCommand("cut")) {
+        const { from: from3, to } = view.state.selection.main;
+        if (from3 !== to) {
+          const text6 = view.state.sliceDoc(from3, to);
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text6);
+          }
+          view.dispatch({
+            changes: { from: from3, to, insert: "" },
+            selection: { anchor: from3 }
+          });
+        }
+      }
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:copy", {
+    label: "Copy",
+    shortcut: "Ctrl+C",
+    run: async () => {
+      view.focus();
+      if (!document.execCommand("copy")) {
+        const { from: from3, to } = view.state.selection.main;
+        if (from3 !== to) {
+          const text6 = view.state.sliceDoc(from3, to);
+          if (navigator.clipboard) {
+            await navigator.clipboard.writeText(text6);
+          }
+        }
+      }
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:paste", {
+    label: "Paste",
+    shortcut: "Ctrl+V",
+    run: async () => {
+      view.focus();
+      if (!document.execCommand("paste")) {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+          try {
+            const text6 = await navigator.clipboard.readText();
+            if (text6) {
+              const { from: from3, to } = view.state.selection.main;
+              view.dispatch({
+                changes: { from: from3, to, insert: text6 },
+                selection: { anchor: from3 + text6.length }
+              });
+            }
+          } catch (err) {
+            console.warn("Clipboard read failed:", err);
+          }
+        }
+      }
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:selectAll", {
+    label: "Select All",
+    shortcut: "Ctrl+A",
+    run: () => {
+      view.focus();
+      selectAll(view);
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("edit:find", {
+    label: "Find & Replace",
+    shortcut: "Ctrl+F",
+    run: () => {
+      view.focus();
+      toggleSearchPanel();
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:bold", {
+    label: "Bold",
+    shortcut: "Ctrl+B",
+    run: () => wrapSelection(view, { open: "**", close: "**", placeholder: "bold text" }),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:italic", {
+    label: "Italic",
+    shortcut: "Ctrl+I",
+    run: () => wrapSelection(view, { open: "*", close: "*", placeholder: "italic text" }),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:strikethrough", {
+    label: "Strikethrough",
+    shortcut: "Ctrl+Shift+X",
+    run: () => wrapSelection(view, { open: "~~", close: "~~", placeholder: "strikethrough text" }),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:inlineCode", {
+    label: "Inline Code",
+    shortcut: "Ctrl+`",
+    run: () => wrapSelection(view, { open: "`", close: "`", placeholder: "code" }),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:codeBlock", {
+    label: "Code Block",
+    shortcut: "Ctrl+Shift+C",
+    run: () => insertCodeBlock(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:link", {
+    label: "Link",
+    shortcut: "Ctrl+K",
+    run: () => insertLink(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:image", {
+    label: "Image",
+    shortcut: "Ctrl+Shift+I",
+    run: () => insertImage(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:table", {
+    label: "Table",
+    run: () => insertTable(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:callout", {
+    label: "Callout",
+    run: () => insertCallout(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:mathInline", {
+    label: "Math (Inline)",
+    shortcut: "Ctrl+Shift+M",
+    run: () => wrapSelection(view, { open: "$", close: "$", placeholder: "x" }),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:mathBlock", {
+    label: "Math (Block)",
+    run: () => insertMathBlock(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:footnote", {
+    label: "Footnote",
+    run: () => wrapSelection(view, { open: "[^", close: "]", placeholder: "1" }),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:hr", {
+    label: "Horizontal Rule",
+    run: () => insertHorizontalRule(view),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:quote", {
+    label: "Quote",
+    run: () => toggleLinePrefix(view, "> "),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:taskList", {
+    label: "Task List",
+    run: () => toggleLinePrefix(view, "- [ ] "),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:heading1", {
+    label: "Heading 1",
+    run: () => toggleHeading(view, 1),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:heading2", {
+    label: "Heading 2",
+    run: () => toggleHeading(view, 2),
+    enabled: () => true
+  });
+  registry_default.registerCommand("insert:heading3", {
+    label: "Heading 3",
+    run: () => toggleHeading(view, 3),
+    enabled: () => true
+  });
+  registry_default.registerCommand("export:pdf", {
+    label: "Export PDF",
+    run: async () => {
+      const result = await window.fileAPI.exportPDF(
+        view.state.doc.toString(),
+        document.body.className
+      );
+      if (result && result.error) alert("Export failed: " + result.error);
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("export:html", {
+    label: "Export HTML",
+    run: async () => {
+      const result = await window.fileAPI.exportHTML(
+        view.state.doc.toString(),
+        document.body.className
+      );
+      if (result && result.error) alert("Export failed: " + result.error);
+    },
+    enabled: () => true
+  });
+  registry_default.registerCommand("view:settings", {
+    label: "Settings",
+    run: () => showSettings(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("view:zen", {
+    label: "Distraction-free",
+    shortcut: "F11",
+    run: () => {
+      document.body.classList.toggle("zen");
+    },
+    enabled: () => true
+  });
   var menuBtn = document.getElementById("menu-btn");
   var dropdown = document.getElementById("dropdown");
   menuBtn.addEventListener("click", (e) => {
@@ -75695,53 +76363,24 @@ Just start writing.
     dropdown.classList.toggle("hidden");
   });
   document.addEventListener("click", () => dropdown.classList.add("hidden"));
-  dropdown.addEventListener("click", async (e) => {
+  var dropdownActionToCommand = {
+    new: "file:new",
+    open: "file:open",
+    save: "file:save",
+    saveAs: "file:saveAs",
+    quickOpen: "file:quickOpen",
+    find: "edit:find",
+    exportPDF: "export:pdf",
+    exportHTML: "export:html",
+    settings: "view:settings",
+    zen: "view:zen"
+  };
+  dropdown.addEventListener("click", (e) => {
     const action = e.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     dropdown.classList.add("hidden");
-    switch (action) {
-      case "new":
-        newFile();
-        break;
-      case "open":
-        openFile();
-        break;
-      case "save":
-        saveFile();
-        break;
-      case "saveAs":
-        saveAsFile();
-        break;
-      case "quickOpen":
-        showQuickOpen();
-        break;
-      case "find":
-        view.focus();
-        toggleSearchPanel();
-        break;
-      case "exportPDF": {
-        const result = await window.fileAPI.exportPDF(
-          view.state.doc.toString(),
-          document.body.className
-        );
-        if (result && result.error) alert("Export failed: " + result.error);
-        break;
-      }
-      case "exportHTML": {
-        const result = await window.fileAPI.exportHTML(
-          view.state.doc.toString(),
-          document.body.className
-        );
-        if (result && result.error) alert("Export failed: " + result.error);
-        break;
-      }
-      case "settings":
-        showSettings();
-        break;
-      case "zen":
-        document.body.classList.toggle("zen");
-        break;
-    }
+    const commandId = dropdownActionToCommand[action] || action;
+    registry_default.execute(commandId, view, view.state);
   });
   var settingsPanel = document.getElementById("settings-panel");
   function showSettings() {
@@ -75931,9 +76570,10 @@ Just start writing.
     syncWindowBackground();
   }
   document.addEventListener("keydown", (e) => {
+    if (e.defaultPrevented) return;
     if (e.key === "F11") {
       e.preventDefault();
-      document.body.classList.toggle("zen");
+      registry_default.execute("view:zen", view, view.state);
     }
   });
   window.addEventListener("keydown", (e) => {
@@ -75942,8 +76582,7 @@ Just start writing.
     if (key !== "f" && key !== "h") return;
     e.preventDefault();
     e.stopPropagation();
-    view.focus();
-    toggleSearchPanel();
+    registry_default.execute("edit:find", view, view.state);
   }, true);
   document.getElementById("editor-wrap").addEventListener("click", (e) => {
     if (e.ctrlKey) {
