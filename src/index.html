@@ -8,19 +8,30 @@
 </head>
 <body>
   <div id="titlebar">
-    <div id="titlebar-left">
-      <button id="menu-btn" title="Menu">&#9776;</button>
-      <div id="dropdown" class="hidden">
-        <div class="menu-section">
+    <div id="titlebar-menus">
+      <!-- File menu -->
+      <div class="menu-item-dropdown">
+        <button class="topbar-menu-btn" id="file-menu-btn">File</button>
+        <div id="file-dropdown" class="dropdown-menu hidden">
           <button data-action="new">New File <span class="shortcut">Ctrl+N</span></button>
           <button data-action="open">Open File <span class="shortcut">Ctrl+O</span></button>
           <button data-action="quickOpen">Quick Open <span class="shortcut">Ctrl+P</span></button>
           <button data-action="save">Save <span class="shortcut">Ctrl+S</span></button>
           <button data-action="saveAs">Save As <span class="shortcut">Ctrl+Shift+S</span></button>
           <button data-action="closeTab">Close Tab <span class="shortcut">Ctrl+W</span></button>
+          <div class="menu-divider"></div>
+          <button data-action="exportPDF">Export PDF</button>
+          <button data-action="exportHTML">Export HTML</button>
+          <div class="menu-divider"></div>
+          <button data-action="settings">Settings <span class="shortcut">Theme &amp; Colors</span></button>
+          <button data-action="zen">Distraction-free <span class="shortcut">F11</span></button>
         </div>
-        <div class="menu-divider"></div>
-        <div class="menu-section">
+      </div>
+
+      <!-- Edit menu -->
+      <div class="menu-item-dropdown">
+        <button class="topbar-menu-btn" id="edit-menu-btn">Edit</button>
+        <div id="edit-dropdown" class="dropdown-menu hidden">
           <button data-action="edit:undo">Undo <span class="shortcut">Ctrl+Z</span></button>
           <button data-action="edit:redo">Redo <span class="shortcut">Ctrl+Y</span></button>
           <div class="menu-divider"></div>
@@ -31,8 +42,12 @@
           <div class="menu-divider"></div>
           <button data-action="edit:find">Find &amp; Replace <span class="shortcut">Ctrl+F</span></button>
         </div>
-        <div class="menu-divider"></div>
-        <div class="menu-section">
+      </div>
+
+      <!-- Insert menu -->
+      <div class="menu-item-dropdown">
+        <button class="topbar-menu-btn" id="insert-menu-btn">Insert</button>
+        <div id="insert-dropdown" class="dropdown-menu hidden">
           <button data-action="insert:bold">Bold <span class="shortcut">Ctrl+B</span></button>
           <button data-action="insert:italic">Italic <span class="shortcut">Ctrl+I</span></button>
           <button data-action="insert:strikethrough">Strikethrough <span class="shortcut">Ctrl+Shift+X</span></button>
@@ -57,20 +72,11 @@
           <button data-action="insert:heading2">Heading 2</button>
           <button data-action="insert:heading3">Heading 3</button>
         </div>
-        <div class="menu-divider"></div>
-        <div class="menu-section">
-          <button data-action="exportPDF">Export PDF</button>
-          <button data-action="exportHTML">Export HTML</button>
-        </div>
-        <div class="menu-divider"></div>
-        <div class="menu-section">
-          <button data-action="settings">Settings <span class="shortcut">Theme &amp; Colors</span></button>
-          <button data-action="zen">Distraction-free <span class="shortcut">F11</span></button>
-        </div>
       </div>
     </div>
 
-    <span id="app-name">FlowMark</span>
+    <!-- Tabs strip directly on topbar -->
+    <div id="tabbar"></div>
 
     <div id="window-controls">
       <button id="btn-min"   title="Minimize">&#8211;</button>
@@ -78,8 +84,6 @@
       <button id="btn-close" title="Close">&#10005;</button>
     </div>
   </div>
-
-  <div id="tabbar"></div>
 
   <!-- Custom confirm dialog -->
   <div id="confirm-overlay" class="hidden">

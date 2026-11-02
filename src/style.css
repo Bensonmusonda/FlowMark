@@ -58,36 +58,68 @@ body {
 /* ── Titlebar ── */
 #titlebar {
   flex-shrink: 0;
-  height: 36px;
+  height: 38px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   user-select: none;
   transition: opacity 0.3s ease;
-  padding: 0 0 0 4px;
-}
-
-#app-name {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
+  padding: 0 4px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   -webkit-app-region: drag;
-  text-align: center;
 }
 
-/* ── Tab Bar ── */
+/* ── Topbar Menus (File, Edit, Insert) ── */
+#titlebar-menus {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 20px; /* clear division spacing, no border */
+  -webkit-app-region: no-drag;
+}
+
+.menu-item-dropdown {
+  position: relative;
+}
+
+.topbar-menu-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  -webkit-app-region: no-drag;
+}
+
+.topbar-menu-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.theme-light .topbar-menu-btn:hover,
+body.theme-sepia .topbar-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── Tabs in Topbar ── */
 #tabbar {
-  flex-shrink: 0;
-  height: 34px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
   display: flex;
   align-items: center;
   overflow-x: auto;
   overflow-y: hidden;
   user-select: none;
   scrollbar-width: none;
+  margin-right: 16px; /* clear division spacing, no border */
   -webkit-app-region: no-drag;
 }
 #tabbar::-webkit-scrollbar {
@@ -102,7 +134,7 @@ body {
   align-items: center;
   height: 100%;
   padding: 0 4px;
-  gap: 2px;
+  gap: 4px;
 }
 
 .tab-item {
@@ -114,24 +146,41 @@ body {
   font-size: 12px;
   color: var(--muted);
   cursor: pointer;
+  background: var(--bg-surface);
   transition: background 0.15s, color 0.15s;
-  max-width: 200px;
+  max-width: 180px;
+  -webkit-app-region: no-drag;
 }
 
 .tab-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.07);
   color: var(--text);
 }
 
 .tab-item.active {
-  background: var(--bg);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
 }
 
-body.theme-light .tab-item.active,
+body.theme-light .tab-item {
+  background: rgba(0, 0, 0, 0.03);
+}
+body.theme-light .tab-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+body.theme-light .tab-item.active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.theme-sepia .tab-item {
+  background: rgba(0, 0, 0, 0.03);
+}
+body.theme-sepia .tab-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
 body.theme-sepia .tab-item.active {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .tab-item.dragging {
@@ -146,7 +195,7 @@ body.theme-sepia .tab-item.active {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  max-width: 120px;
 }
 
 .tab-dirty {
@@ -169,11 +218,12 @@ body.theme-sepia .tab-item.active {
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-app-region: no-drag;
 }
 
 .tab-close:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .tab-new-btn {
@@ -183,17 +233,79 @@ body.theme-sepia .tab-item.active {
   font-size: 16px;
   line-height: 1;
   padding: 4px 8px;
-  margin-left: 4px;
   cursor: pointer;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-app-region: no-drag;
 }
 
 .tab-new-btn:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── Dropdown menus ── */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  min-width: 220px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  z-index: 999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dropdown-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.dropdown-menu.hidden {
+  display: none;
+}
+
+.dropdown-menu button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.dropdown-menu button:hover {
+  background: rgba(128, 128, 128, 0.14);
+}
+
+.shortcut {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: 20px;
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
 }
 
 /* distraction-free: hide titlebar */
@@ -922,100 +1034,6 @@ body.theme-sepia .cm-inline-code {
   background: rgba(0, 0, 0, 0.06);
 }
 
-/* ── Titlebar layout ── */
-#titlebar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  -webkit-app-region: drag;
-}
-
-#titlebar-left {
-  display: flex;
-  align-items: center;
-  position: relative;
-  -webkit-app-region: no-drag;
-}
-
-#window-controls {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0;
-  -webkit-app-region: no-drag;
-}
-
-/* ── Menu button ── */
-#menu-btn {
-  -webkit-app-region: no-drag;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 14px;
-  padding: 4px 10px;
-  cursor: pointer;
-  border-radius: 4px;
-  line-height: 1;
-  transition: color 0.15s, background 0.15s;
-}
-#menu-btn:hover { color: var(--text); background: rgba(255,255,255,0.06); }
-
-/* ── Dropdown ── */
-#dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px;
-  min-width: 230px;
-  max-height: calc(100vh - 48px);
-  overflow-y: auto;
-  z-index: 999;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-}
-
-#dropdown::-webkit-scrollbar {
-  width: 5px;
-}
-
-#dropdown::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-#dropdown.hidden { display: none; }
-
-.menu-section button {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-family: var(--font-ui);
-  font-size: 13px;
-  padding: 7px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.12s;
-}
-.menu-section button:hover { background: rgba(128,128,128,0.12); }
-
-.shortcut {
-  color: var(--muted);
-  font-size: 11px;
-  margin-left: 24px;
-}
-
-.menu-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 4px 0;
-}
-
 /* ── Window controls ── */
 #window-controls button {
   background: none;
@@ -1339,7 +1357,9 @@ body.theme-sepia .cm-syntax-hide { color: transparent; }
 
 /* Dropdown / quick open background in light themes */
 body.theme-light #dropdown,
-body.theme-sepia #dropdown {
+body.theme-sepia #dropdown,
+body.theme-light .dropdown-menu,
+body.theme-sepia .dropdown-menu {
   background: var(--bg-surface);
   box-shadow: 0 8px 24px rgba(0,0,0,0.15);
 }

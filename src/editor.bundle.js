@@ -75325,19 +75325,21 @@ ${text6}
         const lines = text6.split("\n").map((l) => `> ${l}`).join("\n");
         const insert3 = `> [!${type7}]
 ${lines}
+
 `;
         return {
           changes: { from: range.from, to: range.to, insert: insert3 },
-          range: EditorSelection.range(range.from, range.from + insert3.length)
+          range: EditorSelection.range(range.from, range.from + insert3.length - 1)
         };
       }
       const insert2 = `> [!${type7}]
 > Content
+
 `;
       const selFrom = range.from + `> [!${type7}]
 > `.length;
       return {
-        changes: { from: range.from, to: range.from, insert: insert2 },
+        changes: { from: range.from, to: range.to, insert: insert2 },
         range: EditorSelection.range(selFrom, selFrom + "Content".length)
       };
     });
@@ -78170,13 +78172,9 @@ $$
   var tabManager = new TabManager();
   function updateAppName() {
     const doc2 = tabManager.activeDocument;
-    if (!doc2) {
-      document.getElementById("app-name").textContent = "FlowMark";
-      return;
-    }
-    const label = doc2.name || "untitled";
-    const dot4 = doc2.dirty ? " \u2022" : "";
-    document.getElementById("app-name").textContent = `FlowMark \u2014 ${label}${dot4}`;
+    const label = doc2 ? doc2.name || "untitled" : "untitled";
+    const dot4 = doc2 && doc2.dirty ? " \u2022" : "";
+    document.title = `FlowMark \u2014 ${label}${dot4}`;
   }
   function showConfirm(message, okLabel = "OK") {
     return new Promise((resolve) => {
@@ -78404,6 +78402,7 @@ $$
         if (update.docChanged) {
           const activeDoc = tabManager.activeDocument;
           if (activeDoc) {
+            activeDoc.editorState = update.state;
             activeDoc.markDirty(true);
             updateAppName();
             updatePlaceholder();
@@ -78479,10 +78478,9 @@ Just start writing.
     });
   }, true);
   function updatePlaceholder() {
-    const doc2 = tabManager.activeDocument;
     const editorEl = document.getElementById("editor");
     if (!editorEl) return;
-    const isEmpty = !doc2 || doc2.getText().length === 0;
+    const isEmpty = typeof view !== "undefined" && view ? view.state.doc.length === 0 : true;
     editorEl.classList.toggle("empty", isEmpty);
   }
   document.getElementById("btn-min").addEventListener("click", () => window.windowAPI.minimize());
@@ -78774,13 +78772,6 @@ Just start writing.
     },
     enabled: () => true
   });
-  var menuBtn = document.getElementById("menu-btn");
-  var dropdown = document.getElementById("dropdown");
-  menuBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle("hidden");
-  });
-  document.addEventListener("click", () => dropdown.classList.add("hidden"));
   var dropdownActionToCommand = {
     new: "file:new",
     open: "file:open",
@@ -78795,13 +78786,38 @@ Just start writing.
     settings: "view:settings",
     zen: "view:zen"
   };
-  dropdown.addEventListener("click", (e) => {
-    const action = e.target.closest("[data-action]")?.dataset.action;
-    if (!action) return;
-    dropdown.classList.add("hidden");
-    const commandId = dropdownActionToCommand[action] || action;
-    registry_default.execute(commandId, view, view.state);
+  var dropdownMenus = [
+    { btn: document.getElementById("file-menu-btn"), menu: document.getElementById("file-dropdown") },
+    { btn: document.getElementById("edit-menu-btn"), menu: document.getElementById("edit-dropdown") },
+    { btn: document.getElementById("insert-menu-btn"), menu: document.getElementById("insert-dropdown") }
+  ];
+  function closeAllDropdowns() {
+    dropdownMenus.forEach(({ menu }) => menu?.classList.add("hidden"));
+  }
+  dropdownMenus.forEach(({ btn, menu }) => {
+    if (!btn || !menu) return;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isHidden = menu.classList.contains("hidden");
+      closeAllDropdowns();
+      if (isHidden) menu.classList.remove("hidden");
+    });
+    btn.addEventListener("mouseenter", () => {
+      const anyOpen = dropdownMenus.some((d3) => d3.menu && !d3.menu.classList.contains("hidden"));
+      if (anyOpen) {
+        closeAllDropdowns();
+        menu.classList.remove("hidden");
+      }
+    });
+    menu.addEventListener("click", (e) => {
+      const action = e.target.closest("[data-action]")?.dataset.action;
+      if (!action) return;
+      closeAllDropdowns();
+      const commandId = dropdownActionToCommand[action] || action;
+      registry_default.execute(commandId, view, view.state);
+    });
   });
+  document.addEventListener("click", () => closeAllDropdowns());
   var settingsPanel = document.getElementById("settings-panel");
   function showSettings() {
     document.querySelectorAll(".theme-opt").forEach((b) => {
@@ -78975,14 +78991,13 @@ Just start writing.
     }
   });
   function updateWordCount() {
-    const doc2 = tabManager.activeDocument;
     const el = document.getElementById("word-count");
     if (!el) return;
-    if (!doc2) {
+    if (typeof view === "undefined" || !view || !tabManager.activeDocument) {
       el.textContent = "";
       return;
     }
-    const text6 = doc2.getText();
+    const text6 = view.state.doc.toString();
     const words22 = text6.trim() === "" ? 0 : text6.trim().split(/\s+/).length;
     const mins = Math.ceil(words22 / 200);
     const label = words22 === 0 ? "" : `${words22.toLocaleString()} words \xB7 ${mins} min read`;

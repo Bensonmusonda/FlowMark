@@ -2601,13 +2601,9 @@ const tabManager = new TabManager();
 
 function updateAppName() {
   const doc = tabManager.activeDocument;
-  if (!doc) {
-    document.getElementById('app-name').textContent = 'FlowMark';
-    return;
-  }
-  const label = doc.name || 'untitled';
-  const dot = doc.dirty ? ' •' : '';
-  document.getElementById('app-name').textContent = `FlowMark — ${label}${dot}`;
+  const label = doc ? (doc.name || 'untitled') : 'untitled';
+  const dot = doc && doc.dirty ? ' •' : '';
+  document.title = `FlowMark — ${label}${dot}`;
 }
 
 // ── Custom confirm dialog ─────────────────────────────────────────────────────
@@ -2818,6 +2814,7 @@ function getEditorExtensions() {
       if (update.docChanged) {
         const activeDoc = tabManager.activeDocument;
         if (activeDoc) {
+          activeDoc.editorState = update.state;
           activeDoc.markDirty(true);
           updateAppName();
           updatePlaceholder();
@@ -2906,10 +2903,9 @@ window.addEventListener('mouseup', () => {
 
 // ── Placeholder ───────────────────────────────────────────────────────────────
 function updatePlaceholder() {
-  const doc = tabManager.activeDocument;
   const editorEl = document.getElementById('editor');
   if (!editorEl) return;
-  const isEmpty = !doc || doc.getText().length === 0;
+  const isEmpty = (typeof view !== 'undefined' && view) ? view.state.doc.length === 0 : true;
   editorEl.classList.toggle('empty', isEmpty);
 }
 
@@ -3243,17 +3239,7 @@ CommandRegistry.registerCommand('view:zen', {
   enabled: () => true,
 });
 
-// ── Dropdown menu ─────────────────────────────────────────────────────────────
-const menuBtn  = document.getElementById('menu-btn');
-const dropdown = document.getElementById('dropdown');
-
-menuBtn.addEventListener('click', e => {
-  e.stopPropagation();
-  dropdown.classList.toggle('hidden');
-});
-
-document.addEventListener('click', () => dropdown.classList.add('hidden'));
-
+// ── Dropdown menus (File, Edit, Insert) ──────────────────────────────────────
 const dropdownActionToCommand = {
   new: 'file:new',
   open: 'file:open',
@@ -3269,13 +3255,45 @@ const dropdownActionToCommand = {
   zen: 'view:zen',
 };
 
-dropdown.addEventListener('click', e => {
-  const action = e.target.closest('[data-action]')?.dataset.action;
-  if (!action) return;
-  dropdown.classList.add('hidden');
-  const commandId = dropdownActionToCommand[action] || action;
-  CommandRegistry.execute(commandId, view, view.state);
+const dropdownMenus = [
+  { btn: document.getElementById('file-menu-btn'), menu: document.getElementById('file-dropdown') },
+  { btn: document.getElementById('edit-menu-btn'), menu: document.getElementById('edit-dropdown') },
+  { btn: document.getElementById('insert-menu-btn'), menu: document.getElementById('insert-dropdown') },
+];
+
+function closeAllDropdowns() {
+  dropdownMenus.forEach(({ menu }) => menu?.classList.add('hidden'));
+}
+
+dropdownMenus.forEach(({ btn, menu }) => {
+  if (!btn || !menu) return;
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isHidden = menu.classList.contains('hidden');
+    closeAllDropdowns();
+    if (isHidden) menu.classList.remove('hidden');
+  });
+
+  // Hover switching between menus if one is already open
+  btn.addEventListener('mouseenter', () => {
+    const anyOpen = dropdownMenus.some(d => d.menu && !d.menu.classList.contains('hidden'));
+    if (anyOpen) {
+      closeAllDropdowns();
+      menu.classList.remove('hidden');
+    }
+  });
+
+  menu.addEventListener('click', e => {
+    const action = e.target.closest('[data-action]')?.dataset.action;
+    if (!action) return;
+    closeAllDropdowns();
+    const commandId = dropdownActionToCommand[action] || action;
+    CommandRegistry.execute(commandId, view, view.state);
+  });
 });
+
+document.addEventListener('click', () => closeAllDropdowns());
 
 // ── Settings panel ────────────────────────────────────────────────────────────
 const settingsPanel = document.getElementById('settings-panel');
@@ -3468,14 +3486,13 @@ document.getElementById('editor-wrap').addEventListener('click', e => {
 
 // ── Word / reading time count ─────────────────────────────────────────────────
 function updateWordCount() {
-  const doc = tabManager.activeDocument;
   const el = document.getElementById('word-count');
   if (!el) return;
-  if (!doc) {
+  if (typeof view === 'undefined' || !view || !tabManager.activeDocument) {
     el.textContent = '';
     return;
   }
-  const text = doc.getText();
+  const text = view.state.doc.toString();
   const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
   const mins  = Math.ceil(words / 200);
   const label = words === 0 ? '' : `${words.toLocaleString()} words · ${mins} min read`;

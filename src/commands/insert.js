@@ -180,16 +180,16 @@ export function insertCallout(view, type = 'NOTE') {
     const text = state.sliceDoc(range.from, range.to);
     if (text) {
       const lines = text.split('\n').map((l) => `> ${l}`).join('\n');
-      const insert = `> [!${type}]\n${lines}\n`;
+      const insert = `> [!${type}]\n${lines}\n\n`;
       return {
         changes: { from: range.from, to: range.to, insert },
-        range: EditorSelection.range(range.from, range.from + insert.length),
+        range: EditorSelection.range(range.from, range.from + insert.length - 1),
       };
     }
-    const insert = `> [!${type}]\n> Content\n`;
+    const insert = `> [!${type}]\n> Content\n\n`;
     const selFrom = range.from + `> [!${type}]\n> `.length;
     return {
-      changes: { from: range.from, to: range.from, insert },
+      changes: { from: range.from, to: range.to, insert },
       range: EditorSelection.range(selFrom, selFrom + 'Content'.length),
     };
   });
