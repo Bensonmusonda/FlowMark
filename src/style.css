@@ -50,8 +50,14 @@ html, body {
   overflow: hidden;
 }
 
+body {
+  display: flex;
+  flex-direction: column;
+}
+
 /* ── Titlebar ── */
 #titlebar {
+  flex-shrink: 0;
   height: 36px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
@@ -70,21 +76,139 @@ html, body {
   text-align: center;
 }
 
+/* ── Tab Bar ── */
+#tabbar {
+  flex-shrink: 0;
+  height: 34px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  user-select: none;
+  scrollbar-width: none;
+}
+#tabbar::-webkit-scrollbar {
+  display: none;
+}
+#tabbar.hidden {
+  display: none;
+}
+
+.tab-strip {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 4px;
+  gap: 2px;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  max-width: 200px;
+}
+
+.tab-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.tab-item.active {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+body.theme-light .tab-item.active,
+body.theme-sepia .tab-item.active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tab-item.dragging {
+  opacity: 0.4;
+}
+
+.tab-item.drag-over {
+  border-left: 2px solid var(--accent);
+}
+
+.tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.tab-dirty {
+  color: var(--accent);
+  font-size: 14px;
+  margin-left: 4px;
+  line-height: 1;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  margin-left: 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-close:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tab-new-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 4px 8px;
+  margin-left: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-new-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
 /* distraction-free: hide titlebar */
-body.zen #titlebar { opacity: 0; pointer-events: none; }
-body.zen #editor-wrap { height: 100vh; }
+body.zen #titlebar { opacity: 0; pointer-events: none; display: none; }
+body.zen #tabbar { display: none; }
+body.zen #editor-wrap { height: 100vh; flex: 1; }
 
 /* ── Editor wrap ── */
-/* The outer wrap no longer scrolls: CodeMirror's own `.cm-scroller` is the
-   scroll container. Arrow-key commands dispatch `scrollIntoView`, which only
-   moves `view.scrollDOM` — with the scroller set to `overflow: visible` none
-   of that reached the page, so Down/Up never scrolled. Handing scrolling back
-   to CM6 also restores viewport virtualization (only visible lines render). */
 #editor-wrap {
-  height: calc(100vh - 36px);
+  flex: 1;
+  min-height: 0;
+  height: auto;
   overflow: hidden;
   padding: 0;
   background: var(--bg);
+  position: relative;
 }
 
 .cm-scroller {

@@ -75633,6 +75633,421 @@ $$
     };
   }
 
+  // src/model/document.js
+  var nextDocId = 1;
+  var Document = class {
+    /**
+     * @param {Object} options
+     * @param {string} [options.id]
+     * @param {string|null} [options.path] - Full file system path
+     * @param {string} [options.name] - Tab display name
+     * @param {import('@codemirror/state').EditorState} [options.editorState]
+     * @param {boolean} [options.dirty]
+     * @param {number} [options.scrollPosition]
+     * @param {string} [options.initialContent]
+     */
+    constructor(options = {}) {
+      this.id = options.id || `doc_${nextDocId++}_${Date.now()}`;
+      this.path = options.path || null;
+      this.name = options.name || (this.path ? this._basename(this.path) : `Untitled ${nextDocId}`);
+      this.editorState = options.editorState || null;
+      this.dirty = Boolean(options.dirty);
+      this.scrollPosition = options.scrollPosition || 0;
+      this.selection = options.selection || null;
+    }
+    _basename(filePath) {
+      if (!filePath) return "untitled.md";
+      return filePath.split(/[\\/]/).pop() || filePath;
+    }
+    /**
+     * Set or update file path.
+     * @param {string|null} newPath
+     */
+    setPath(newPath) {
+      this.path = newPath;
+      if (newPath) {
+        this.name = this._basename(newPath);
+      }
+    }
+    /**
+     * Mark document dirty or clean.
+     * @param {boolean} [dirty=true]
+     */
+    markDirty(dirty = true) {
+      this.dirty = Boolean(dirty);
+    }
+    /**
+     * Get current EditorState.
+     * @returns {import('@codemirror/state').EditorState|null}
+     */
+    getState() {
+      return this.editorState;
+    }
+    /**
+     * Set EditorState.
+     * @param {import('@codemirror/state').EditorState} state
+     */
+    setState(state) {
+      this.editorState = state;
+    }
+    /**
+     * Get doc text content string.
+     * @returns {string}
+     */
+    getText() {
+      if (this.editorState) {
+        return this.editorState.doc.toString();
+      }
+      return "";
+    }
+    /**
+     * Save document to disk via fileAPI.
+     * @param {Object} fileAPI
+     * @returns {Promise<{ canceled?: boolean, filePath?: string, noPath?: boolean }>}
+     */
+    async save(fileAPI) {
+      const content3 = this.getText();
+      if (!this.path) {
+        const res2 = await fileAPI.saveAs({ defaultPath: this.name, content: content3 });
+        if (!res2.canceled && res2.filePath) {
+          this.setPath(res2.filePath);
+          this.markDirty(false);
+        }
+        return res2;
+      }
+      const res = await fileAPI.save({ filePath: this.path, content: content3 });
+      if (!res.noPath) {
+        this.markDirty(false);
+      }
+      return res;
+    }
+    /**
+     * Serialize for session storage.
+     */
+    toJSON() {
+      return {
+        id: this.id,
+        path: this.path,
+        name: this.name,
+        dirty: this.dirty,
+        scrollPosition: this.scrollPosition,
+        // For unsaved (no path) documents, preserve content in session
+        content: !this.path ? this.getText() : void 0
+      };
+    }
+  };
+  var TabManager = class {
+    constructor() {
+      this.documents = [];
+      this.activeId = null;
+      this._listeners = /* @__PURE__ */ new Set();
+    }
+    get activeDocument() {
+      return this.documents.find((d3) => d3.id === this.activeId) || null;
+    }
+    get count() {
+      return this.documents.length;
+    }
+    get(id3) {
+      return this.documents.find((d3) => d3.id === id3) || null;
+    }
+    getByPath(filePath) {
+      if (!filePath) return null;
+      return this.documents.find((d3) => d3.path === filePath) || null;
+    }
+    indexOf(id3) {
+      return this.documents.findIndex((d3) => d3.id === id3);
+    }
+    /**
+     * Add a document.
+     * @param {Document} doc
+     * @param {boolean} [activate=true]
+     */
+    add(doc2, activate = true) {
+      if (doc2.path) {
+        const existing = this.getByPath(doc2.path);
+        if (existing) {
+          if (activate) this.setActive(existing.id);
+          return existing;
+        }
+      }
+      this.documents.push(doc2);
+      if (activate || !this.activeId) {
+        this.activeId = doc2.id;
+      }
+      this._notify();
+      return doc2;
+    }
+    /**
+     * Remove a document by ID.
+     * @param {string} id
+     * @returns {Document|null} the removed document
+     */
+    remove(id3) {
+      const index = this.indexOf(id3);
+      if (index === -1) return null;
+      const [removed] = this.documents.splice(index, 1);
+      if (this.activeId === id3) {
+        if (this.documents.length > 0) {
+          const nextIndex = Math.min(index, this.documents.length - 1);
+          this.activeId = this.documents[nextIndex].id;
+        } else {
+          this.activeId = null;
+        }
+      }
+      this._notify();
+      return removed;
+    }
+    /**
+     * Set active document by ID.
+     * @param {string} id
+     */
+    setActive(id3) {
+      if (this.activeId === id3) return;
+      const doc2 = this.get(id3);
+      if (!doc2) return;
+      this.activeId = id3;
+      this._notify();
+    }
+    /**
+     * Switch to next tab.
+     */
+    next() {
+      if (this.documents.length <= 1) return;
+      const currentIndex = this.indexOf(this.activeId);
+      const nextIndex = (currentIndex + 1) % this.documents.length;
+      this.setActive(this.documents[nextIndex].id);
+    }
+    /**
+     * Switch to previous tab.
+     */
+    prev() {
+      if (this.documents.length <= 1) return;
+      const currentIndex = this.indexOf(this.activeId);
+      const prevIndex = (currentIndex - 1 + this.documents.length) % this.documents.length;
+      this.setActive(this.documents[prevIndex].id);
+    }
+    /**
+     * Reorder tabs (e.g. from drag & drop).
+     * @param {number} fromIndex
+     * @param {number} toIndex
+     */
+    reorder(fromIndex, toIndex) {
+      if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+      if (fromIndex >= this.documents.length || toIndex >= this.documents.length) return;
+      const [moved] = this.documents.splice(fromIndex, 1);
+      this.documents.splice(toIndex, 0, moved);
+      this._notify();
+    }
+    onChange(listener) {
+      this._listeners.add(listener);
+      return () => this._listeners.delete(listener);
+    }
+    _notify() {
+      for (const listener of this._listeners) {
+        try {
+          listener(this);
+        } catch (err) {
+          console.error("Error in TabManager listener:", err);
+        }
+      }
+    }
+  };
+
+  // src/ui/tabs.js
+  var TabBarUI = class {
+    /**
+     * @param {Object} options
+     * @param {HTMLElement} options.container - Tab bar DOM container
+     * @param {import('../model/document.js').TabManager} options.tabManager
+     * @param {Function} options.onSelect - (docId) => void
+     * @param {Function} options.onClose - (docId) => void
+     * @param {Function} options.onNewTab - () => void
+     */
+    constructor({ container, tabManager: tabManager2, onSelect, onClose, onNewTab }) {
+      this.container = container;
+      this.tabManager = tabManager2;
+      this.onSelect = onSelect;
+      this.onClose = onClose;
+      this.onNewTab = onNewTab;
+      this.draggedIndex = null;
+      this.tabManager.onChange(() => this.render());
+      this.render();
+    }
+    render() {
+      this.container.innerHTML = "";
+      const tabList = document.createElement("div");
+      tabList.className = "tab-strip";
+      this.tabManager.documents.forEach((doc2, index) => {
+        const tabEl = document.createElement("div");
+        tabEl.className = "tab-item" + (doc2.id === this.tabManager.activeId ? " active" : "");
+        tabEl.dataset.id = doc2.id;
+        tabEl.dataset.index = index;
+        tabEl.draggable = true;
+        tabEl.addEventListener("dragstart", (e) => {
+          this.draggedIndex = index;
+          tabEl.classList.add("dragging");
+          e.dataTransfer.effectAllowed = "move";
+        });
+        tabEl.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          tabEl.classList.add("drag-over");
+        });
+        tabEl.addEventListener("dragleave", () => {
+          tabEl.classList.remove("drag-over");
+        });
+        tabEl.addEventListener("drop", (e) => {
+          e.preventDefault();
+          tabEl.classList.remove("drag-over");
+          if (this.draggedIndex !== null && this.draggedIndex !== index) {
+            this.tabManager.reorder(this.draggedIndex, index);
+          }
+        });
+        tabEl.addEventListener("dragend", () => {
+          tabEl.classList.remove("dragging");
+          this.draggedIndex = null;
+        });
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "tab-title";
+        titleSpan.textContent = doc2.name;
+        titleSpan.title = doc2.path || doc2.name;
+        tabEl.appendChild(titleSpan);
+        if (doc2.dirty) {
+          const dirtyDot = document.createElement("span");
+          dirtyDot.className = "tab-dirty";
+          dirtyDot.textContent = "\u2022";
+          tabEl.appendChild(dirtyDot);
+        }
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "tab-close";
+        closeBtn.innerHTML = "&times;";
+        closeBtn.title = "Close Tab (Ctrl+W)";
+        closeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.onClose(doc2.id);
+        });
+        tabEl.appendChild(closeBtn);
+        tabEl.addEventListener("click", () => {
+          this.onSelect(doc2.id);
+        });
+        tabList.appendChild(tabEl);
+      });
+      const addTabBtn = document.createElement("button");
+      addTabBtn.className = "tab-new-btn";
+      addTabBtn.innerHTML = "+";
+      addTabBtn.title = "New File (Ctrl+N)";
+      addTabBtn.addEventListener("click", () => {
+        this.onNewTab();
+      });
+      tabList.appendChild(addTabBtn);
+      this.container.appendChild(tabList);
+      const activeEl = this.container.querySelector(".tab-item.active");
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+      }
+    }
+  };
+  var tabs_default = TabBarUI;
+
+  // src/session/sessionManager.js
+  var saveTimeout = null;
+  var SessionManager = class {
+    /**
+     * @param {Object} options
+     * @param {import('../model/document.js').TabManager} options.tabManager
+     * @param {Function} options.createEditorState - (initialContent) => EditorState
+     */
+    constructor({ tabManager: tabManager2, createEditorState: createEditorState2 }) {
+      this.tabManager = tabManager2;
+      this.createEditorState = createEditorState2;
+    }
+    /**
+     * Save session data (debounced).
+     */
+    scheduleSave() {
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        this.saveNow();
+      }, 1e3);
+    }
+    /**
+     * Save session data immediately.
+     */
+    async saveNow() {
+      if (!window.fileAPI || !window.fileAPI.saveSession) return;
+      const tabsData = this.tabManager.documents.map((doc2) => {
+        return {
+          path: doc2.path,
+          name: doc2.name,
+          dirty: doc2.dirty,
+          scrollPosition: doc2.scrollPosition,
+          // If untitled or dirty, preserve content
+          content: !doc2.path || doc2.dirty ? doc2.getText() : void 0
+        };
+      });
+      const activeIndex = this.tabManager.indexOf(this.tabManager.activeId);
+      const sessionData = {
+        version: 1,
+        tabs: tabsData,
+        activeIndex: activeIndex >= 0 ? activeIndex : 0,
+        timestamp: Date.now()
+      };
+      try {
+        await window.fileAPI.saveSession(sessionData);
+      } catch (err) {
+        console.warn("Failed to save session:", err);
+      }
+    }
+    /**
+     * Restore session from disk.
+     * @returns {Promise<boolean>} true if session was restored
+     */
+    async restore() {
+      if (!window.fileAPI || !window.fileAPI.loadSession) return false;
+      try {
+        const session = await window.fileAPI.loadSession();
+        if (!session || !Array.isArray(session.tabs) || session.tabs.length === 0) {
+          return false;
+        }
+        for (let i = 0; i < session.tabs.length; i++) {
+          const item = session.tabs[i];
+          let content3 = "";
+          if (item.path) {
+            const res = await window.fileAPI.openPath(item.path);
+            if (res && !res.canceled && res.content !== void 0) {
+              content3 = item.dirty && item.content !== void 0 ? item.content : res.content;
+            } else if (item.content !== void 0) {
+              content3 = item.content;
+            } else {
+              continue;
+            }
+          } else if (item.content !== void 0) {
+            content3 = item.content;
+          }
+          const state = this.createEditorState(content3);
+          const doc2 = new Document({
+            path: item.path || null,
+            name: item.name,
+            editorState: state,
+            dirty: Boolean(item.dirty),
+            scrollPosition: item.scrollPosition || 0
+          });
+          this.tabManager.add(doc2, false);
+        }
+        if (this.tabManager.count > 0) {
+          const targetIndex = Math.min(Math.max(0, session.activeIndex || 0), this.tabManager.count - 1);
+          this.tabManager.setActive(this.tabManager.documents[targetIndex].id);
+          return true;
+        }
+      } catch (err) {
+        console.error("Failed to restore session:", err);
+      }
+      return false;
+    }
+  };
+  var sessionManager_default = SessionManager;
+
   // src/editor.js
   var HIDE = Decoration.replace({});
   var refreshEffect = StateEffect.define();
@@ -77423,31 +77838,15 @@ $$
     const target = name2.endsWith(".md") ? name2 : name2 + ".md";
     const result = await window.fileAPI.openPath(target);
     if (!result.canceled) {
-      if (!await confirmDiscard()) {
-        view2.focus();
-        return;
-      }
-      setContent(result.content);
-      isDirty = false;
-      markClean(result.filePath);
-      updatePlaceholder();
-      updateWordCount();
+      openFilePath(result.filePath, result.content);
       view2.focus();
       return;
     }
     const shouldCreate = await showConfirm(`"${target}" doesn't exist. Create it?`, "Create");
     if (!shouldCreate) return;
-    if (!await confirmDiscard()) {
-      view2.focus();
-      return;
-    }
     const created = await window.fileAPI.createAndOpen(target);
     if (!created.canceled) {
-      setContent("");
-      isDirty = false;
-      markClean(created.filePath);
-      updatePlaceholder();
-      updateWordCount();
+      openFilePath(created.filePath, "");
       view2.focus();
     }
   }
@@ -77714,28 +78113,16 @@ $$
       ".cm-syntax-show": { color: accentColor, opacity: "0.6" }
     }, { dark: true });
   }
-  var isDirty = false;
-  var currentFileName = null;
-  var currentDocPath = null;
-  function setFileName(filePath) {
-    currentFileName = filePath ? filePath.split(/[\\/]/).pop() : null;
-    const label = currentFileName || "untitled";
-    const dot4 = isDirty ? " \u2022" : "";
+  var tabManager = new TabManager();
+  function updateAppName() {
+    const doc2 = tabManager.activeDocument;
+    if (!doc2) {
+      document.getElementById("app-name").textContent = "FlowMark";
+      return;
+    }
+    const label = doc2.name || "untitled";
+    const dot4 = doc2.dirty ? " \u2022" : "";
     document.getElementById("app-name").textContent = `FlowMark \u2014 ${label}${dot4}`;
-  }
-  function markDirty() {
-    if (!isDirty) {
-      isDirty = true;
-      setFileName(currentFileName);
-    }
-  }
-  function markClean(filePath) {
-    isDirty = false;
-    if (filePath) {
-      currentDocPath = filePath;
-      currentFileName = filePath.split(/[\\/]/).pop();
-    }
-    setFileName(filePath ? filePath.split(/[\\/]/).pop() : null);
   }
   function showConfirm(message, okLabel = "OK") {
     return new Promise((resolve) => {
@@ -77763,51 +78150,222 @@ $$
       ok.focus();
     });
   }
-  function getContent() {
-    return view.state.doc.toString();
+  function switchDocument(fromDoc, toDoc) {
+    if (fromDoc && typeof view !== "undefined" && view) {
+      fromDoc.editorState = view.state;
+      fromDoc.scrollPosition = view.scrollDOM.scrollTop;
+    }
+    if (toDoc) {
+      hideWelcome();
+      document.getElementById("editor").classList.remove("hidden");
+      view.setState(toDoc.editorState);
+      view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
+      const isLight = currentTheme !== "theme-dark";
+      const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+      view.dispatch({ effects: [
+        themeCompartment.reconfigure(makeTheme(color)),
+        highlightCompartment.reconfigure(makeHighlight(!isLight, color))
+      ] });
+      view.focus();
+      updateAppName();
+      updatePlaceholder();
+      updateWordCount();
+    } else {
+      document.getElementById("editor").classList.add("hidden");
+      updateAppName();
+      showWelcome();
+    }
   }
-  function setContent(text6) {
-    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text6 } });
+  async function closeTab(docId) {
+    const doc2 = tabManager.get(docId);
+    if (!doc2) return;
+    if (doc2.dirty) {
+      const discard = await showConfirm(`"${doc2.name}" has unsaved changes. Discard them?`, "Discard");
+      if (!discard) return;
+    }
+    tabManager.remove(docId);
+    sessionManager.scheduleSave();
   }
-  async function confirmDiscard() {
-    if (!isDirty) return true;
-    return await showConfirm("You have unsaved changes. Discard them?", "Discard");
-  }
-  async function newFile() {
-    if (!await confirmDiscard()) return;
+  function newFile(initialContent = "") {
     hideWelcome();
-    await window.fileAPI.clearPath();
-    setContent("");
-    isDirty = false;
-    currentFileName = null;
-    setFileName(null);
-    view.focus();
-    updatePlaceholder();
+    const state = createEditorState(initialContent);
+    const doc2 = new Document({
+      editorState: state,
+      dirty: false
+    });
+    tabManager.add(doc2, true);
+    sessionManager.scheduleSave();
   }
   async function openFile() {
-    if (!await confirmDiscard()) return;
-    hideWelcome();
     const result = await window.fileAPI.open();
-    if (result.canceled) return;
-    setContent(result.content);
-    isDirty = false;
-    currentFileName = result.filePath.split(/[\\/]/).pop();
-    markClean(result.filePath);
-    updatePlaceholder();
+    if (result.canceled || !result.filePath) return;
+    openFilePath(result.filePath, result.content);
+  }
+  function openFilePath(filePath, content3 = "") {
+    hideWelcome();
+    const existing = tabManager.getByPath(filePath);
+    if (existing) {
+      tabManager.setActive(existing.id);
+      return;
+    }
+    const active = tabManager.activeDocument;
+    if (active && !active.path && !active.dirty && active.getText().trim() === "") {
+      active.setPath(filePath);
+      active.editorState = createEditorState(content3);
+      active.markDirty(false);
+      view.setState(active.editorState);
+      updateAppName();
+      updatePlaceholder();
+      updateWordCount();
+      tabBarUI.render();
+      sessionManager.scheduleSave();
+      return;
+    }
+    const state = createEditorState(content3);
+    const doc2 = new Document({
+      path: filePath,
+      editorState: state,
+      dirty: false
+    });
+    tabManager.add(doc2, true);
+    sessionManager.scheduleSave();
   }
   async function saveFile() {
-    const result = await window.fileAPI.save(getContent());
-    if (result.noPath) return saveAsFile();
-    markClean(result.filePath);
+    const doc2 = tabManager.activeDocument;
+    if (!doc2) return;
+    const res = await doc2.save(window.fileAPI);
+    if (res.noPath) return saveAsFile();
+    updateAppName();
+    tabBarUI.render();
+    sessionManager.scheduleSave();
   }
   async function saveAsFile() {
-    const result = await window.fileAPI.saveAs(getContent());
-    if (result.canceled) return;
-    markClean(result.filePath);
+    const doc2 = tabManager.activeDocument;
+    if (!doc2) return;
+    const content3 = doc2.getText();
+    const res = await window.fileAPI.saveAs({ defaultPath: doc2.path || doc2.name, content: content3 });
+    if (res.canceled || !res.filePath) return;
+    doc2.setPath(res.filePath);
+    doc2.markDirty(false);
+    updateAppName();
+    tabBarUI.render();
+    sessionManager.scheduleSave();
   }
   function toggleSearchPanel() {
     if (searchPanelOpen(view.state)) closeSearchPanel(view);
     else openSearchPanel(view);
+  }
+  function getEditorExtensions() {
+    const isLight = currentTheme !== "theme-dark";
+    const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+    return [
+      history(),
+      drawSelection(),
+      dropCursor(),
+      closeBrackets(),
+      autocompletion({
+        activateOnTyping: true,
+        override: [calloutCompletion, fenceLanguageCompletion, emojiCompletion],
+        icons: true,
+        maxRenderedOptions: 20
+      }),
+      markdownLanguage.data.of({
+        closeBrackets: {
+          brackets: ["(", "[", "{", '"', "'", "`", "$"],
+          before: ")]}:;>\n\r "
+        }
+      }),
+      keymap.of([
+        ...closeBracketsKeymap,
+        ...completionKeymap,
+        ...defaultKeymap,
+        ...historyKeymap,
+        { key: "Ctrl-n", run: () => {
+          registry_default.execute("file:new", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-o", run: () => {
+          registry_default.execute("file:open", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-s", run: () => {
+          registry_default.execute("file:save", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-Shift-s", run: () => {
+          registry_default.execute("file:saveAs", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-w", run: () => {
+          registry_default.execute("file:closeTab", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-Tab", run: () => {
+          registry_default.execute("view:nextTab", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-Shift-Tab", run: () => {
+          registry_default.execute("view:prevTab", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-p", run: () => {
+          registry_default.execute("file:quickOpen", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-f", run: () => {
+          registry_default.execute("edit:find", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-h", run: () => {
+          registry_default.execute("edit:find", view, view.state);
+          return true;
+        } },
+        { key: "F11", run: () => {
+          registry_default.execute("view:zen", view, view.state);
+          return true;
+        } },
+        { key: "Ctrl-b", run: () => registry_default.execute("insert:bold", view, view.state), preventDefault: true },
+        { key: "Ctrl-i", run: () => registry_default.execute("insert:italic", view, view.state), preventDefault: true },
+        { key: "Ctrl-Shift-x", run: () => registry_default.execute("insert:strikethrough", view, view.state), preventDefault: true },
+        { key: "Ctrl-`", run: () => registry_default.execute("insert:inlineCode", view, view.state), preventDefault: true },
+        { key: "Ctrl-Shift-c", run: () => registry_default.execute("insert:codeBlock", view, view.state), preventDefault: true },
+        { key: "Ctrl-k", run: () => registry_default.execute("insert:link", view, view.state), preventDefault: true },
+        { key: "Ctrl-Shift-i", run: () => registry_default.execute("insert:image", view, view.state), preventDefault: true },
+        { key: "Ctrl-Shift-m", run: () => registry_default.execute("insert:mathInline", view, view.state), preventDefault: true },
+        ...searchKeymap
+      ]),
+      markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
+      search({ top: true }),
+      highlightCompartment.of(makeHighlight(!isLight, color)),
+      lineHeightProbe,
+      tableMenuDismiss,
+      embedField,
+      checkboxPlugin,
+      bulletPlugin,
+      noteLinkPlugin,
+      activeSyntaxPlugin,
+      themeCompartment.of(makeTheme(color)),
+      EditorView.lineWrapping,
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          const activeDoc = tabManager.activeDocument;
+          if (activeDoc) {
+            activeDoc.markDirty(true);
+            updateAppName();
+            updatePlaceholder();
+            updateWordCount();
+            tabBarUI.render();
+            sessionManager.scheduleSave();
+          }
+        }
+      })
+    ];
+  }
+  function createEditorState(initialContent = "") {
+    return EditorState.create({
+      doc: initialContent,
+      extensions: getEditorExtensions()
+    });
   }
   var startDoc = `# Welcome to FlowMark
 
@@ -77830,95 +78388,30 @@ Links work too: [FlowMark](https://github.com)
 Just start writing.
 `;
   var view = new EditorView({
-    state: EditorState.create({
-      doc: startDoc,
-      extensions: [
-        history(),
-        drawSelection(),
-        dropCursor(),
-        closeBrackets(),
-        autocompletion({
-          activateOnTyping: true,
-          override: [calloutCompletion, fenceLanguageCompletion, emojiCompletion],
-          icons: true,
-          maxRenderedOptions: 20
-        }),
-        // Markdown-specific bracket pairs for closeBrackets
-        markdownLanguage.data.of({
-          closeBrackets: {
-            brackets: ["(", "[", "{", '"', "'", "`", "$"],
-            before: ")]}:;>\n\r "
-          }
-        }),
-        keymap.of([
-          ...closeBracketsKeymap,
-          ...completionKeymap,
-          ...defaultKeymap,
-          ...historyKeymap,
-          { key: "Ctrl-n", run: () => {
-            registry_default.execute("file:new", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-o", run: () => {
-            registry_default.execute("file:open", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-s", run: () => {
-            registry_default.execute("file:save", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-Shift-s", run: () => {
-            registry_default.execute("file:saveAs", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-p", run: () => {
-            registry_default.execute("file:quickOpen", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-f", run: () => {
-            registry_default.execute("edit:find", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-h", run: () => {
-            registry_default.execute("edit:find", view, view.state);
-            return true;
-          } },
-          { key: "F11", run: () => {
-            registry_default.execute("view:zen", view, view.state);
-            return true;
-          } },
-          { key: "Ctrl-b", run: () => registry_default.execute("insert:bold", view, view.state), preventDefault: true },
-          { key: "Ctrl-i", run: () => registry_default.execute("insert:italic", view, view.state), preventDefault: true },
-          { key: "Ctrl-Shift-x", run: () => registry_default.execute("insert:strikethrough", view, view.state), preventDefault: true },
-          { key: "Ctrl-`", run: () => registry_default.execute("insert:inlineCode", view, view.state), preventDefault: true },
-          { key: "Ctrl-Shift-c", run: () => registry_default.execute("insert:codeBlock", view, view.state), preventDefault: true },
-          { key: "Ctrl-k", run: () => registry_default.execute("insert:link", view, view.state), preventDefault: true },
-          { key: "Ctrl-Shift-i", run: () => registry_default.execute("insert:image", view, view.state), preventDefault: true },
-          { key: "Ctrl-Shift-m", run: () => registry_default.execute("insert:mathInline", view, view.state), preventDefault: true },
-          ...searchKeymap
-        ]),
-        markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
-        search({ top: true }),
-        highlightCompartment.of(makeHighlight(true)),
-        lineHeightProbe,
-        tableMenuDismiss,
-        embedField,
-        checkboxPlugin,
-        bulletPlugin,
-        noteLinkPlugin,
-        activeSyntaxPlugin,
-        themeCompartment.of(makeTheme("#7cb8f0")),
-        EditorView.lineWrapping,
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            markDirty();
-            updatePlaceholder();
-            updateWordCount();
-          }
-        })
-      ]
-    }),
+    state: createEditorState(""),
     parent: document.getElementById("editor")
+  });
+  var tabBarUI = new tabs_default({
+    container: document.getElementById("tabbar"),
+    tabManager,
+    onSelect: (id3) => tabManager.setActive(id3),
+    onClose: (id3) => closeTab(id3),
+    onNewTab: () => newFile()
+  });
+  var sessionManager = new sessionManager_default({
+    tabManager,
+    createEditorState
+  });
+  var currentActiveId = null;
+  tabManager.onChange(() => {
+    const active = tabManager.activeDocument;
+    const newId = active ? active.id : null;
+    if (newId !== currentActiveId) {
+      const prevDoc = tabManager.get(currentActiveId);
+      currentActiveId = newId;
+      switchDocument(prevDoc, active);
+    }
+    tabBarUI.render();
   });
   view.scrollDOM.addEventListener("mousedown", (e) => {
     if (e.button === 0) interaction.dragging = true;
@@ -77932,7 +78425,11 @@ Just start writing.
     });
   }, true);
   function updatePlaceholder() {
-    document.getElementById("editor").classList.toggle("empty", view.state.doc.length === 0);
+    const doc2 = tabManager.activeDocument;
+    const editorEl = document.getElementById("editor");
+    if (!editorEl) return;
+    const isEmpty = !doc2 || doc2.getText().length === 0;
+    editorEl.classList.toggle("empty", isEmpty);
   }
   document.getElementById("btn-min").addEventListener("click", () => window.windowAPI.minimize());
   document.getElementById("btn-max").addEventListener("click", () => window.windowAPI.maximize());
@@ -77960,6 +78457,27 @@ Just start writing.
     shortcut: "Ctrl+Shift+S",
     run: () => saveAsFile(),
     enabled: () => true
+  });
+  registry_default.registerCommand("file:closeTab", {
+    label: "Close Tab",
+    shortcut: "Ctrl+W",
+    run: () => {
+      const active = tabManager.activeDocument;
+      if (active) closeTab(active.id);
+    },
+    enabled: () => tabManager.count > 0
+  });
+  registry_default.registerCommand("view:nextTab", {
+    label: "Next Tab",
+    shortcut: "Ctrl+Tab",
+    run: () => tabManager.next(),
+    enabled: () => tabManager.count > 1
+  });
+  registry_default.registerCommand("view:prevTab", {
+    label: "Previous Tab",
+    shortcut: "Ctrl+Shift+Tab",
+    run: () => tabManager.prev(),
+    enabled: () => tabManager.count > 1
   });
   registry_default.registerCommand("file:quickOpen", {
     label: "Quick Open",
@@ -78166,8 +78684,10 @@ Just start writing.
   registry_default.registerCommand("export:pdf", {
     label: "Export PDF",
     run: async () => {
+      const doc2 = tabManager.activeDocument;
+      if (!doc2) return;
       const result = await window.fileAPI.exportPDF(
-        view.state.doc.toString(),
+        doc2.getText(),
         document.body.className
       );
       if (result && result.error) alert("Export failed: " + result.error);
@@ -78177,8 +78697,10 @@ Just start writing.
   registry_default.registerCommand("export:html", {
     label: "Export HTML",
     run: async () => {
+      const doc2 = tabManager.activeDocument;
+      if (!doc2) return;
       const result = await window.fileAPI.exportHTML(
-        view.state.doc.toString(),
+        doc2.getText(),
         document.body.className
       );
       if (result && result.error) alert("Export failed: " + result.error);
@@ -78210,6 +78732,8 @@ Just start writing.
     open: "file:open",
     save: "file:save",
     saveAs: "file:saveAs",
+    closeTab: "file:closeTab",
+    "file:closeTab": "file:closeTab",
     quickOpen: "file:quickOpen",
     find: "edit:find",
     exportPDF: "export:pdf",
@@ -78319,14 +78843,14 @@ Just start writing.
   async function openRecentFile(filePath) {
     hideWelcome();
     hideQuickOpen();
-    if (!await confirmDiscard()) return;
+    const existing = tabManager.getByPath(filePath);
+    if (existing) {
+      tabManager.setActive(existing.id);
+      return;
+    }
     const result = await window.fileAPI.openPath(filePath);
-    if (result.canceled) return;
-    setContent(result.content);
-    isDirty = false;
-    markClean(result.filePath);
-    updatePlaceholder();
-    updateWordCount();
+    if (result.canceled || !result.filePath) return;
+    openFilePath(result.filePath, result.content);
   }
   document.getElementById("quick-open-actions").addEventListener("click", (e) => {
     const action = e.target.closest("[data-action]")?.dataset.action;
@@ -78421,10 +78945,23 @@ Just start writing.
   window.addEventListener("keydown", (e) => {
     if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
     const key = e.key.toLowerCase();
-    if (key !== "f" && key !== "h") return;
-    e.preventDefault();
-    e.stopPropagation();
-    registry_default.execute("edit:find", view, view.state);
+    if (key === "f" || key === "h") {
+      e.preventDefault();
+      e.stopPropagation();
+      registry_default.execute("edit:find", view, view.state);
+    } else if (key === "w") {
+      e.preventDefault();
+      e.stopPropagation();
+      registry_default.execute("file:closeTab", view, view.state);
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.shiftKey) {
+        registry_default.execute("view:prevTab", view, view.state);
+      } else {
+        registry_default.execute("view:nextTab", view, view.state);
+      }
+    }
   }, true);
   document.getElementById("editor-wrap").addEventListener("click", (e) => {
     if (e.ctrlKey) {
@@ -78438,16 +78975,34 @@ Just start writing.
     }
   });
   function updateWordCount() {
-    const text6 = view.state.doc.toString();
+    const doc2 = tabManager.activeDocument;
+    const el = document.getElementById("word-count");
+    if (!el) return;
+    if (!doc2) {
+      el.textContent = "";
+      return;
+    }
+    const text6 = doc2.getText();
     const words22 = text6.trim() === "" ? 0 : text6.trim().split(/\s+/).length;
     const mins = Math.ceil(words22 / 200);
     const label = words22 === 0 ? "" : `${words22.toLocaleString()} words \xB7 ${mins} min read`;
-    document.getElementById("word-count").textContent = label;
+    el.textContent = label;
   }
-  setFileName(null);
+  updateAppName();
   updatePlaceholder();
   updateWordCount();
   applyTheme(currentTheme);
-  showWelcome();
-  view.focus();
+  async function initSession() {
+    const restored = await sessionManager.restore();
+    if (!restored) {
+      const initialDoc = new Document({
+        name: "Welcome.md",
+        editorState: createEditorState(startDoc),
+        dirty: false
+      });
+      tabManager.add(initialDoc, true);
+    }
+    view.focus();
+  }
+  initSession();
 })();

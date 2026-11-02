@@ -24,6 +24,9 @@ import {
 import { appendInlineMarkdown } from './commands/inlineRenderer.js';
 import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './commands/completion.js';
+import { Document, TabManager } from './model/document.js';
+import TabBarUI from './ui/tabs.js';
+import SessionManager from './session/sessionManager.js';
 
 // ── Live-preview stability primitives ────────────────────────────────────────
 //
@@ -2167,26 +2170,16 @@ async function handleNoteLinkClick(e, view) {
   const target = name.endsWith('.md') ? name : name + '.md';
   const result = await window.fileAPI.openPath(target);
   if (!result.canceled) {
-    if (!await confirmDiscard()) { view.focus(); return; }
-    setContent(result.content);
-    isDirty = false;
-    markClean(result.filePath);
-    updatePlaceholder();
-    updateWordCount();
+    openFilePath(result.filePath, result.content);
     view.focus();
     return;
   }
   // File not found — offer to create
   const shouldCreate = await showConfirm(`"${target}" doesn't exist. Create it?`, 'Create');
   if (!shouldCreate) return;
-  if (!await confirmDiscard()) { view.focus(); return; }
   const created = await window.fileAPI.createAndOpen(target);
   if (!created.canceled) {
-    setContent('');
-    isDirty = false;
-    markClean(created.filePath);
-    updatePlaceholder();
-    updateWordCount();
+    openFilePath(created.filePath, '');
     view.focus();
   }
 }
@@ -2541,29 +2534,18 @@ function makeTheme(accentColor) {
   }, { dark: true });
 }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let isDirty = false;
-let currentFileName = null;
-let currentDocPath = null;
+// ── State & Tab Management ───────────────────────────────────────────────────
+const tabManager = new TabManager();
 
-function setFileName(filePath) {
-  currentFileName = filePath ? filePath.split(/[\\/]/).pop() : null;
-  const label = currentFileName || 'untitled';
-  const dot = isDirty ? ' •' : '';
-  document.getElementById('app-name').textContent = `FlowMark — ${label}${dot}`;
-}
-
-function markDirty() {
-  if (!isDirty) { isDirty = true; setFileName(currentFileName); }
-}
-
-function markClean(filePath) {
-  isDirty = false;
-  if (filePath) {
-    currentDocPath = filePath;
-    currentFileName = filePath.split(/[\\/]/).pop();
+function updateAppName() {
+  const doc = tabManager.activeDocument;
+  if (!doc) {
+    document.getElementById('app-name').textContent = 'FlowMark';
+    return;
   }
-  setFileName(filePath ? filePath.split(/[\\/]/).pop() : null);
+  const label = doc.name || 'untitled';
+  const dot = doc.dirty ? ' •' : '';
+  document.getElementById('app-name').textContent = `FlowMark — ${label}${dot}`;
 }
 
 // ── Custom confirm dialog ─────────────────────────────────────────────────────
@@ -2593,52 +2575,116 @@ function showConfirm(message, okLabel = 'OK') {
   });
 }
 
-// ── File ops ──────────────────────────────────────────────────────────────────
-function getContent() { return view.state.doc.toString(); }
-
-function setContent(text) {
-  view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: text } });
+// ── Document switching & tab actions ─────────────────────────────────────────
+function switchDocument(fromDoc, toDoc) {
+  if (fromDoc && typeof view !== 'undefined' && view) {
+    fromDoc.editorState = view.state;
+    fromDoc.scrollPosition = view.scrollDOM.scrollTop;
+  }
+  if (toDoc) {
+    hideWelcome();
+    document.getElementById('editor').classList.remove('hidden');
+    view.setState(toDoc.editorState);
+    view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
+    const isLight = currentTheme !== 'theme-dark';
+    const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
+    view.dispatch({ effects: [
+      themeCompartment.reconfigure(makeTheme(color)),
+      highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
+    ]});
+    view.focus();
+    updateAppName();
+    updatePlaceholder();
+    updateWordCount();
+  } else {
+    document.getElementById('editor').classList.add('hidden');
+    updateAppName();
+    showWelcome();
+  }
 }
 
-async function confirmDiscard() {
-  if (!isDirty) return true;
-  return await showConfirm('You have unsaved changes. Discard them?', 'Discard');
+async function closeTab(docId) {
+  const doc = tabManager.get(docId);
+  if (!doc) return;
+  if (doc.dirty) {
+    const discard = await showConfirm(`"${doc.name}" has unsaved changes. Discard them?`, 'Discard');
+    if (!discard) return;
+  }
+  tabManager.remove(docId);
+  sessionManager.scheduleSave();
 }
 
-async function newFile() {
-  if (!await confirmDiscard()) return;
+function newFile(initialContent = '') {
   hideWelcome();
-  await window.fileAPI.clearPath();
-  setContent('');
-  isDirty = false;
-  currentFileName = null;
-  setFileName(null);
-  view.focus();
-  updatePlaceholder();
+  const state = createEditorState(initialContent);
+  const doc = new Document({
+    editorState: state,
+    dirty: false,
+  });
+  tabManager.add(doc, true);
+  sessionManager.scheduleSave();
 }
 
 async function openFile() {
-  if (!await confirmDiscard()) return;
-  hideWelcome();
   const result = await window.fileAPI.open();
-  if (result.canceled) return;
-  setContent(result.content);
-  isDirty = false;
-  currentFileName = result.filePath.split(/[\\/]/).pop();
-  markClean(result.filePath);
-  updatePlaceholder();
+  if (result.canceled || !result.filePath) return;
+  openFilePath(result.filePath, result.content);
+}
+
+function openFilePath(filePath, content = '') {
+  hideWelcome();
+  const existing = tabManager.getByPath(filePath);
+  if (existing) {
+    tabManager.setActive(existing.id);
+    return;
+  }
+
+  // If current active tab is an untouched, clean, empty Untitled document, replace it
+  const active = tabManager.activeDocument;
+  if (active && !active.path && !active.dirty && active.getText().trim() === '') {
+    active.setPath(filePath);
+    active.editorState = createEditorState(content);
+    active.markDirty(false);
+    view.setState(active.editorState);
+    updateAppName();
+    updatePlaceholder();
+    updateWordCount();
+    tabBarUI.render();
+    sessionManager.scheduleSave();
+    return;
+  }
+
+  const state = createEditorState(content);
+  const doc = new Document({
+    path: filePath,
+    editorState: state,
+    dirty: false,
+  });
+  tabManager.add(doc, true);
+  sessionManager.scheduleSave();
 }
 
 async function saveFile() {
-  const result = await window.fileAPI.save(getContent());
-  if (result.noPath) return saveAsFile();
-  markClean(result.filePath);
+  const doc = tabManager.activeDocument;
+  if (!doc) return;
+  const res = await doc.save(window.fileAPI);
+  if (res.noPath) return saveAsFile();
+  updateAppName();
+  tabBarUI.render();
+  sessionManager.scheduleSave();
 }
 
 async function saveAsFile() {
-  const result = await window.fileAPI.saveAs(getContent());
-  if (result.canceled) return;
-  markClean(result.filePath);
+  const doc = tabManager.activeDocument;
+  if (!doc) return;
+  const content = doc.getText();
+  const res = await window.fileAPI.saveAs({ defaultPath: doc.path || doc.name, content });
+  if (res.canceled || !res.filePath) return;
+  doc.setPath(res.filePath);
+  doc.markDirty(false);
+  updateAppName();
+  tabBarUI.render();
+  sessionManager.scheduleSave();
 }
 
 // ── Find & Replace ────────────────────────────────────────────────────────────
@@ -2647,7 +2693,88 @@ function toggleSearchPanel() {
   else openSearchPanel(view);
 }
 
-// ── Editor ────────────────────────────────────────────────────────────────────
+// ── Editor Factory & Extensions ───────────────────────────────────────────────
+function getEditorExtensions() {
+  const isLight = currentTheme !== 'theme-dark';
+  const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
+  return [
+    history(),
+    drawSelection(),
+    dropCursor(),
+    closeBrackets(),
+    autocompletion({
+      activateOnTyping: true,
+      override: [calloutCompletion, fenceLanguageCompletion, emojiCompletion],
+      icons: true,
+      maxRenderedOptions: 20,
+    }),
+    markdownLanguage.data.of({
+      closeBrackets: {
+        brackets: ['(', '[', '{', '"', "'", '`', '$'],
+        before: ')]}:;>\n\r ',
+      },
+    }),
+    keymap.of([
+      ...closeBracketsKeymap,
+      ...completionKeymap,
+      ...defaultKeymap,
+      ...historyKeymap,
+      { key: 'Ctrl-n', run: () => { CommandRegistry.execute('file:new', view, view.state); return true; } },
+      { key: 'Ctrl-o', run: () => { CommandRegistry.execute('file:open', view, view.state); return true; } },
+      { key: 'Ctrl-s', run: () => { CommandRegistry.execute('file:save', view, view.state); return true; } },
+      { key: 'Ctrl-Shift-s', run: () => { CommandRegistry.execute('file:saveAs', view, view.state); return true; } },
+      { key: 'Ctrl-w', run: () => { CommandRegistry.execute('file:closeTab', view, view.state); return true; } },
+      { key: 'Ctrl-Tab', run: () => { CommandRegistry.execute('view:nextTab', view, view.state); return true; } },
+      { key: 'Ctrl-Shift-Tab', run: () => { CommandRegistry.execute('view:prevTab', view, view.state); return true; } },
+      { key: 'Ctrl-p', run: () => { CommandRegistry.execute('file:quickOpen', view, view.state); return true; } },
+      { key: 'Ctrl-f', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
+      { key: 'Ctrl-h', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
+      { key: 'F11', run: () => { CommandRegistry.execute('view:zen', view, view.state); return true; } },
+      { key: 'Ctrl-b', run: () => CommandRegistry.execute('insert:bold', view, view.state), preventDefault: true },
+      { key: 'Ctrl-i', run: () => CommandRegistry.execute('insert:italic', view, view.state), preventDefault: true },
+      { key: 'Ctrl-Shift-x', run: () => CommandRegistry.execute('insert:strikethrough', view, view.state), preventDefault: true },
+      { key: 'Ctrl-`', run: () => CommandRegistry.execute('insert:inlineCode', view, view.state), preventDefault: true },
+      { key: 'Ctrl-Shift-c', run: () => CommandRegistry.execute('insert:codeBlock', view, view.state), preventDefault: true },
+      { key: 'Ctrl-k', run: () => CommandRegistry.execute('insert:link', view, view.state), preventDefault: true },
+      { key: 'Ctrl-Shift-i', run: () => CommandRegistry.execute('insert:image', view, view.state), preventDefault: true },
+      { key: 'Ctrl-Shift-m', run: () => CommandRegistry.execute('insert:mathInline', view, view.state), preventDefault: true },
+      ...searchKeymap,
+    ]),
+    markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
+    search({ top: true }),
+    highlightCompartment.of(makeHighlight(!isLight, color)),
+    lineHeightProbe,
+    tableMenuDismiss,
+    embedField,
+    checkboxPlugin,
+    bulletPlugin,
+    noteLinkPlugin,
+    activeSyntaxPlugin,
+    themeCompartment.of(makeTheme(color)),
+    EditorView.lineWrapping,
+    EditorView.updateListener.of(update => {
+      if (update.docChanged) {
+        const activeDoc = tabManager.activeDocument;
+        if (activeDoc) {
+          activeDoc.markDirty(true);
+          updateAppName();
+          updatePlaceholder();
+          updateWordCount();
+          tabBarUI.render();
+          sessionManager.scheduleSave();
+        }
+      }
+    }),
+  ];
+}
+
+function createEditorState(initialContent = '') {
+  return EditorState.create({
+    doc: initialContent,
+    extensions: getEditorExtensions(),
+  });
+}
+
 const startDoc = `# Welcome to FlowMark
 
 Start typing — **bold**, *italic*, \`code\`, and more render as you write.
@@ -2670,67 +2797,33 @@ Just start writing.
 `;
 
 const view = new EditorView({
-  state: EditorState.create({
-    doc: startDoc,
-    extensions: [
-      history(),
-      drawSelection(),
-      dropCursor(),
-      closeBrackets(),
-      autocompletion({
-        activateOnTyping: true,
-        override: [calloutCompletion, fenceLanguageCompletion, emojiCompletion],
-        icons: true,
-        maxRenderedOptions: 20,
-      }),
-      // Markdown-specific bracket pairs for closeBrackets
-      markdownLanguage.data.of({
-        closeBrackets: {
-          brackets: ['(', '[', '{', '"', "'", '`', '$'],
-          before: ')]}:;>\n\r ',
-        },
-      }),
-      keymap.of([
-        ...closeBracketsKeymap,
-        ...completionKeymap,
-        ...defaultKeymap,
-        ...historyKeymap,
-        { key: 'Ctrl-n', run: () => { CommandRegistry.execute('file:new', view, view.state); return true; } },
-        { key: 'Ctrl-o', run: () => { CommandRegistry.execute('file:open', view, view.state); return true; } },
-        { key: 'Ctrl-s', run: () => { CommandRegistry.execute('file:save', view, view.state); return true; } },
-        { key: 'Ctrl-Shift-s', run: () => { CommandRegistry.execute('file:saveAs', view, view.state); return true; } },
-        { key: 'Ctrl-p', run: () => { CommandRegistry.execute('file:quickOpen', view, view.state); return true; } },
-        { key: 'Ctrl-f', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
-        { key: 'Ctrl-h', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
-        { key: 'F11', run: () => { CommandRegistry.execute('view:zen', view, view.state); return true; } },
-        { key: 'Ctrl-b', run: () => CommandRegistry.execute('insert:bold', view, view.state), preventDefault: true },
-        { key: 'Ctrl-i', run: () => CommandRegistry.execute('insert:italic', view, view.state), preventDefault: true },
-        { key: 'Ctrl-Shift-x', run: () => CommandRegistry.execute('insert:strikethrough', view, view.state), preventDefault: true },
-        { key: 'Ctrl-`', run: () => CommandRegistry.execute('insert:inlineCode', view, view.state), preventDefault: true },
-        { key: 'Ctrl-Shift-c', run: () => CommandRegistry.execute('insert:codeBlock', view, view.state), preventDefault: true },
-        { key: 'Ctrl-k', run: () => CommandRegistry.execute('insert:link', view, view.state), preventDefault: true },
-        { key: 'Ctrl-Shift-i', run: () => CommandRegistry.execute('insert:image', view, view.state), preventDefault: true },
-        { key: 'Ctrl-Shift-m', run: () => CommandRegistry.execute('insert:mathInline', view, view.state), preventDefault: true },
-        ...searchKeymap,
-      ]),
-      markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
-      search({ top: true }),
-      highlightCompartment.of(makeHighlight(true)),
-      lineHeightProbe,
-      tableMenuDismiss,
-      embedField,
-      checkboxPlugin,
-      bulletPlugin,
-      noteLinkPlugin,
-      activeSyntaxPlugin,
-      themeCompartment.of(makeTheme('#7cb8f0')),
-      EditorView.lineWrapping,
-      EditorView.updateListener.of(update => {
-        if (update.docChanged) { markDirty(); updatePlaceholder(); updateWordCount(); }
-      }),
-    ],
-  }),
+  state: createEditorState(''),
   parent: document.getElementById('editor'),
+});
+
+const tabBarUI = new TabBarUI({
+  container: document.getElementById('tabbar'),
+  tabManager,
+  onSelect: (id) => tabManager.setActive(id),
+  onClose: (id) => closeTab(id),
+  onNewTab: () => newFile(),
+});
+
+const sessionManager = new SessionManager({
+  tabManager,
+  createEditorState,
+});
+
+let currentActiveId = null;
+tabManager.onChange(() => {
+  const active = tabManager.activeDocument;
+  const newId = active ? active.id : null;
+  if (newId !== currentActiveId) {
+    const prevDoc = tabManager.get(currentActiveId);
+    currentActiveId = newId;
+    switchDocument(prevDoc, active);
+  }
+  tabBarUI.render();
 });
 
 // Freeze decoration rebuilds while the pointer is down (drag-select), then
@@ -2751,7 +2844,11 @@ window.addEventListener('mouseup', () => {
 
 // ── Placeholder ───────────────────────────────────────────────────────────────
 function updatePlaceholder() {
-  document.getElementById('editor').classList.toggle('empty', view.state.doc.length === 0);
+  const doc = tabManager.activeDocument;
+  const editorEl = document.getElementById('editor');
+  if (!editorEl) return;
+  const isEmpty = !doc || doc.getText().length === 0;
+  editorEl.classList.toggle('empty', isEmpty);
 }
 
 // ── Window controls ───────────────────────────────────────────────────────────
@@ -2787,6 +2884,30 @@ CommandRegistry.registerCommand('file:saveAs', {
   shortcut: 'Ctrl+Shift+S',
   run: () => saveAsFile(),
   enabled: () => true,
+});
+
+CommandRegistry.registerCommand('file:closeTab', {
+  label: 'Close Tab',
+  shortcut: 'Ctrl+W',
+  run: () => {
+    const active = tabManager.activeDocument;
+    if (active) closeTab(active.id);
+  },
+  enabled: () => tabManager.count > 0,
+});
+
+CommandRegistry.registerCommand('view:nextTab', {
+  label: 'Next Tab',
+  shortcut: 'Ctrl+Tab',
+  run: () => tabManager.next(),
+  enabled: () => tabManager.count > 1,
+});
+
+CommandRegistry.registerCommand('view:prevTab', {
+  label: 'Previous Tab',
+  shortcut: 'Ctrl+Shift+Tab',
+  run: () => tabManager.prev(),
+  enabled: () => tabManager.count > 1,
 });
 
 CommandRegistry.registerCommand('file:quickOpen', {
@@ -3023,8 +3144,10 @@ CommandRegistry.registerCommand('insert:heading3', {
 CommandRegistry.registerCommand('export:pdf', {
   label: 'Export PDF',
   run: async () => {
+    const doc = tabManager.activeDocument;
+    if (!doc) return;
     const result = await window.fileAPI.exportPDF(
-      view.state.doc.toString(), document.body.className);
+      doc.getText(), document.body.className);
     if (result && result.error) alert('Export failed: ' + result.error);
   },
   enabled: () => true,
@@ -3033,8 +3156,10 @@ CommandRegistry.registerCommand('export:pdf', {
 CommandRegistry.registerCommand('export:html', {
   label: 'Export HTML',
   run: async () => {
+    const doc = tabManager.activeDocument;
+    if (!doc) return;
     const result = await window.fileAPI.exportHTML(
-      view.state.doc.toString(), document.body.className);
+      doc.getText(), document.body.className);
     if (result && result.error) alert('Export failed: ' + result.error);
   },
   enabled: () => true,
@@ -3072,6 +3197,8 @@ const dropdownActionToCommand = {
   open: 'file:open',
   save: 'file:save',
   saveAs: 'file:saveAs',
+  closeTab: 'file:closeTab',
+  'file:closeTab': 'file:closeTab',
   quickOpen: 'file:quickOpen',
   find: 'edit:find',
   exportPDF: 'export:pdf',
@@ -3193,14 +3320,14 @@ function hideQuickOpen() {
 async function openRecentFile(filePath) {
   hideWelcome();
   hideQuickOpen();
-  if (!await confirmDiscard()) return;
+  const existing = tabManager.getByPath(filePath);
+  if (existing) {
+    tabManager.setActive(existing.id);
+    return;
+  }
   const result = await window.fileAPI.openPath(filePath);
-  if (result.canceled) return;
-  setContent(result.content);
-  isDirty = false;
-  markClean(result.filePath);
-  updatePlaceholder();
-  updateWordCount();
+  if (result.canceled || !result.filePath) return;
+  openFilePath(result.filePath, result.content);
 }
 
 // Action buttons inside overlay
@@ -3303,15 +3430,27 @@ document.addEventListener('keydown', e => {
   if (e.key === 'F11') { e.preventDefault(); CommandRegistry.execute('view:zen', view, view.state); }
 });
 
-// Find & Replace must work from anywhere, including a focused table-cell or
-// math-overlay input where CodeMirror's own keymap never sees the event.
+// Global key shortcuts for Find, Tab navigation, and Tab closing
 window.addEventListener('keydown', (e) => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   const key = e.key.toLowerCase();
-  if (key !== 'f' && key !== 'h') return;
-  e.preventDefault();
-  e.stopPropagation();
-  CommandRegistry.execute('edit:find', view, view.state);
+  if (key === 'f' || key === 'h') {
+    e.preventDefault();
+    e.stopPropagation();
+    CommandRegistry.execute('edit:find', view, view.state);
+  } else if (key === 'w') {
+    e.preventDefault();
+    e.stopPropagation();
+    CommandRegistry.execute('file:closeTab', view, view.state);
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.shiftKey) {
+      CommandRegistry.execute('view:prevTab', view, view.state);
+    } else {
+      CommandRegistry.execute('view:nextTab', view, view.state);
+    }
+  }
 }, true);
 
 // ── Click-to-focus / note link ────────────────────────────────────────────────
@@ -3329,17 +3468,37 @@ document.getElementById('editor-wrap').addEventListener('click', e => {
 
 // ── Word / reading time count ─────────────────────────────────────────────────
 function updateWordCount() {
-  const text = view.state.doc.toString();
+  const doc = tabManager.activeDocument;
+  const el = document.getElementById('word-count');
+  if (!el) return;
+  if (!doc) {
+    el.textContent = '';
+    return;
+  }
+  const text = doc.getText();
   const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
   const mins  = Math.ceil(words / 200);
   const label = words === 0 ? '' : `${words.toLocaleString()} words · ${mins} min read`;
-  document.getElementById('word-count').textContent = label;
+  el.textContent = label;
 }
 
-setFileName(null);
+updateAppName();
 updatePlaceholder();
 updateWordCount();
 // Re-apply theme now that view exists (fixes highlight on non-dark startup)
 applyTheme(currentTheme);
-showWelcome();
-view.focus();
+
+async function initSession() {
+  const restored = await sessionManager.restore();
+  if (!restored) {
+    const initialDoc = new Document({
+      name: 'Welcome.md',
+      editorState: createEditorState(startDoc),
+      dirty: false,
+    });
+    tabManager.add(initialDoc, true);
+  }
+  view.focus();
+}
+
+initSession();

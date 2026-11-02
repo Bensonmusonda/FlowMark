@@ -43,10 +43,12 @@ function createWindow() {
 
 // ── IPC Handlers ─────────────────────────────────────────────────────────────
 
-ipcMain.handle('dialog:save', async (_, content) => {
+ipcMain.handle('dialog:save', async (_, arg) => {
+  const content = typeof arg === 'string' ? arg : (arg && arg.content !== undefined ? arg.content : '');
+  const defaultPath = (typeof arg === 'object' && arg && arg.defaultPath) || currentFilePath || 'untitled.md';
   const { filePath, canceled } = await dialog.showSaveDialog(win, {
     title: 'Save As',
-    defaultPath: currentFilePath || 'untitled.md',
+    defaultPath,
     filters: [{ name: 'Markdown', extensions: ['md'] }],
   });
   if (canceled || !filePath) return { canceled: true };
@@ -56,10 +58,22 @@ ipcMain.handle('dialog:save', async (_, content) => {
   return { canceled: false, filePath };
 });
 
-ipcMain.handle('file:save', async (_, content) => {
-  if (!currentFilePath) return { noPath: true };
-  fs.writeFileSync(currentFilePath, content, 'utf8');
-  return { filePath: currentFilePath };
+ipcMain.handle('file:save', async (_, arg) => {
+  let targetPath = currentFilePath;
+  let content = '';
+
+  if (typeof arg === 'string') {
+    content = arg;
+  } else if (typeof arg === 'object' && arg !== null) {
+    if (arg.filePath) targetPath = arg.filePath;
+    if (arg.content !== undefined) content = arg.content;
+  }
+
+  if (!targetPath) return { noPath: true };
+  fs.writeFileSync(targetPath, content, 'utf8');
+  currentFilePath = targetPath;
+  addRecent(targetPath);
+  return { filePath: targetPath };
 });
 
 ipcMain.handle('file:open', async () => {
@@ -106,6 +120,30 @@ ipcMain.handle('file:createAndOpen', async (_, filePath) => {
 
 ipcMain.handle('file:clearPath', () => { currentFilePath = null; });
 ipcMain.handle('recents:get', () => recentFiles.filter(f => fs.existsSync(f)));
+
+// ── Session persistence ──────────────────────────────────────────────────────
+ipcMain.handle('session:save', async (_, sessionData) => {
+  try {
+    const sessionPath = path.join(app.getPath('userData'), 'session.json');
+    fs.writeFileSync(sessionPath, JSON.stringify(sessionData, null, 2), 'utf8');
+    return { success: true };
+  } catch (err) {
+    console.error('Failed to save session:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('session:load', async () => {
+  try {
+    const sessionPath = path.join(app.getPath('userData'), 'session.json');
+    if (!fs.existsSync(sessionPath)) return null;
+    const raw = fs.readFileSync(sessionPath, 'utf8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Failed to load session:', err);
+    return null;
+  }
+});
 
 ipcMain.on('window:refocus', () => { win.focus(); win.webContents.focus(); });
 ipcMain.on('window:minimize', () => win.minimize());

@@ -62,29 +62,30 @@ Based on the feature planning session — tracks implementation phases for the e
 ---
 
 ## Phase 3 — Tabs + Session Model
-**Status:** `pending`  
+**Status:** `done` ✅  
 **Effort:** Large (structural refactor)  
 **Dependencies:** Phase 1 (commands), Phase 2 (completion for filenames)  
 **Goal:** Multi-document tabs with per-tab state, session persistence.
 
 ### Tasks
-- [ ] Create `Document` class (`src/model/document.js`)
-  - [ ] `path`, `name`, `editorState`, `dirty`, `scrollPosition`, `selection`
-  - [ ] Methods: `save()`, `markDirty()`, `getState()`, `setState()`
-- [ ] Refactor `editor.js` singletons → per-document instances
-  - [ ] `currentDocPath` → `documents[]` array
-  - [ ] `EditorView` state swapped via `view.setState(doc.editorState)`
-  - [ ] History lives in `EditorState` → undo is automatically per-tab
-- [ ] Tab bar UI (`src/ui/tabs.js`)
-  - [ ] Render tabs with name, dirty indicator, close button
-  - [ ] Click to switch, drag to reorder
-  - [ ] `Ctrl+W` close, `Ctrl+Tab` / `Ctrl+Shift+Tab` navigate
-  - [ ] Unsaved-close prompt (uses command registry `confirmClose`)
-- [ ] Session persistence (`src/session/sessionManager.js`)
-  - [ ] Save to `userData/session.json`: open tabs, active tab, scroll, selection
-  - [ ] Restore on startup (re-open files, recreate `EditorState`)
-- [ ] Welcome screen: show when no tabs open; "New File" creates first tab
-- [ ] Word count / status bar per active tab
+- [x] Create `Document` class (`src/model/document.js`)
+  - [x] `path`, `name`, `editorState`, `dirty`, `scrollPosition`, `selection`
+  - [x] Methods: `save()`, `markDirty()`, `getState()`, `setState()`
+- [x] Refactor `editor.js` singletons → per-document instances
+  - [x] `currentDocPath` → `documents[]` array via `TabManager`
+  - [x] `EditorView` state swapped via `view.setState(doc.editorState)`
+  - [x] History lives in `EditorState` → undo is automatically per-tab
+- [x] Tab bar UI (`src/ui/tabs.js`)
+  - [x] Render tabs with name, dirty indicator, close button
+  - [x] Click to switch, drag to reorder
+  - [x] `Ctrl+W` close, `Ctrl+Tab` / `Ctrl+Shift+Tab` navigate
+  - [x] Unsaved-close prompt (uses command registry `file:closeTab` and confirmation)
+- [x] Session persistence (`src/session/sessionManager.js`)
+  - [x] Save to `userData/session.json`: open tabs, active tab, scroll, selection, unsaved draft text
+  - [x] Restore on startup (re-open files, recreate `EditorState`)
+- [x] Welcome screen: show when no tabs open; "New File" creates first tab
+- [x] Word count / status bar per active tab
+- [x] Automated unit tests: 50 tests covering Document, TabManager, SessionManager
 
 ---
 
@@ -153,6 +154,7 @@ Based on the feature planning session — tracks implementation phases for the e
 | 2026-11-01 | Tracker created | From planning session response |
 | 2026-11-02 | Phase 1 complete | All 6 prompts implemented: registry, edit menu, insert menu, inline renderer, shortcuts |
 | 2026-11-02 | Phase 2 complete | closeBrackets + autocompletion with callout/fence/emoji sources, themed tooltip |
+| 2026-11-02 | Phase 3 complete | Document & TabManager model, Tab bar UI with drag reorder, Session persistence, multi-tab routing |
 
 ---
 
@@ -161,7 +163,7 @@ Based on the feature planning session — tracks implementation phases for the e
 ```
 Phase 1: ██████████  12/12 tasks ✅
 Phase 2: ██████████   6/6  tasks ✅
-Phase 3: ░░░░░░░░░░  0/15 tasks
-Phase 4: ░░░░░░░░░░  0/10 tasks
-Phase 5: ░░░░░░░░░░  0/8 tasks
+Phase 3: ██████████  15/15 tasks ✅
+Phase 4: ░░░░░░░░░░   0/10 tasks
+Phase 5: ░░░░░░░░░░   0/8  tasks
 ```
