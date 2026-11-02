@@ -22,6 +22,8 @@ import {
   toggleHeading,
 } from './commands/insert.js';
 import { appendInlineMarkdown } from './commands/inlineRenderer.js';
+import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } from '@codemirror/autocomplete';
+import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './commands/completion.js';
 
 // ── Live-preview stability primitives ────────────────────────────────────────
 //
@@ -2674,7 +2676,23 @@ const view = new EditorView({
       history(),
       drawSelection(),
       dropCursor(),
+      closeBrackets(),
+      autocompletion({
+        activateOnTyping: true,
+        override: [calloutCompletion, fenceLanguageCompletion, emojiCompletion],
+        icons: true,
+        maxRenderedOptions: 20,
+      }),
+      // Markdown-specific bracket pairs for closeBrackets
+      markdownLanguage.data.of({
+        closeBrackets: {
+          brackets: ['(', '[', '{', '"', "'", '`', '$'],
+          before: ')]}:;>\n\r ',
+        },
+      }),
       keymap.of([
+        ...closeBracketsKeymap,
+        ...completionKeymap,
         ...defaultKeymap,
         ...historyKeymap,
         { key: 'Ctrl-n', run: () => { CommandRegistry.execute('file:new', view, view.state); return true; } },

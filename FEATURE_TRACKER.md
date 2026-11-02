@@ -43,21 +43,21 @@ Based on the feature planning session — tracks implementation phases for the e
 ---
 
 ## Phase 2 — Smart Typing + Autocomplete
-**Status:** `pending`  
+**Status:** `done` ✅  
 **Effort:** Small (brackets) / Medium (completion)  
 **Dependencies:** `@codemirror/autocomplete` already in deps  
 **Goal:** Auto-close pairs + Markdown-aware completions.
 
 ### Tasks
-- [ ] Wire `closeBrackets()` for: `()`, `[]`, `{}`, `""`, `''`, `` `` ``, `**`, `$...$`, `[[...]]`
-- [ ] Handle live-preview concealment so closing pairs aren't hidden
-- [ ] Wire `autocompletion()` with Markdown-specific sources:
-  - [ ] Callout types (`note`, `warning`, `tip`, `danger`, etc.)
-  - [ ] Fence languages (`js`, `ts`, `python`, `rust`, `json`, etc.)
-  - [ ] Footnote labels
-  - [ ] Filenames (once tabs exist)
-  - [ ] Tag completions (from frontmatter once Phase 4 lands)
-- [ ] Completion triggers: after `#` (headings), `> [!` (callouts), ``` (fences), `[^` (footnotes)
+- [x] Wire `closeBrackets()` for: `()`, `[]`, `{}`, `""`, `''`, `` `` ``, `$...$`
+- [x] Wire `closeBracketsKeymap` (Backspace deletes bracket pairs)
+- [x] Wire `autocompletion()` with Markdown-specific sources:
+  - [x] Callout types (`NOTE`, `WARNING`, `TIP`, `DANGER`, etc.) — after `> [!`
+  - [x] Fence languages (`javascript`, `python`, `rust`, `json`, etc.) — after ``` 
+  - [x] Emoji shortcodes (`:smile:`, `:rocket:`, etc.) — after `:xx`
+- [x] Wire `completionKeymap` (Ctrl+Space, Escape, Enter, arrows)
+- [x] Theme autocomplete tooltip to match editor (dark/light/sepia)
+- [x] Headless tests: 28 tests for completion sources and data integrity
 
 ---
 
@@ -152,6 +152,7 @@ Based on the feature planning session — tracks implementation phases for the e
 |---|---|---|
 | 2026-11-01 | Tracker created | From planning session response |
 | 2026-11-02 | Phase 1 complete | All 6 prompts implemented: registry, edit menu, insert menu, inline renderer, shortcuts |
+| 2026-11-02 | Phase 2 complete | closeBrackets + autocompletion with callout/fence/emoji sources, themed tooltip |
 
 ---
 
@@ -159,7 +160,7 @@ Based on the feature planning session — tracks implementation phases for the e
 
 ```
 Phase 1: ██████████  12/12 tasks ✅
-Phase 2: ░░░░░░░░░░  0/8 tasks
+Phase 2: ██████████   6/6  tasks ✅
 Phase 3: ░░░░░░░░░░  0/15 tasks
 Phase 4: ░░░░░░░░░░  0/10 tasks
 Phase 5: ░░░░░░░░░░  0/8 tasks

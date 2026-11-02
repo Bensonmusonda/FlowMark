@@ -559,11 +559,11 @@
       return CharCategory.Other;
     };
   }
-  function combineConfig(configs, defaults4, combine = {}) {
+  function combineConfig(configs, defaults5, combine = {}) {
     let result = {};
-    for (let config of configs)
-      for (let key of Object.keys(config)) {
-        let value = config[key], current = result[key];
+    for (let config2 of configs)
+      for (let key of Object.keys(config2)) {
+        let value = config2[key], current = result[key];
         if (current === void 0)
           result[key] = value;
         else if (current === value || value === void 0) ;
@@ -572,9 +572,9 @@
         else
           throw new Error("Config merge conflict for field " + key);
       }
-    for (let key in defaults4)
+    for (let key in defaults5)
       if (result[key] === void 0)
-        result[key] = defaults4[key];
+        result[key] = defaults5[key];
     return result;
   }
   function cmpVal(a2, b) {
@@ -586,10 +586,10 @@
   function lazySort(ranges) {
     if (ranges.length > 1)
       for (let prev = ranges[0], i = 1; i < ranges.length; i++) {
-        let cur = ranges[i];
-        if (cmpRange(prev, cur) > 0)
+        let cur2 = ranges[i];
+        if (cmpRange(prev, cur2) > 0)
           return ranges.slice().sort(cmpRange);
-        prev = cur;
+        prev = cur2;
       }
     return ranges;
   }
@@ -609,7 +609,7 @@
     return shared;
   }
   function heapBubble(heap, index) {
-    for (let cur = heap[index]; ; ) {
+    for (let cur2 = heap[index]; ; ) {
       let childIndex = (index << 1) + 1;
       if (childIndex >= heap.length)
         break;
@@ -618,9 +618,9 @@
         child = heap[childIndex + 1];
         childIndex++;
       }
-      if (cur.compare(child) < 0)
+      if (cur2.compare(child) < 0)
         break;
-      heap[childIndex] = cur;
+      heap[childIndex] = cur2;
       heap[index] = child;
       index = childIndex;
     }
@@ -1933,8 +1933,8 @@
         /**
         Define a new facet.
         */
-        static define(config = {}) {
-          return new _Facet(config.combine || ((a2) => a2), config.compareInput || ((a2, b) => a2 === b), config.compare || (!config.combine ? sameArray : (a2, b) => a2 === b), !!config.static, config.enables);
+        static define(config2 = {}) {
+          return new _Facet(config2.combine || ((a2) => a2), config2.compareInput || ((a2, b) => a2 === b), config2.compare || (!config2.combine ? sameArray : (a2, b) => a2 === b), !!config2.static, config2.enables);
         }
         /**
         Returns an extension that adds the given value to this facet.
@@ -2040,10 +2040,10 @@
         /**
         Define a state field.
         */
-        static define(config) {
-          let field = new _StateField(nextID++, config.create, config.update, config.compare || ((a2, b) => a2 === b), config);
-          if (config.provide)
-            field.provides = config.provide(field);
+        static define(config2) {
+          let field = new _StateField(nextID++, config2.create, config2.update, config2.compare || ((a2, b) => a2 === b), config2);
+          if (config2.provide)
+            field.provides = config2.provide(field);
           return field;
         }
         create(state) {
@@ -2335,13 +2335,13 @@
       StateEffect.reconfigure = /* @__PURE__ */ StateEffect.define();
       StateEffect.appendConfig = /* @__PURE__ */ StateEffect.define();
       Transaction = class _Transaction {
-        constructor(startState2, changes, selection, effects, annotations, scrollIntoView2) {
+        constructor(startState2, changes, selection, effects, annotations, scrollIntoView3) {
           this.startState = startState2;
           this.changes = changes;
           this.selection = selection;
           this.effects = effects;
           this.annotations = annotations;
-          this.scrollIntoView = scrollIntoView2;
+          this.scrollIntoView = scrollIntoView3;
           this._doc = null;
           this._state = null;
           if (selection)
@@ -2352,8 +2352,8 @@
         /**
         @internal
         */
-        static create(startState2, changes, selection, effects, annotations, scrollIntoView2) {
-          return new _Transaction(startState2, changes, selection, effects, annotations, scrollIntoView2);
+        static create(startState2, changes, selection, effects, annotations, scrollIntoView3) {
+          return new _Transaction(startState2, changes, selection, effects, annotations, scrollIntoView3);
         }
         /**
         The new document produced by the transaction. Contrary to
@@ -2439,12 +2439,12 @@
       } catch (_) {
       }
       EditorState = class _EditorState {
-        constructor(config, doc2, selection, values2, computeSlot, tr) {
-          this.config = config;
+        constructor(config2, doc2, selection, values2, computeSlot, tr) {
+          this.config = config2;
           this.doc = doc2;
           this.selection = selection;
           this.values = values2;
-          this.status = config.statusTemplate.slice();
+          this.status = config2.statusTemplate.slice();
           this.computeSlot = computeSlot;
           if (tr)
             tr._state = this;
@@ -2615,7 +2615,7 @@
         to [`toJSON`](https://codemirror.net/6/docs/ref/#state.EditorState.toJSON) when serializing as
         third argument.
         */
-        static fromJSON(json3, config = {}, fields) {
+        static fromJSON(json3, config2 = {}, fields) {
           if (!json3 || typeof json3.doc != "string")
             throw new RangeError("Invalid JSON representation for EditorState");
           let fieldInit = [];
@@ -2629,7 +2629,7 @@
           return _EditorState.create({
             doc: json3.doc,
             selection: EditorSelection.fromJSON(json3.selection),
-            extensions: config.extensions ? fieldInit.concat([config.extensions]) : fieldInit
+            extensions: config2.extensions ? fieldInit.concat([config2.extensions]) : fieldInit
           });
         }
         /**
@@ -2637,10 +2637,10 @@
         initializing an editor—updated states are created by applying
         transactions.
         */
-        static create(config = {}) {
-          let configuration = Configuration.resolve(config.extensions || [], /* @__PURE__ */ new Map());
-          let doc2 = config.doc instanceof Text ? config.doc : Text.of((config.doc || "").split(configuration.staticFacet(_EditorState.lineSeparator) || DefaultSplit));
-          let selection = !config.selection ? EditorSelection.single(0) : config.selection instanceof EditorSelection ? config.selection : EditorSelection.single(config.selection.anchor, config.selection.head);
+        static create(config2 = {}) {
+          let configuration = Configuration.resolve(config2.extensions || [], /* @__PURE__ */ new Map());
+          let doc2 = config2.doc instanceof Text ? config2.doc : Text.of((config2.doc || "").split(configuration.staticFacet(_EditorState.lineSeparator) || DefaultSplit));
+          let selection = !config2.selection ? EditorSelection.single(0) : config2.selection instanceof EditorSelection ? config2.selection : EditorSelection.single(config2.selection.anchor, config2.selection.head);
           checkSelection(selection, doc2.length);
           if (!configuration.staticFacet(allowMultipleSelections))
             selection = selection.asSingle();
@@ -2929,21 +2929,21 @@
             add3 = add3.slice().sort(cmpRange);
           if (this.isEmpty)
             return add3.length ? _RangeSet.of(add3) : this;
-          let cur = new LayerCursor(this, null, -1).goto(0), i = 0, spill = [];
+          let cur2 = new LayerCursor(this, null, -1).goto(0), i = 0, spill = [];
           let builder = new RangeSetBuilder();
-          while (cur.value || i < add3.length) {
-            if (i < add3.length && (cur.from - add3[i].from || cur.startSide - add3[i].value.startSide) >= 0) {
+          while (cur2.value || i < add3.length) {
+            if (i < add3.length && (cur2.from - add3[i].from || cur2.startSide - add3[i].value.startSide) >= 0) {
               let range = add3[i++];
               if (!builder.addInner(range.from, range.to, range.value))
                 spill.push(range);
-            } else if (cur.rangeIndex == 1 && cur.chunkIndex < this.chunk.length && (i == add3.length || this.chunkEnd(cur.chunkIndex) < add3[i].from) && (!filter2 || filterFrom > this.chunkEnd(cur.chunkIndex) || filterTo < this.chunkPos[cur.chunkIndex]) && builder.addChunk(this.chunkPos[cur.chunkIndex], this.chunk[cur.chunkIndex])) {
-              cur.nextChunk();
+            } else if (cur2.rangeIndex == 1 && cur2.chunkIndex < this.chunk.length && (i == add3.length || this.chunkEnd(cur2.chunkIndex) < add3[i].from) && (!filter2 || filterFrom > this.chunkEnd(cur2.chunkIndex) || filterTo < this.chunkPos[cur2.chunkIndex]) && builder.addChunk(this.chunkPos[cur2.chunkIndex], this.chunk[cur2.chunkIndex])) {
+              cur2.nextChunk();
             } else {
-              if (!filter2 || filterFrom > cur.to || filterTo < cur.from || filter2(cur.from, cur.to, cur.value)) {
-                if (!builder.addInner(cur.from, cur.to, cur.value))
-                  spill.push(Range.create(cur.from, cur.to, cur.value));
+              if (!filter2 || filterFrom > cur2.to || filterTo < cur2.from || filter2(cur2.from, cur2.to, cur2.value)) {
+                if (!builder.addInner(cur2.from, cur2.to, cur2.value))
+                  spill.push(Range.create(cur2.from, cur2.to, cur2.value));
               }
-              cur.next();
+              cur2.next();
             }
           }
           return builder.finishInner(this.nextLayer.isEmpty && !spill.length ? _RangeSet.empty : this.nextLayer.update({ add: spill, filter: filter2, filterFrom, filterTo }));
@@ -3285,9 +3285,9 @@
         static from(sets, skip = null, minPoint = -1) {
           let heap = [];
           for (let i = 0; i < sets.length; i++) {
-            for (let cur = sets[i]; !cur.isEmpty; cur = cur.nextLayer) {
-              if (cur.maxPoint >= minPoint)
-                heap.push(new LayerCursor(cur, skip, minPoint, i));
+            for (let cur2 = sets[i]; !cur2.isEmpty; cur2 = cur2.nextLayer) {
+              if (cur2.maxPoint >= minPoint)
+                heap.push(new LayerCursor(cur2, skip, minPoint, i));
             }
           }
           return heap.length == 1 ? heap[0] : new _HeapCursor(heap);
@@ -3296,16 +3296,16 @@
           return this.value ? this.value.startSide : 0;
         }
         goto(pos, side = -1e9) {
-          for (let cur of this.heap)
-            cur.goto(pos, side);
+          for (let cur2 of this.heap)
+            cur2.goto(pos, side);
           for (let i = this.heap.length >> 1; i >= 0; i--)
             heapBubble(this.heap, i);
           this.next();
           return this;
         }
         forward(pos, side) {
-          for (let cur of this.heap)
-            cur.forward(pos, side);
+          for (let cur2 of this.heap)
+            cur2.forward(pos, side);
           for (let i = this.heap.length >> 1; i >= 0; i--)
             heapBubble(this.heap, i);
           if ((this.to - pos || this.value.endSide - side) < 0)
@@ -3912,26 +3912,26 @@
   }
   function scrollRectIntoView(dom, rect, side, x, y, xMargin, yMargin, ltr) {
     let doc2 = dom.ownerDocument, win = doc2.defaultView || window;
-    for (let cur = dom, stop = false; cur && !stop; ) {
-      if (cur.nodeType == 1) {
-        let bounding, top3 = cur == doc2.body;
+    for (let cur2 = dom, stop = false; cur2 && !stop; ) {
+      if (cur2.nodeType == 1) {
+        let bounding, top3 = cur2 == doc2.body;
         let scaleX = 1, scaleY = 1;
         if (top3) {
           bounding = windowRect(win);
         } else {
-          if (/^(fixed|sticky)$/.test(getComputedStyle(cur).position))
+          if (/^(fixed|sticky)$/.test(getComputedStyle(cur2).position))
             stop = true;
-          if (cur.scrollHeight <= cur.clientHeight && cur.scrollWidth <= cur.clientWidth) {
-            cur = cur.assignedSlot || cur.parentNode;
+          if (cur2.scrollHeight <= cur2.clientHeight && cur2.scrollWidth <= cur2.clientWidth) {
+            cur2 = cur2.assignedSlot || cur2.parentNode;
             continue;
           }
-          let rect2 = cur.getBoundingClientRect();
-          ({ scaleX, scaleY } = getScale(cur, rect2));
+          let rect2 = cur2.getBoundingClientRect();
+          ({ scaleX, scaleY } = getScale(cur2, rect2));
           bounding = {
             left: rect2.left,
-            right: rect2.left + cur.clientWidth * scaleX,
+            right: rect2.left + cur2.clientWidth * scaleX,
             top: rect2.top,
-            bottom: rect2.top + cur.clientHeight * scaleY
+            bottom: rect2.top + cur2.clientHeight * scaleY
           };
         }
         let moveX = 0, moveY = 0;
@@ -3970,14 +3970,14 @@
           } else {
             let movedX = 0, movedY = 0;
             if (moveY) {
-              let start2 = cur.scrollTop;
-              cur.scrollTop += moveY / scaleY;
-              movedY = (cur.scrollTop - start2) * scaleY;
+              let start2 = cur2.scrollTop;
+              cur2.scrollTop += moveY / scaleY;
+              movedY = (cur2.scrollTop - start2) * scaleY;
             }
             if (moveX) {
-              let start2 = cur.scrollLeft;
-              cur.scrollLeft += moveX / scaleX;
-              movedX = (cur.scrollLeft - start2) * scaleX;
+              let start2 = cur2.scrollLeft;
+              cur2.scrollLeft += moveX / scaleX;
+              movedX = (cur2.scrollLeft - start2) * scaleX;
             }
             rect = {
               left: rect.left - movedX,
@@ -4000,9 +4000,9 @@
             top: Math.max(rect.top, bounding.top),
             bottom: Math.min(rect.bottom, bounding.bottom)
           };
-        cur = cur.assignedSlot || cur.parentNode;
-      } else if (cur.nodeType == 11) {
-        cur = cur.host;
+        cur2 = cur2.assignedSlot || cur2.parentNode;
+      } else if (cur2.nodeType == 11) {
+        cur2 = cur2.host;
       } else {
         break;
       }
@@ -4010,17 +4010,17 @@
   }
   function scrollableParents(dom, getX = true) {
     let doc2 = dom.ownerDocument, x = null, y = null;
-    for (let cur = dom.parentNode; cur; ) {
-      if (cur == doc2.body || (!getX || x) && y) {
+    for (let cur2 = dom.parentNode; cur2; ) {
+      if (cur2 == doc2.body || (!getX || x) && y) {
         break;
-      } else if (cur.nodeType == 1) {
-        if (!y && cur.scrollHeight > cur.clientHeight)
-          y = cur;
-        if (getX && !x && cur.scrollWidth > cur.clientWidth)
-          x = cur;
-        cur = cur.assignedSlot || cur.parentNode;
-      } else if (cur.nodeType == 11) {
-        cur = cur.host;
+      } else if (cur2.nodeType == 1) {
+        if (!y && cur2.scrollHeight > cur2.clientHeight)
+          y = cur2;
+        if (getX && !x && cur2.scrollWidth > cur2.clientWidth)
+          x = cur2;
+        cur2 = cur2.assignedSlot || cur2.parentNode;
+      } else if (cur2.nodeType == 11) {
+        cur2 = cur2.host;
       } else {
         break;
       }
@@ -4033,9 +4033,9 @@
     if (preventScrollSupported)
       return dom.focus(preventScrollSupported);
     let stack = [];
-    for (let cur = dom; cur; cur = cur.parentNode) {
-      stack.push(cur, cur.scrollTop, cur.scrollLeft);
-      if (cur == cur.ownerDocument)
+    for (let cur2 = dom; cur2; cur2 = cur2.parentNode) {
+      stack.push(cur2, cur2.scrollTop, cur2.scrollLeft);
+      if (cur2 == cur2.ownerDocument)
         break;
     }
     dom.focus(preventScrollSupported == null ? {
@@ -4230,13 +4230,13 @@
           let embed = type7 == outerType;
           context = embed ? 0 : 1;
           for (let sJ = sI - 3; sJ >= 0; sJ -= 3) {
-            let cur = BracketStack[sJ + 2];
-            if (cur & 2)
+            let cur2 = BracketStack[sJ + 2];
+            if (cur2 & 2)
               break;
             if (embed) {
               BracketStack[sJ + 2] |= 2;
             } else {
-              if (cur & 4)
+              if (cur2 & 4)
                 break;
               BracketStack[sJ + 2] |= 4;
             }
@@ -4620,8 +4620,8 @@
     return comp.changes;
   }
   function inUneditable(node, inside) {
-    for (let cur = node; cur && cur != inside; cur = cur.assignedSlot || cur.parentNode) {
-      if (cur.nodeType == 1 && cur.contentEditable == "false") {
+    for (let cur2 = node; cur2 && cur2 != inside; cur2 = cur2.assignedSlot || cur2.parentNode) {
+      if (cur2.nodeType == 1 && cur2.contentEditable == "false") {
         return true;
       }
     }
@@ -4711,11 +4711,11 @@
   function moveByChar(view2, start2, forward, by) {
     let line = view2.state.doc.lineAt(start2.head), spans = view2.bidiSpans(line);
     let direction = view2.textDirectionAt(line.from);
-    for (let cur = start2, check = null; ; ) {
-      let next2 = moveVisually(line, spans, direction, cur, forward), char = movedOver;
+    for (let cur2 = start2, check = null; ; ) {
+      let next2 = moveVisually(line, spans, direction, cur2, forward), char = movedOver;
       if (!next2) {
         if (line.number == (forward ? view2.state.doc.lines : 1))
-          return cur;
+          return cur2;
         char = "\n";
         line = view2.state.doc.line(line.number + (forward ? 1 : -1));
         spans = view2.bidiSpans(line);
@@ -4726,9 +4726,9 @@
           return next2;
         check = by(char);
       } else if (!check(char)) {
-        return cur;
+        return cur2;
       }
-      cur = next2;
+      cur2 = next2;
     }
   }
   function byGroup(view2, pos, start2) {
@@ -4959,15 +4959,15 @@
     if (change) {
       return applyDOMChangeInner(view2, change, newSel, lastKey);
     } else if (newSel && !sameSelPos(newSel, sel)) {
-      let scrollIntoView2 = false, userEvent = "select";
+      let scrollIntoView3 = false, userEvent = "select";
       if (view2.inputState.lastSelectionTime > Date.now() - 50) {
         if (view2.inputState.lastSelectionOrigin == "select")
-          scrollIntoView2 = true;
+          scrollIntoView3 = true;
         userEvent = view2.inputState.lastSelectionOrigin;
         if (userEvent == "select.pointer")
           newSel = skipAtomsForSelection(state.facet(atomicRanges).map((f) => f(view2)), newSel);
       }
-      view2.dispatch({ selection: newSel, scrollIntoView: scrollIntoView2, userEvent });
+      view2.dispatch({ selection: newSel, scrollIntoView: scrollIntoView3, userEvent });
       return true;
     } else {
       return false;
@@ -5262,16 +5262,16 @@
         }
       },
       get(event2, extend, multiple) {
-        let cur = view2.posAndSideAtCoords({ x: event2.clientX, y: event2.clientY }, false), removed;
-        let range = rangeForClick(view2, cur.pos, cur.assoc, type7);
-        if (start2.pos != cur.pos && !extend) {
+        let cur2 = view2.posAndSideAtCoords({ x: event2.clientX, y: event2.clientY }, false), removed;
+        let range = rangeForClick(view2, cur2.pos, cur2.assoc, type7);
+        if (start2.pos != cur2.pos && !extend) {
           let startRange = rangeForClick(view2, start2.pos, start2.assoc, type7);
           let from3 = Math.min(startRange.from, range.from), to = Math.max(startRange.to, range.to);
           range = from3 < range.from ? EditorSelection.range(from3, to, range.assoc) : EditorSelection.range(to, from3, range.assoc);
         }
         if (extend)
           return startSel.replaceRange(startSel.main.extend(range.from, range.to, range.assoc));
-        else if (multiple && type7 == 1 && startSel.ranges.length > 1 && (removed = removeRangeAround(startSel, cur.pos)))
+        else if (multiple && type7 == 1 && startSel.ranges.length > 1 && (removed = removeRangeAround(startSel, cur2.pos)))
           return removed;
         else if (multiple)
           return startSel.addRange(range);
@@ -5828,15 +5828,15 @@
   function sameMarker(a2, b) {
     return a2.constructor == b.constructor && a2.eq(b);
   }
-  function layer(config) {
+  function layer(config2) {
     return [
-      ViewPlugin.define((v) => new LayerView(v, config)),
-      layerOrder.of(config)
+      ViewPlugin.define((v) => new LayerView(v, config2)),
+      layerOrder.of(config2)
     ];
   }
-  function drawSelection(config = {}) {
+  function drawSelection(config2 = {}) {
     return [
-      selectionConfig.of(config),
+      selectionConfig.of(config2),
       cursorLayer,
       selectionLayer,
       hideNativeSelection,
@@ -5852,6 +5852,22 @@
   function dropCursor() {
     return [dropCursorPos, drawDropCursor];
   }
+  function windowSpace(view2) {
+    let docElt = view2.dom.ownerDocument.documentElement;
+    return { top: 0, left: 0, bottom: docElt.clientHeight, right: docElt.clientWidth };
+  }
+  function setLeftStyle(elt2, value) {
+    let current = parseInt(elt2.style.left, 10);
+    if (isNaN(current) || Math.abs(value - current) > 1)
+      elt2.style.left = value + "px";
+  }
+  function getTooltip(view2, tooltip) {
+    let plugin = view2.plugin(tooltipPlugin);
+    if (!plugin)
+      return null;
+    let found = plugin.manager.tooltips.indexOf(tooltip);
+    return found < 0 ? null : plugin.manager.tooltipViews[found];
+  }
   function getPanel(view2, panel) {
     let plugin = view2.plugin(panelPlugin);
     let index = plugin ? plugin.specs.indexOf(panel) : -1;
@@ -5862,10 +5878,10 @@
     node.remove();
     return next2;
   }
-  function showDialog(view2, config) {
+  function showDialog(view2, config2) {
     let resolve;
     let promise = new Promise((r2) => resolve = r2);
-    let panelCtor = (view3) => createDialog(view3, config, resolve);
+    let panelCtor = (view3) => createDialog(view3, config2, resolve);
     if (view2.state.field(dialogField, false)) {
       view2.dispatch({ effects: openDialogEffect.of(panelCtor) });
     } else {
@@ -5890,22 +5906,22 @@
     }
     return null;
   }
-  function createDialog(view2, config, result) {
-    let content3 = config.content ? config.content(view2, () => done(null)) : null;
+  function createDialog(view2, config2, result) {
+    let content3 = config2.content ? config2.content(view2, () => done(null)) : null;
     if (!content3) {
       content3 = crelt("form");
-      if (config.input) {
-        let input = crelt("input", config.input);
+      if (config2.input) {
+        let input = crelt("input", config2.input);
         if (/^(text|password|number|email|tel|url)$/.test(input.type))
           input.classList.add("cm-textfield");
         if (!input.name)
           input.name = "input";
-        content3.appendChild(crelt("label", (config.label || "") + ": ", input));
+        content3.appendChild(crelt("label", (config2.label || "") + ": ", input));
       } else {
-        content3.appendChild(document.createTextNode(config.label || ""));
+        content3.appendChild(document.createTextNode(config2.label || ""));
       }
       content3.appendChild(document.createTextNode(" "));
-      content3.appendChild(crelt("button", { class: "cm-button", type: "submit" }, config.submitLabel || "OK"));
+      content3.appendChild(crelt("button", { class: "cm-button", type: "submit" }, config2.submitLabel || "OK"));
     }
     let forms = content3.nodeName == "FORM" ? [content3] : content3.querySelectorAll("form");
     for (let i = 0; i < forms.length; i++) {
@@ -5930,8 +5946,8 @@
       class: "cm-dialog-close",
       type: "button"
     }, ["\xD7"]));
-    if (config.class)
-      panel.className = config.class;
+    if (config2.class)
+      panel.className = config2.class;
     panel.classList.add("cm-dialog");
     function done(form) {
       if (panel.contains(panel.ownerDocument.activeElement))
@@ -5940,12 +5956,12 @@
     }
     return {
       dom: panel,
-      top: config.top,
+      top: config2.top,
       mount: () => {
-        if (config.focus) {
+        if (config2.focus) {
           let focus;
-          if (typeof config.focus == "string")
-            focus = content3.querySelector(config.focus);
+          if (typeof config2.focus == "string")
+            focus = content3.querySelector(config2.focus);
           else
             focus = content3.querySelector("input") || content3.querySelector("button");
           if (focus && "select" in focus)
@@ -5956,7 +5972,7 @@
       }
     };
   }
-  var nav, doc, ie_edge, ie_upto10, ie_11up, ie2, gecko, chrome, webkit, safari, ios, browser, noAttrs, WidgetType, BlockType, Decoration, MarkDecoration, LineDecoration, PointDecoration, BlockWrapper, DOMSelectionState, preventScrollSupported, scratchRange, DOMPos, Direction, LTR, RTL, LowTypes, ArabicTypes, Brackets, BracketStack, BidiRE, BidiSpan, types, movedOver, clickAddsSelectionRange, dragMovesSelection$1, mouseSelectionStyle, exceptionSink, updateListener, inputHandler, focusChangeEffect, clipboardInputFilter, clipboardOutputFilter, perLineTextDirection, nativeSelectionHidden, scrollHandler, ScrollTarget, scrollIntoView, setEditContextFormatting, editable, nextPluginID, viewPlugin, ViewPlugin, PluginInstance, editorAttributes, contentAttributes, decorations, blockWrappers, outerDecorations, atomicRanges, bidiIsolatedRanges, scrollMargins, styleModule, ChangedRange, ViewUpdate, noChildren, Tile, CompositeTile, DocTile, BlockWrapperTile, LineTile, MarkTile, TextTile, WidgetTile, WidgetBufferTile, TilePointer, OpenWrapper, TileBuilder, TextStream, buckets, TileCache, TileUpdate, lineBaseAttrs, NullWidget, BreakWidget, DocView, DecorationComparator$1, WrapperComparator, BlockGapWidget, PosAssoc, InlineCoordsScan, LineBreakPlaceholder, DOMReader, DOMPoint, DOMChange, InputState, PendingKeys, EmacsyPendingKeys, modifierCodes, dragScrollMargin, MouseSelection, handlers, observers, brokenClipboardAPI, BadMouseDetail, lastMouseDown, lastMouseDownCount, lastMouseDownTime, lastLinewiseCopy, isFocusChange, appliedFirefoxHack, wrappingWhiteSpace, heightChangeFlag, HeightOracle, MeasuredHeights, BlockInfo, QueryType, Epsilon, HeightMap, SpaceDeco, HeightMapBlock, HeightMapText, HeightMapGap, HeightMapBranch, relevantWidgetHeight, NodeBuilder, DecorationComparator2, LineGap, LineGapWidget, ViewState, Viewport, IdScaler, BigScaler, theme, darkTheme, baseThemeID, baseLightID, baseDarkID, lightDarkIDs, baseTheme$1, observeOptions, useCharData, DOMObserver, EditContextManager, EditorView, MaxBidiLine, BadMeasure, CachedOrder, currentPlatform, handleKeyEvents, keymap, Keymaps, storedPrefix, PrefixTimeout, currentKeyEvent, RectangleMarker, LayerView, layerOrder, selectionConfig, cursorLayer, selectionLayer, hideNativeSelection, setDropCursorPos, dropCursorPos, drawDropCursor, UnicodeRegexpSupport, baseTheme, panelConfig, panelPlugin, PanelGroup, showPanel, dialogField, openDialogEffect, closeDialogEffect, GutterMarker;
+  var nav, doc, ie_edge, ie_upto10, ie_11up, ie2, gecko, chrome, webkit, safari, ios, browser, noAttrs, WidgetType, BlockType, Decoration, MarkDecoration, LineDecoration, PointDecoration, BlockWrapper, DOMSelectionState, preventScrollSupported, scratchRange, DOMPos, Direction, LTR, RTL, LowTypes, ArabicTypes, Brackets, BracketStack, BidiRE, BidiSpan, types, movedOver, clickAddsSelectionRange, dragMovesSelection$1, mouseSelectionStyle, exceptionSink, updateListener, inputHandler, focusChangeEffect, clipboardInputFilter, clipboardOutputFilter, perLineTextDirection, nativeSelectionHidden, scrollHandler, ScrollTarget, scrollIntoView, setEditContextFormatting, editable, nextPluginID, viewPlugin, ViewPlugin, PluginInstance, editorAttributes, contentAttributes, decorations, blockWrappers, outerDecorations, atomicRanges, bidiIsolatedRanges, scrollMargins, styleModule, ChangedRange, ViewUpdate, noChildren, Tile, CompositeTile, DocTile, BlockWrapperTile, LineTile, MarkTile, TextTile, WidgetTile, WidgetBufferTile, TilePointer, OpenWrapper, TileBuilder, TextStream, buckets, TileCache, TileUpdate, lineBaseAttrs, NullWidget, BreakWidget, DocView, DecorationComparator$1, WrapperComparator, BlockGapWidget, PosAssoc, InlineCoordsScan, LineBreakPlaceholder, DOMReader, DOMPoint, DOMChange, InputState, PendingKeys, EmacsyPendingKeys, modifierCodes, dragScrollMargin, MouseSelection, handlers, observers, brokenClipboardAPI, BadMouseDetail, lastMouseDown, lastMouseDownCount, lastMouseDownTime, lastLinewiseCopy, isFocusChange, appliedFirefoxHack, wrappingWhiteSpace, heightChangeFlag, HeightOracle, MeasuredHeights, BlockInfo, QueryType, Epsilon, HeightMap, SpaceDeco, HeightMapBlock, HeightMapText, HeightMapGap, HeightMapBranch, relevantWidgetHeight, NodeBuilder, DecorationComparator2, LineGap, LineGapWidget, ViewState, Viewport, IdScaler, BigScaler, theme, darkTheme, baseThemeID, baseLightID, baseDarkID, lightDarkIDs, baseTheme$1, observeOptions, useCharData, DOMObserver, EditContextManager, EditorView, MaxBidiLine, BadMeasure, CachedOrder, currentPlatform, handleKeyEvents, keymap, Keymaps, storedPrefix, PrefixTimeout, currentKeyEvent, RectangleMarker, LayerView, layerOrder, selectionConfig, cursorLayer, selectionLayer, hideNativeSelection, setDropCursorPos, dropCursorPos, drawDropCursor, UnicodeRegexpSupport, Outside, TooltipViewManager, tooltipConfig, knownHeight, tooltipPlugin, baseTheme, noOffset, showTooltip, panelConfig, panelPlugin, PanelGroup, showPanel, dialogField, openDialogEffect, closeDialogEffect, GutterMarker;
   var init_dist2 = __esm({
     "node_modules/@codemirror/view/dist/index.js"() {
       init_dist();
@@ -6804,19 +6820,19 @@
           }
         }
         blockTiles(f) {
-          for (let stack = [], cur = this, i = 0, pos = 0; ; ) {
-            if (i == cur.children.length) {
+          for (let stack = [], cur2 = this, i = 0, pos = 0; ; ) {
+            if (i == cur2.children.length) {
               if (!stack.length)
                 return;
-              cur = cur.parent;
-              if (cur.breakAfter)
+              cur2 = cur2.parent;
+              if (cur2.breakAfter)
                 pos++;
               i = stack.pop();
             } else {
-              let next2 = cur.children[i++];
+              let next2 = cur2.children[i++];
               if (next2 instanceof BlockWrapperTile) {
                 stack.push(i);
-                cur = next2;
+                cur2 = next2;
                 i = 0;
               } else {
                 let end2 = pos + next2.length;
@@ -7349,9 +7365,9 @@
           for (let i = this.wrappers.length - 1; i >= 0; i--)
             if (this.wrappers[i].to < this.pos)
               this.wrappers.splice(i, 1);
-          for (let cur = this.blockWrappers; cur.value && cur.from <= this.pos; cur.next())
-            if (cur.to >= this.pos) {
-              let wrap = new OpenWrapper(cur.from, cur.to, cur.value, cur.rank), i = this.wrappers.length;
+          for (let cur2 = this.blockWrappers; cur2.value && cur2.from <= this.pos; cur2.next())
+            if (cur2.to >= this.pos) {
+              let wrap = new OpenWrapper(cur2.from, cur2.to, cur2.value, cur2.rank), i = this.wrappers.length;
               while (i > 0 && (this.wrappers[i - 1].rank - wrap.rank || this.wrappers[i - 1].to - wrap.to) < 0)
                 i--;
               this.wrappers.splice(i, 0, wrap);
@@ -8514,20 +8530,20 @@
           if (!start2)
             return this;
           let parent = start2.parentNode;
-          for (let cur = start2; ; ) {
-            this.findPointBefore(parent, cur);
+          for (let cur2 = start2; ; ) {
+            this.findPointBefore(parent, cur2);
             let oldLen = this.text.length;
-            this.readNode(cur);
-            let tile = Tile.get(cur), next2 = cur.nextSibling;
+            this.readNode(cur2);
+            let tile = Tile.get(cur2), next2 = cur2.nextSibling;
             if (next2 == end2) {
               if ((tile === null || tile === void 0 ? void 0 : tile.breakAfter) && !next2 && parent != this.view.contentDOM)
                 this.lineBreak();
               break;
             }
             let nextTile = Tile.get(next2);
-            if ((tile && nextTile ? tile.breakAfter : (tile ? tile.breakAfter : isBlockElement(cur)) || isBlockElement(next2) && (cur.nodeName != "BR" || (tile === null || tile === void 0 ? void 0 : tile.isWidget())) && this.text.length > oldLen) && !isEmptyToEnd(next2, end2))
+            if ((tile && nextTile ? tile.breakAfter : (tile ? tile.breakAfter : isBlockElement(cur2)) || isBlockElement(next2) && (cur2.nodeName != "BR" || (tile === null || tile === void 0 ? void 0 : tile.isWidget())) && this.text.length > oldLen) && !isEmptyToEnd(next2, end2))
               this.lineBreak();
-            cur = next2;
+            cur2 = next2;
           }
           this.findPointBefore(parent, end2);
           return this;
@@ -11324,7 +11340,7 @@
         option, or put `view.dom` into your document after creating a
         view, so that the user can see the editor.
         */
-        constructor(config = {}) {
+        constructor(config2 = {}) {
           var _a2;
           this.plugins = [];
           this.pluginMap = /* @__PURE__ */ new Map();
@@ -11346,15 +11362,15 @@
           this.dom = document.createElement("div");
           this.dom.appendChild(this.announceDOM);
           this.dom.appendChild(this.scrollDOM);
-          if (config.parent)
-            config.parent.appendChild(this.dom);
-          let { dispatch } = config;
-          this.dispatchTransactions = config.dispatchTransactions || dispatch && ((trs) => trs.forEach((tr) => dispatch(tr, this))) || ((trs) => this.update(trs));
+          if (config2.parent)
+            config2.parent.appendChild(this.dom);
+          let { dispatch } = config2;
+          this.dispatchTransactions = config2.dispatchTransactions || dispatch && ((trs) => trs.forEach((tr) => dispatch(tr, this))) || ((trs) => this.update(trs));
           this.dispatch = this.dispatch.bind(this);
-          this._root = config.root || getRoot(config.parent) || document;
-          this.viewState = new ViewState(this, config.state || EditorState.create(config));
-          if (config.scrollTo && config.scrollTo.is(scrollIntoView))
-            this.viewState.scrollTarget = config.scrollTo.value.clip(this.viewState.state);
+          this._root = config2.root || getRoot(config2.parent) || document;
+          this.viewState = new ViewState(this, config2.state || EditorState.create(config2));
+          if (config2.scrollTo && config2.scrollTo.is(scrollIntoView))
+            this.viewState.scrollTarget = config2.scrollTo.value.clip(this.viewState.state);
           this.plugins = this.state.facet(viewPlugin).map((spec) => new PluginInstance(spec));
           for (let plugin of this.plugins)
             plugin.update(this);
@@ -12540,6 +12556,311 @@
         }
       });
       UnicodeRegexpSupport = /x/.unicode != null ? "gu" : "g";
+      Outside = "-10000px";
+      TooltipViewManager = class {
+        constructor(view2, facet, createTooltipView, removeTooltipView) {
+          this.facet = facet;
+          this.createTooltipView = createTooltipView;
+          this.removeTooltipView = removeTooltipView;
+          this.input = view2.state.facet(facet);
+          this.tooltips = this.input.filter((t2) => t2);
+          let prev = null;
+          this.tooltipViews = this.tooltips.map((t2) => prev = createTooltipView(t2, prev));
+        }
+        update(update, above) {
+          var _a2;
+          let input = update.state.facet(this.facet);
+          let tooltips = input.filter((x) => x);
+          if (input === this.input) {
+            for (let t2 of this.tooltipViews)
+              if (t2.update)
+                t2.update(update);
+            return false;
+          }
+          let tooltipViews = [], newAbove = above ? [] : null;
+          for (let i = 0; i < tooltips.length; i++) {
+            let tip = tooltips[i], known = -1;
+            if (!tip)
+              continue;
+            for (let i2 = 0; i2 < this.tooltips.length; i2++) {
+              let other = this.tooltips[i2];
+              if (other && other.create == tip.create)
+                known = i2;
+            }
+            if (known < 0) {
+              tooltipViews[i] = this.createTooltipView(tip, i ? tooltipViews[i - 1] : null);
+              if (newAbove)
+                newAbove[i] = !!tip.above;
+            } else {
+              let tooltipView = tooltipViews[i] = this.tooltipViews[known];
+              if (newAbove)
+                newAbove[i] = above[known];
+              if (tooltipView.update)
+                tooltipView.update(update);
+            }
+          }
+          for (let t2 of this.tooltipViews)
+            if (tooltipViews.indexOf(t2) < 0) {
+              this.removeTooltipView(t2);
+              (_a2 = t2.destroy) === null || _a2 === void 0 ? void 0 : _a2.call(t2);
+            }
+          if (above) {
+            newAbove.forEach((val, i) => above[i] = val);
+            above.length = newAbove.length;
+          }
+          this.input = input;
+          this.tooltips = tooltips;
+          this.tooltipViews = tooltipViews;
+          return true;
+        }
+      };
+      tooltipConfig = /* @__PURE__ */ Facet.define({
+        combine: (values2) => {
+          var _a2, _b2, _c;
+          return {
+            position: browser.ios ? "absolute" : ((_a2 = values2.find((conf) => conf.position)) === null || _a2 === void 0 ? void 0 : _a2.position) || "fixed",
+            parent: ((_b2 = values2.find((conf) => conf.parent)) === null || _b2 === void 0 ? void 0 : _b2.parent) || null,
+            tooltipSpace: ((_c = values2.find((conf) => conf.tooltipSpace)) === null || _c === void 0 ? void 0 : _c.tooltipSpace) || windowSpace
+          };
+        }
+      });
+      knownHeight = /* @__PURE__ */ new WeakMap();
+      tooltipPlugin = /* @__PURE__ */ ViewPlugin.fromClass(class {
+        constructor(view2) {
+          this.view = view2;
+          this.above = [];
+          this.inView = true;
+          this.madeAbsolute = false;
+          this.lastTransaction = 0;
+          this.measureTimeout = -1;
+          let config2 = view2.state.facet(tooltipConfig);
+          this.position = config2.position;
+          this.parent = config2.parent;
+          this.classes = view2.themeClasses;
+          this.createContainer();
+          this.measureReq = { read: this.readMeasure.bind(this), write: this.writeMeasure.bind(this), key: this };
+          this.resizeObserver = typeof ResizeObserver == "function" ? new ResizeObserver(() => this.measureSoon()) : null;
+          this.manager = new TooltipViewManager(view2, showTooltip, (t2, p) => this.createTooltip(t2, p), (t2) => {
+            if (this.resizeObserver)
+              this.resizeObserver.unobserve(t2.dom);
+            t2.dom.remove();
+          });
+          this.above = this.manager.tooltips.map((t2) => !!t2.above);
+          this.intersectionObserver = typeof IntersectionObserver == "function" ? new IntersectionObserver((entries) => {
+            if (Date.now() > this.lastTransaction - 50 && entries.length > 0 && entries[entries.length - 1].intersectionRatio < 1)
+              this.measureSoon();
+          }, { threshold: [1] }) : null;
+          this.observeIntersection();
+          view2.win.addEventListener("resize", this.measureSoon = this.measureSoon.bind(this));
+          this.maybeMeasure();
+        }
+        createContainer() {
+          if (this.parent) {
+            this.container = document.createElement("div");
+            this.container.style.position = "relative";
+            this.container.className = this.view.themeClasses;
+            this.parent.appendChild(this.container);
+          } else {
+            this.container = this.view.dom;
+          }
+        }
+        observeIntersection() {
+          if (this.intersectionObserver) {
+            this.intersectionObserver.disconnect();
+            for (let tooltip of this.manager.tooltipViews)
+              this.intersectionObserver.observe(tooltip.dom);
+          }
+        }
+        measureSoon() {
+          if (this.measureTimeout < 0)
+            this.measureTimeout = setTimeout(() => {
+              this.measureTimeout = -1;
+              this.maybeMeasure();
+            }, 50);
+        }
+        update(update) {
+          if (update.transactions.length)
+            this.lastTransaction = Date.now();
+          let updated = this.manager.update(update, this.above);
+          if (updated)
+            this.observeIntersection();
+          let shouldMeasure = updated || update.geometryChanged;
+          let newConfig = update.state.facet(tooltipConfig);
+          if (newConfig.position != this.position && !this.madeAbsolute) {
+            this.position = newConfig.position;
+            for (let t2 of this.manager.tooltipViews)
+              t2.dom.style.position = this.position;
+            shouldMeasure = true;
+          }
+          if (newConfig.parent != this.parent) {
+            if (this.parent)
+              this.container.remove();
+            this.parent = newConfig.parent;
+            this.createContainer();
+            for (let t2 of this.manager.tooltipViews)
+              this.container.appendChild(t2.dom);
+            shouldMeasure = true;
+          } else if (this.parent && this.view.themeClasses != this.classes) {
+            this.classes = this.container.className = this.view.themeClasses;
+          }
+          if (shouldMeasure)
+            this.maybeMeasure();
+        }
+        createTooltip(tooltip, prev) {
+          let tooltipView = tooltip.create(this.view);
+          let before = prev ? prev.dom : null;
+          tooltipView.dom.classList.add("cm-tooltip");
+          if (tooltip.arrow && !tooltipView.dom.querySelector(".cm-tooltip > .cm-tooltip-arrow")) {
+            let arrow = document.createElement("div");
+            arrow.className = "cm-tooltip-arrow";
+            tooltipView.dom.appendChild(arrow);
+          }
+          tooltipView.dom.style.position = this.position;
+          tooltipView.dom.style.top = Outside;
+          tooltipView.dom.style.left = "0px";
+          this.container.insertBefore(tooltipView.dom, before);
+          if (tooltipView.mount)
+            tooltipView.mount(this.view);
+          if (this.resizeObserver)
+            this.resizeObserver.observe(tooltipView.dom);
+          return tooltipView;
+        }
+        destroy() {
+          var _a2, _b2, _c;
+          this.view.win.removeEventListener("resize", this.measureSoon);
+          for (let tooltipView of this.manager.tooltipViews) {
+            tooltipView.dom.remove();
+            (_a2 = tooltipView.destroy) === null || _a2 === void 0 ? void 0 : _a2.call(tooltipView);
+          }
+          if (this.parent)
+            this.container.remove();
+          (_b2 = this.resizeObserver) === null || _b2 === void 0 ? void 0 : _b2.disconnect();
+          (_c = this.intersectionObserver) === null || _c === void 0 ? void 0 : _c.disconnect();
+          clearTimeout(this.measureTimeout);
+        }
+        readMeasure() {
+          let scaleX = 1, scaleY = 1, makeAbsolute = false;
+          if (this.position == "fixed" && this.manager.tooltipViews.length) {
+            let { dom } = this.manager.tooltipViews[0];
+            if (browser.safari) {
+              let rect = dom.getBoundingClientRect();
+              makeAbsolute = Math.abs(rect.top + 1e4) > 1 || Math.abs(rect.left) > 1;
+            } else {
+              makeAbsolute = !!dom.offsetParent && dom.offsetParent != this.container.ownerDocument.body;
+            }
+          }
+          if (makeAbsolute || this.position == "absolute") {
+            if (this.parent) {
+              let rect = this.parent.getBoundingClientRect();
+              if (rect.width && rect.height) {
+                scaleX = rect.width / this.parent.offsetWidth;
+                scaleY = rect.height / this.parent.offsetHeight;
+              }
+            } else {
+              ({ scaleX, scaleY } = this.view.viewState);
+            }
+          }
+          let visible = this.view.scrollDOM.getBoundingClientRect(), margins = getScrollMargins(this.view);
+          return {
+            visible: {
+              left: visible.left + margins.left,
+              top: visible.top + margins.top,
+              right: visible.right - margins.right,
+              bottom: visible.bottom - margins.bottom
+            },
+            parent: this.parent ? this.container.getBoundingClientRect() : this.view.dom.getBoundingClientRect(),
+            pos: this.manager.tooltips.map((t2, i) => {
+              let tv = this.manager.tooltipViews[i];
+              return tv.getCoords ? tv.getCoords(t2.pos) : this.view.coordsAtPos(t2.pos);
+            }),
+            size: this.manager.tooltipViews.map(({ dom }) => dom.getBoundingClientRect()),
+            space: this.view.state.facet(tooltipConfig).tooltipSpace(this.view),
+            scaleX,
+            scaleY,
+            makeAbsolute
+          };
+        }
+        writeMeasure(measured) {
+          var _a2;
+          if (measured.makeAbsolute) {
+            this.madeAbsolute = true;
+            this.position = "absolute";
+            for (let t2 of this.manager.tooltipViews)
+              t2.dom.style.position = "absolute";
+          }
+          let { visible, space: space8, scaleX, scaleY } = measured;
+          let others2 = [];
+          for (let i = 0; i < this.manager.tooltips.length; i++) {
+            let tooltip = this.manager.tooltips[i], tView = this.manager.tooltipViews[i], { dom } = tView;
+            let pos = measured.pos[i], size = measured.size[i];
+            if (!pos || tooltip.clip !== false && (pos.bottom <= Math.max(visible.top, space8.top) || pos.top >= Math.min(visible.bottom, space8.bottom) || pos.right < Math.max(visible.left, space8.left) - 0.1 || pos.left > Math.min(visible.right, space8.right) + 0.1)) {
+              dom.style.top = Outside;
+              continue;
+            }
+            let arrow = tooltip.arrow ? tView.dom.querySelector(".cm-tooltip-arrow") : null;
+            let arrowHeight = arrow ? 7 : 0;
+            let width = size.right - size.left, height = (_a2 = knownHeight.get(tView)) !== null && _a2 !== void 0 ? _a2 : size.bottom - size.top;
+            let offset = tView.offset || noOffset, ltr = this.view.textDirection == Direction.LTR;
+            let left = size.width > space8.right - space8.left ? ltr ? space8.left : space8.right - size.width : ltr ? Math.max(space8.left, Math.min(pos.left - (arrow ? 14 : 0) + offset.x, space8.right - width)) : Math.min(Math.max(space8.left, pos.left - width + (arrow ? 14 : 0) - offset.x), space8.right - width);
+            let above = this.above[i];
+            if (!tooltip.strictSide && (above ? pos.top - height - arrowHeight - offset.y < space8.top : pos.bottom + height + arrowHeight + offset.y > space8.bottom) && above == space8.bottom - pos.bottom > pos.top - space8.top)
+              above = this.above[i] = !above;
+            let spaceVert = (above ? pos.top - space8.top : space8.bottom - pos.bottom) - arrowHeight;
+            if (spaceVert < height && tView.resize !== false) {
+              if (spaceVert < this.view.defaultLineHeight) {
+                dom.style.top = Outside;
+                continue;
+              }
+              knownHeight.set(tView, height);
+              dom.style.height = (height = spaceVert) / scaleY + "px";
+            } else if (dom.style.height) {
+              dom.style.height = "";
+            }
+            let top3 = above ? pos.top - height - arrowHeight - offset.y : pos.bottom + arrowHeight + offset.y;
+            let right = left + width;
+            if (tView.overlap !== true) {
+              for (let r2 of others2)
+                if (r2.left < right && r2.right > left && r2.top < top3 + height && r2.bottom > top3)
+                  top3 = above ? r2.top - height - 2 - arrowHeight : r2.bottom + arrowHeight + 2;
+            }
+            if (this.position == "absolute") {
+              dom.style.top = (top3 - measured.parent.top) / scaleY + "px";
+              setLeftStyle(dom, (left - measured.parent.left) / scaleX);
+            } else {
+              dom.style.top = top3 / scaleY + "px";
+              setLeftStyle(dom, left / scaleX);
+            }
+            if (arrow) {
+              let arrowLeft = pos.left + (ltr ? offset.x : -offset.x) - (left + 14 - 7);
+              arrow.style.left = arrowLeft / scaleX + "px";
+            }
+            if (tView.overlap !== true)
+              others2.push({ left, top: top3, right, bottom: top3 + height });
+            dom.classList.toggle("cm-tooltip-above", above);
+            dom.classList.toggle("cm-tooltip-below", !above);
+            if (tView.positioned)
+              tView.positioned(measured.space);
+          }
+        }
+        maybeMeasure() {
+          if (this.manager.tooltips.length) {
+            if (this.view.inView)
+              this.view.requestMeasure(this.measureReq);
+            if (this.inView != this.view.inView) {
+              this.inView = this.view.inView;
+              if (!this.inView)
+                for (let tv of this.manager.tooltipViews)
+                  tv.dom.style.top = Outside;
+            }
+          }
+        }
+      }, {
+        eventObservers: {
+          scroll() {
+            this.maybeMeasure();
+          }
+        }
+      });
       baseTheme = /* @__PURE__ */ EditorView.baseTheme({
         ".cm-tooltip": {
           zIndex: 500,
@@ -12601,6 +12922,10 @@
             borderBottomColor: "transparent"
           }
         }
+      });
+      noOffset = { x: 0, y: 0 };
+      showTooltip = /* @__PURE__ */ Facet.define({
+        enables: [tooltipPlugin, baseTheme]
       });
       panelConfig = /* @__PURE__ */ Facet.define({
         combine(configs) {
@@ -12828,21 +13153,21 @@
     }
   }
   function getChildren(node, type7, before, after) {
-    let cur = node.cursor(), result = [];
-    if (!cur.firstChild())
+    let cur2 = node.cursor(), result = [];
+    if (!cur2.firstChild())
       return result;
     if (before != null)
       for (let found = false; !found; ) {
-        found = cur.type.is(before);
-        if (!cur.nextSibling())
+        found = cur2.type.is(before);
+        if (!cur2.nextSibling())
           return result;
       }
     for (; ; ) {
-      if (after != null && cur.type.is(after))
+      if (after != null && cur2.type.is(after))
         return result;
-      if (cur.type.is(type7))
-        result.push(cur.node);
-      if (!cur.nextSibling())
+      if (cur2.type.is(type7))
+        result.push(cur2.node);
+      if (!cur2.nextSibling())
         return after == null ? result : [];
     }
   }
@@ -13047,7 +13372,7 @@
         if (nodeSize2 < 0 || startPos < minPos || fork.start < minStart)
           break;
         let localSkipped = fork.id >= minRepeatType ? 4 : 0;
-        let nodeStart = fork.start;
+        let nodeStart2 = fork.start;
         fork.next();
         while (fork.pos > startPos) {
           if (fork.size < 0) {
@@ -13060,7 +13385,7 @@
           }
           fork.next();
         }
-        start2 = nodeStart;
+        start2 = nodeStart2;
         size += nodeSize2;
         skip += localSkipped;
       }
@@ -13296,13 +13621,13 @@
         /**
         Create a new node prop type.
         */
-        constructor(config = {}) {
+        constructor(config2 = {}) {
           this.id = nextPropID++;
-          this.perNode = !!config.perNode;
-          this.deserialize = config.deserialize || (() => {
+          this.perNode = !!config2.perNode;
+          this.deserialize = config2.deserialize || (() => {
             throw new Error("This node type doesn't define a deserialize function");
           });
-          this.combine = config.combine || null;
+          this.combine = config2.combine || null;
         }
         /**
         This is meant to be used with
@@ -13649,8 +13974,8 @@
         which may have children grouped into subtrees with type
         [`NodeType.none`](#common.NodeType^none).
         */
-        balance(config = {}) {
-          return this.children.length <= 8 ? this : balanceRange(NodeType.none, this.children, this.positions, 0, this.children.length, 0, this.length, (children, positions, length) => new _Tree(this.type, children, positions, length, this.propValues), config.makeTree || ((children, positions, length) => new _Tree(NodeType.none, children, positions, length)));
+        balance(config2 = {}) {
+          return this.children.length <= 8 ? this : balanceRange(NodeType.none, this.children, this.positions, 0, this.children.length, 0, this.length, (children, positions, length) => new _Tree(this.type, children, positions, length, this.propValues), config2.makeTree || ((children, positions, length) => new _Tree(NodeType.none, children, positions, length)));
         }
         /**
         Build a tree from a postfix-ordered buffer of node information,
@@ -15015,14 +15340,14 @@
           let configs = powerSet(mods);
           for (let parent of base6.set)
             if (!parent.modified.length)
-              for (let config of configs)
-                set2.push(_Modifier.get(parent, config));
+              for (let config2 of configs)
+                set2.push(_Modifier.get(parent, config2));
           return tag2;
         }
       };
       ruleNodeProp = new NodeProp({
         combine(a2, b) {
-          let cur, root, take;
+          let cur2, root, take;
           while (a2 || b) {
             if (!a2 || b && a2.depth >= b.depth) {
               take = b;
@@ -15031,14 +15356,14 @@
               take = a2;
               a2 = a2.next;
             }
-            if (cur && cur.mode == take.mode && !take.context && !cur.context)
+            if (cur2 && cur2.mode == take.mode && !take.context && !cur2.context)
               continue;
             let copy = new Rule(take.tags, take.mode, take.context);
-            if (cur)
-              cur.next = copy;
+            if (cur2)
+              cur2.next = copy;
             else
               root = copy;
-            cur = copy;
+            cur2 = copy;
           }
           return root;
         }
@@ -15636,18 +15961,18 @@
     let inner2 = ast.resolveInner(pos, -1).resolve(pos, 0).enterUnfinishedNodesBefore(pos);
     if (inner2 != stack.node) {
       let add3 = [];
-      for (let cur = inner2; cur && !(cur.from < stack.node.from || cur.to > stack.node.to || cur.from == stack.node.from && cur.type == stack.node.type); cur = cur.parent)
-        add3.push(cur);
+      for (let cur2 = inner2; cur2 && !(cur2.from < stack.node.from || cur2.to > stack.node.to || cur2.from == stack.node.from && cur2.type == stack.node.type); cur2 = cur2.parent)
+        add3.push(cur2);
       for (let i = add3.length - 1; i >= 0; i--)
         stack = { node: add3[i], next: stack };
     }
     return indentFor(stack, cx2, pos);
   }
   function indentFor(stack, cx2, pos) {
-    for (let cur = stack; cur; cur = cur.next) {
-      let strategy = indentStrategy(cur.node);
+    for (let cur2 = stack; cur2; cur2 = cur2.next) {
+      let strategy = indentStrategy(cur2.node);
       if (strategy)
-        return strategy(TreeIndentContext.create(cx2, pos, cur));
+        return strategy(TreeIndentContext.create(cx2, pos, cur2));
     }
     return 0;
   }
@@ -15669,8 +15994,8 @@
     return 0;
   }
   function isParent(parent, of) {
-    for (let cur = of; cur; cur = cur.parent)
-      if (parent == cur)
+    for (let cur2 = of; cur2; cur2 = cur2.parent)
+      if (parent == cur2)
         return true;
     return false;
   }
@@ -15695,12 +16020,12 @@
       pos = next2.to;
     }
   }
-  function delimitedIndent({ closing: closing3, align = true, units = 1 }) {
-    return (context) => delimitedStrategy(context, align, units, closing3);
+  function delimitedIndent({ closing: closing4, align = true, units = 1 }) {
+    return (context) => delimitedStrategy(context, align, units, closing4);
   }
-  function delimitedStrategy(context, align, units, closing3, closedAt) {
+  function delimitedStrategy(context, align, units, closing4, closedAt) {
     let after = context.textAfter, space8 = after.match(/^\s*/)[0].length;
-    let closed = closing3 && after.slice(space8, space8 + closing3.length) == closing3 || closedAt == context.pos + space8;
+    let closed = closing4 && after.slice(space8, space8 + closing4.length) == closing4 || closedAt == context.pos + space8;
     let aligned = align ? bracketedAligned(context) : null;
     if (aligned)
       return closed ? context.column(aligned.from) : context.column(aligned.to);
@@ -15752,15 +16077,15 @@
     let hasHandle = node.type.prop(bracketMatchingHandle);
     return hasHandle ? hasHandle(node.node) : node;
   }
-  function matchBrackets(state, pos, dir, config = {}) {
-    let maxScanDistance = config.maxScanDistance || DefaultScanDist, brackets2 = config.brackets || DefaultBrackets;
+  function matchBrackets(state, pos, dir, config2 = {}) {
+    let maxScanDistance = config2.maxScanDistance || DefaultScanDist, brackets2 = config2.brackets || DefaultBrackets;
     let tree = syntaxTree(state), node = tree.resolveInner(pos, dir);
-    for (let cur = node; cur; cur = cur.parent) {
-      let matches = matchingNodes(cur.type, dir, brackets2);
-      if (matches && cur.from < cur.to) {
-        let handle = findHandle(cur);
+    for (let cur2 = node; cur2; cur2 = cur2.parent) {
+      let matches = matchingNodes(cur2.type, dir, brackets2);
+      if (matches && cur2.from < cur2.to) {
+        let handle = findHandle(cur2);
         if (handle && (dir > 0 ? pos >= handle.from && pos < handle.to : pos > handle.from && pos <= handle.to))
-          return matchMarkedBrackets(state, pos, dir, cur, handle, matches, brackets2);
+          return matchMarkedBrackets(state, pos, dir, cur2, handle, matches, brackets2);
       }
     }
     return matchPlainBrackets(state, pos, dir, tree, node.type, maxScanDistance, brackets2);
@@ -17317,6 +17642,9 @@
       return source(context);
     };
   }
+  function cur(state) {
+    return state.selection.main.from;
+  }
   function ensureAnchor(expr, start2) {
     var _a2;
     let { source } = expr;
@@ -17324,6 +17652,278 @@
     if (!addStart && !addEnd)
       return expr;
     return new RegExp(`${addStart ? "^" : ""}(?:${source})${addEnd ? "$" : ""}`, (_a2 = expr.flags) !== null && _a2 !== void 0 ? _a2 : expr.ignoreCase ? "i" : "");
+  }
+  function insertCompletionText(state, text6, from3, to) {
+    let { main: main2 } = state.selection, fromOff = from3 - main2.from, toOff = to - main2.from;
+    return {
+      ...state.changeByRange((range) => {
+        if (range != main2 && from3 != to && state.sliceDoc(range.from + fromOff, range.from + toOff) != state.sliceDoc(from3, to))
+          return { range };
+        let lines = state.toText(text6);
+        return {
+          changes: { from: range.from + fromOff, to: to == main2.from ? range.to : range.from + toOff, insert: lines },
+          range: EditorSelection.cursor(range.from + fromOff + lines.length)
+        };
+      }),
+      scrollIntoView: true,
+      userEvent: "input.complete"
+    };
+  }
+  function asSource(source) {
+    if (!Array.isArray(source))
+      return source;
+    let known = SourceCache.get(source);
+    if (!known)
+      SourceCache.set(source, known = completeFromList(source));
+    return known;
+  }
+  function joinClass(a2, b) {
+    return a2 ? b ? a2 + " " + b : a2 : b;
+  }
+  function defaultPositionInfo(view2, list2, option, info, space8, tooltip) {
+    let rtl = view2.textDirection == Direction.RTL, left = rtl, narrow = false;
+    let side = "top", offset, maxWidth;
+    let spaceLeft = list2.left - space8.left, spaceRight = space8.right - list2.right;
+    let infoWidth = info.right - info.left, infoHeight = info.bottom - info.top;
+    if (left && spaceLeft < Math.min(infoWidth, spaceRight))
+      left = false;
+    else if (!left && spaceRight < Math.min(infoWidth, spaceLeft))
+      left = true;
+    if (infoWidth <= (left ? spaceLeft : spaceRight)) {
+      offset = Math.max(space8.top, Math.min(option.top, space8.bottom - infoHeight)) - list2.top;
+      maxWidth = Math.min(400, left ? spaceLeft : spaceRight);
+    } else {
+      narrow = true;
+      maxWidth = Math.min(
+        400,
+        (rtl ? list2.right : space8.right - list2.left) - 30
+        /* Info.Margin */
+      );
+      let spaceBelow = space8.bottom - list2.bottom;
+      if (spaceBelow >= infoHeight || spaceBelow > list2.top) {
+        offset = option.bottom - list2.top;
+      } else {
+        side = "bottom";
+        offset = list2.bottom - option.top;
+      }
+    }
+    let scaleY = (list2.bottom - list2.top) / tooltip.offsetHeight;
+    let scaleX = (list2.right - list2.left) / tooltip.offsetWidth;
+    return {
+      style: `${side}: ${offset / scaleY}px; max-width: ${maxWidth / scaleX}px`,
+      class: "cm-completionInfo-" + (narrow ? rtl ? "left-narrow" : "right-narrow" : left ? "left" : "right")
+    };
+  }
+  function optionContent(config2) {
+    let content3 = config2.addToOptions.slice();
+    if (config2.icons)
+      content3.push({
+        render(completion) {
+          let icon = document.createElement("div");
+          icon.classList.add("cm-completionIcon");
+          if (completion.type)
+            icon.classList.add(...completion.type.split(/\s+/g).map((cls) => "cm-completionIcon-" + cls));
+          icon.setAttribute("aria-hidden", "true");
+          return icon;
+        },
+        position: 20
+      });
+    content3.push({
+      render(completion, _s, _v, match2) {
+        let labelElt = document.createElement("span");
+        labelElt.className = "cm-completionLabel";
+        let label = completion.displayLabel || completion.label, off = 0;
+        for (let j = 0; j < match2.length; ) {
+          let from3 = match2[j++], to = match2[j++];
+          if (from3 > off)
+            labelElt.appendChild(document.createTextNode(label.slice(off, from3)));
+          let span = labelElt.appendChild(document.createElement("span"));
+          span.appendChild(document.createTextNode(label.slice(from3, to)));
+          span.className = "cm-completionMatchedText";
+          off = to;
+        }
+        if (off < label.length)
+          labelElt.appendChild(document.createTextNode(label.slice(off)));
+        return labelElt;
+      },
+      position: 50
+    }, {
+      render(completion) {
+        if (!completion.detail)
+          return null;
+        let detailElt = document.createElement("span");
+        detailElt.className = "cm-completionDetail";
+        detailElt.textContent = completion.detail;
+        return detailElt;
+      },
+      position: 80
+    });
+    return content3.sort((a2, b) => a2.position - b.position).map((a2) => a2.render);
+  }
+  function rangeAroundSelected(total, selected, max) {
+    if (total <= max)
+      return { from: 0, to: total };
+    if (selected < 0)
+      selected = 0;
+    if (selected <= total >> 1) {
+      let off2 = Math.floor(selected / max);
+      return { from: off2 * max, to: (off2 + 1) * max };
+    }
+    let off = Math.floor((total - selected) / max);
+    return { from: total - (off + 1) * max, to: total - off * max };
+  }
+  function completionTooltip(stateField, applyCompletion2) {
+    return (view2) => new CompletionTooltip(view2, stateField, applyCompletion2);
+  }
+  function scrollIntoView2(container, element2) {
+    let parent = container.getBoundingClientRect();
+    let self = element2.getBoundingClientRect();
+    let scaleY = parent.height / container.offsetHeight;
+    if (self.top < parent.top)
+      container.scrollTop -= (parent.top - self.top) / scaleY;
+    else if (self.bottom > parent.bottom)
+      container.scrollTop += (self.bottom - parent.bottom) / scaleY;
+  }
+  function score(option) {
+    return (option.boost || 0) * 100 + (option.apply ? 10 : 0) + (option.info ? 5 : 0) + (option.type ? 1 : 0);
+  }
+  function sortOptions(active, state) {
+    let options = [];
+    let sections = null, dynamicSectionScore = null;
+    let addOption = (option) => {
+      options.push(option);
+      let { section: section2 } = option.completion;
+      if (section2) {
+        if (!sections)
+          sections = [];
+        let name2 = typeof section2 == "string" ? section2 : section2.name;
+        if (!sections.some((s) => s.name == name2))
+          sections.push(typeof section2 == "string" ? { name: name2 } : section2);
+      }
+    };
+    let conf = state.facet(completionConfig);
+    for (let a2 of active)
+      if (a2.hasResult()) {
+        let getMatch = a2.result.getMatch;
+        if (a2.result.filter === false) {
+          for (let option of a2.result.options) {
+            addOption(new Option(option, a2.source, getMatch ? getMatch(option) : [], 1e9 - options.length));
+          }
+        } else {
+          let pattern = state.sliceDoc(a2.from, a2.to), match2;
+          let matcher = conf.filterStrict ? new StrictMatcher(pattern) : new FuzzyMatcher(pattern);
+          for (let option of a2.result.options)
+            if (match2 = matcher.match(option.label)) {
+              let matched = !option.displayLabel ? match2.matched : getMatch ? getMatch(option, match2.matched) : [];
+              let score2 = match2.score + (option.boost || 0);
+              addOption(new Option(option, a2.source, matched, score2));
+              if (typeof option.section == "object" && option.section.rank === "dynamic") {
+                let { name: name2 } = option.section;
+                if (!dynamicSectionScore)
+                  dynamicSectionScore = /* @__PURE__ */ Object.create(null);
+                dynamicSectionScore[name2] = Math.max(score2, dynamicSectionScore[name2] || -1e9);
+              }
+            }
+        }
+      }
+    if (sections) {
+      let sectionOrder = /* @__PURE__ */ Object.create(null), pos = 0;
+      let cmp = (a2, b) => {
+        return (a2.rank === "dynamic" && b.rank === "dynamic" ? dynamicSectionScore[b.name] - dynamicSectionScore[a2.name] : 0) || (typeof a2.rank == "number" ? a2.rank : 1e9) - (typeof b.rank == "number" ? b.rank : 1e9) || (a2.name < b.name ? -1 : 1);
+      };
+      for (let s of sections.sort(cmp)) {
+        pos -= 1e5;
+        sectionOrder[s.name] = pos;
+      }
+      for (let option of options) {
+        let { section: section2 } = option.completion;
+        if (section2)
+          option.score += sectionOrder[typeof section2 == "string" ? section2 : section2.name];
+      }
+    }
+    let result = [], prev = null;
+    let compare2 = conf.compareCompletions;
+    for (let opt of options.sort((a2, b) => b.score - a2.score || compare2(a2.completion, b.completion))) {
+      let cur2 = opt.completion;
+      if (!prev || prev.label != cur2.label || prev.detail != cur2.detail || prev.type != null && cur2.type != null && prev.type != cur2.type || prev.apply != cur2.apply || prev.boost != cur2.boost)
+        result.push(opt);
+      else if (score(opt.completion) > score(prev))
+        result[result.length - 1] = opt;
+      prev = opt.completion;
+    }
+    return result;
+  }
+  function sameResults(a2, b) {
+    if (a2 == b)
+      return true;
+    for (let iA = 0, iB = 0; ; ) {
+      while (iA < a2.length && !a2[iA].hasResult())
+        iA++;
+      while (iB < b.length && !b[iB].hasResult())
+        iB++;
+      let endA = iA == a2.length, endB = iB == b.length;
+      if (endA || endB)
+        return endA == endB;
+      if (a2[iA++].result != b[iB++].result)
+        return false;
+    }
+  }
+  function makeAttrs(id3, selected) {
+    let result = {
+      "aria-autocomplete": "list",
+      "aria-haspopup": "listbox",
+      "aria-controls": id3
+    };
+    if (selected > -1)
+      result["aria-activedescendant"] = id3 + "-" + selected;
+    return result;
+  }
+  function getUpdateType(tr, conf) {
+    if (tr.isUserEvent("input.complete")) {
+      let completion = tr.annotation(pickedCompletion);
+      if (completion && conf.activateOnCompletion(completion))
+        return 4 | 8;
+    }
+    let typing = tr.isUserEvent("input.type");
+    return typing && conf.activateOnTyping ? 4 | 1 : typing ? 1 : tr.isUserEvent("delete.backward") ? 2 : tr.selection ? 8 : tr.docChanged ? 16 : 0;
+  }
+  function checkValid(validFor, state, from3, to) {
+    if (!validFor)
+      return false;
+    let text6 = state.sliceDoc(from3, to);
+    return typeof validFor == "function" ? validFor(text6, from3, to, state) : ensureAnchor(validFor, true).test(text6);
+  }
+  function applyCompletion(view2, option) {
+    const apply = option.completion.apply || option.completion.label;
+    let result = view2.state.field(completionState).active.find((a2) => a2.source == option.source);
+    if (!(result instanceof ActiveResult))
+      return false;
+    if (typeof apply == "string")
+      view2.dispatch({
+        ...insertCompletionText(view2.state, apply, result.from, result.to),
+        annotations: pickedCompletion.of(option.completion)
+      });
+    else
+      apply(view2, option.completion, result.from, result.to);
+    return true;
+  }
+  function moveCompletionSelection(forward, by = "option") {
+    return (view2) => {
+      let cState = view2.state.field(completionState, false);
+      if (!cState || !cState.open || cState.open.disabled || Date.now() - cState.open.timestamp < view2.state.facet(completionConfig).interactionDelay)
+        return false;
+      let step = 1, tooltip;
+      if (by == "page" && (tooltip = getTooltip(view2, cState.open.tooltip)))
+        step = Math.max(2, Math.floor(tooltip.dom.offsetHeight / tooltip.dom.querySelector("li").offsetHeight) - 1);
+      let { length } = cState.open.options;
+      let selected = cState.open.selected > -1 ? cState.open.selected + step * (forward ? 1 : -1) : forward ? 0 : length - 1;
+      if (selected < 0)
+        selected = by == "page" ? 0 : length - 1;
+      else if (selected >= length)
+        selected = by == "page" ? length - 1 : 0;
+      view2.dispatch({ effects: setSelectedEffect.of(selected) });
+      return true;
+    };
   }
   function fieldSelection(ranges, field) {
     return EditorSelection.create(ranges.filter((r2) => r2.field == field).map((r2) => EditorSelection.range(r2.from, r2.to)));
@@ -17366,7 +17966,176 @@
   function snippetCompletion(template, completion) {
     return { ...completion, apply: snippet(template) };
   }
-  var CompletionContext, pickedCompletion, windows, baseTheme3, FieldPos, FieldRange, Snippet, fieldMarker, fieldRange, ActiveSnippet, setActive, moveToField, snippetState, clearSnippet, nextSnippetField, prevSnippetField, defaultSnippetKeymap, snippetKeymap, addSnippetKeymap, snippetPointerHandler, closedBracket, android;
+  function closeBrackets() {
+    return [inputHandler2, bracketState];
+  }
+  function closing(ch2) {
+    for (let i = 0; i < definedClosing.length; i += 2)
+      if (definedClosing.charCodeAt(i) == ch2)
+        return definedClosing.charAt(i + 1);
+    return fromCodePoint(ch2 < 128 ? ch2 : ch2 + 1);
+  }
+  function config(state, pos) {
+    return state.languageDataAt("closeBrackets", pos)[0] || defaults;
+  }
+  function insertBracket(state, bracket2) {
+    let conf = config(state, state.selection.main.head);
+    let tokens2 = conf.brackets || defaults.brackets;
+    for (let tok of tokens2) {
+      let closed = closing(codePointAt2(tok, 0));
+      if (bracket2 == tok)
+        return closed == tok ? handleSame(state, tok, tokens2.indexOf(tok + tok + tok) > -1, conf) : handleOpen(state, tok, closed, conf.before || defaults.before);
+      if (bracket2 == closed && closedBracketAt(state, state.selection.main.from))
+        return handleClose(state, tok, closed);
+    }
+    return null;
+  }
+  function closedBracketAt(state, pos) {
+    let found = false;
+    state.field(bracketState).between(0, state.doc.length, (from3) => {
+      if (from3 == pos)
+        found = true;
+    });
+    return found;
+  }
+  function nextChar(doc2, pos) {
+    let next2 = doc2.sliceString(pos, pos + 2);
+    return next2.slice(0, codePointSize2(codePointAt2(next2, 0)));
+  }
+  function prevChar(doc2, pos) {
+    let prev = doc2.sliceString(pos - 2, pos);
+    return codePointSize2(codePointAt2(prev, 0)) == prev.length ? prev : prev.slice(1);
+  }
+  function handleOpen(state, open2, close2, closeBefore) {
+    let dont = null, changes = state.changeByRange((range) => {
+      if (!range.empty)
+        return {
+          changes: [{ insert: open2, from: range.from }, { insert: close2, from: range.to }],
+          effects: closeBracketEffect.of(range.to + open2.length),
+          range: EditorSelection.range(range.anchor + open2.length, range.head + open2.length)
+        };
+      let next2 = nextChar(state.doc, range.head);
+      if (!next2 || /\s/.test(next2) || closeBefore.indexOf(next2) > -1)
+        return {
+          changes: { insert: open2 + close2, from: range.head },
+          effects: closeBracketEffect.of(range.head + open2.length),
+          range: EditorSelection.cursor(range.head + open2.length)
+        };
+      return { range: dont = range };
+    });
+    return dont ? null : state.update(changes, {
+      scrollIntoView: true,
+      userEvent: "input.type"
+    });
+  }
+  function handleClose(state, _open, close2) {
+    let dont = null, changes = state.changeByRange((range) => {
+      if (range.empty && nextChar(state.doc, range.head) == close2)
+        return {
+          changes: { from: range.head, to: range.head + close2.length, insert: close2 },
+          range: EditorSelection.cursor(range.head + close2.length)
+        };
+      return dont = { range };
+    });
+    return dont ? null : state.update(changes, {
+      scrollIntoView: true,
+      userEvent: "input.type"
+    });
+  }
+  function handleSame(state, token, allowTriple, config2) {
+    let stringPrefixes4 = config2.stringPrefixes || defaults.stringPrefixes;
+    let dont = null, changes = state.changeByRange((range) => {
+      if (!range.empty)
+        return {
+          changes: [{ insert: token, from: range.from }, { insert: token, from: range.to }],
+          effects: closeBracketEffect.of(range.to + token.length),
+          range: EditorSelection.range(range.anchor + token.length, range.head + token.length)
+        };
+      let pos = range.head, next2 = nextChar(state.doc, pos), start2;
+      if (next2 == token) {
+        if (nodeStart(state, pos)) {
+          return {
+            changes: { insert: token + token, from: pos },
+            effects: closeBracketEffect.of(pos + token.length),
+            range: EditorSelection.cursor(pos + token.length)
+          };
+        } else if (closedBracketAt(state, pos)) {
+          let isTriple = allowTriple && state.sliceDoc(pos, pos + token.length * 3) == token + token + token;
+          let content3 = isTriple ? token + token + token : token;
+          return {
+            changes: { from: pos, to: pos + content3.length, insert: content3 },
+            range: EditorSelection.cursor(pos + content3.length)
+          };
+        }
+      } else if (allowTriple && state.sliceDoc(pos - 2 * token.length, pos) == token + token && (start2 = canStartStringAt(state, pos - 2 * token.length, stringPrefixes4)) > -1 && nodeStart(state, start2)) {
+        return {
+          changes: { insert: token + token + token + token, from: pos },
+          effects: closeBracketEffect.of(pos + token.length),
+          range: EditorSelection.cursor(pos + token.length)
+        };
+      } else if (state.charCategorizer(pos)(next2) != CharCategory.Word) {
+        if (canStartStringAt(state, pos, stringPrefixes4) > -1 && !probablyInString(state, pos, token, stringPrefixes4))
+          return {
+            changes: { insert: token + token, from: pos },
+            effects: closeBracketEffect.of(pos + token.length),
+            range: EditorSelection.cursor(pos + token.length)
+          };
+      }
+      return { range: dont = range };
+    });
+    return dont ? null : state.update(changes, {
+      scrollIntoView: true,
+      userEvent: "input.type"
+    });
+  }
+  function nodeStart(state, pos) {
+    let tree = syntaxTree(state).resolveInner(pos + 1);
+    return tree.parent && tree.from == pos;
+  }
+  function probablyInString(state, pos, quoteToken, prefixes) {
+    let node = syntaxTree(state).resolveInner(pos, -1);
+    let maxPrefix = prefixes.reduce((m, p) => Math.max(m, p.length), 0);
+    for (let i = 0; i < 5; i++) {
+      let start2 = state.sliceDoc(node.from, Math.min(node.to, node.from + quoteToken.length + maxPrefix));
+      let quotePos = start2.indexOf(quoteToken);
+      if (!quotePos || quotePos > -1 && prefixes.indexOf(start2.slice(0, quotePos)) > -1) {
+        let first = node.firstChild;
+        while (first && first.from == node.from && first.to - first.from > quoteToken.length + quotePos) {
+          if (state.sliceDoc(first.to - quoteToken.length, first.to) == quoteToken)
+            return false;
+          first = first.firstChild;
+        }
+        return true;
+      }
+      let parent = node.to == pos && node.parent;
+      if (!parent)
+        break;
+      node = parent;
+    }
+    return false;
+  }
+  function canStartStringAt(state, pos, prefixes) {
+    let charCat = state.charCategorizer(pos);
+    if (charCat(state.sliceDoc(pos - 1, pos)) != CharCategory.Word)
+      return pos;
+    for (let prefix2 of prefixes) {
+      let start2 = pos - prefix2.length;
+      if (state.sliceDoc(start2, pos) == prefix2 && charCat(state.sliceDoc(start2 - 1, start2)) != CharCategory.Word)
+        return start2;
+    }
+    return -1;
+  }
+  function autocompletion(config2 = {}) {
+    return [
+      commitCharacters,
+      completionState,
+      completionConfig.of(config2),
+      completionPlugin,
+      completionKeymapExt,
+      baseTheme3
+    ];
+  }
+  var CompletionContext, Option, pickedCompletion, SourceCache, startCompletionEffect, closeCompletionEffect, FuzzyMatcher, StrictMatcher, completionConfig, setSelectedEffect, CompletionTooltip, CompletionDialog, CompletionState, baseAttrs, noAttrs2, none3, ActiveSource, ActiveResult, setActiveEffect, completionState, createTooltip, acceptCompletion, startCompletion, closeCompletion, RunningQuery, MaxUpdateCount, MinAbortTime, completionPlugin, windows, commitCharacters, baseTheme3, FieldPos, FieldRange, Snippet, fieldMarker, fieldRange, ActiveSnippet, setActive, moveToField, snippetState, clearSnippet, nextSnippetField, prevSnippetField, defaultSnippetKeymap, snippetKeymap, addSnippetKeymap, snippetPointerHandler, defaults, closeBracketEffect, closedBracket, bracketState, definedClosing, android, inputHandler2, deleteBracketPair, closeBracketsKeymap, completionKeymap, completionKeymapExt;
   var init_dist6 = __esm({
     "node_modules/@codemirror/autocomplete/dist/index.js"() {
       init_dist();
@@ -17440,8 +18209,839 @@
           }
         }
       };
+      Option = class {
+        constructor(completion, source, match2, score2) {
+          this.completion = completion;
+          this.source = source;
+          this.match = match2;
+          this.score = score2;
+        }
+      };
       pickedCompletion = /* @__PURE__ */ Annotation.define();
+      SourceCache = /* @__PURE__ */ new WeakMap();
+      startCompletionEffect = /* @__PURE__ */ StateEffect.define();
+      closeCompletionEffect = /* @__PURE__ */ StateEffect.define();
+      FuzzyMatcher = class {
+        constructor(pattern) {
+          this.pattern = pattern;
+          this.chars = [];
+          this.folded = [];
+          this.any = [];
+          this.precise = [];
+          this.byWord = [];
+          this.score = 0;
+          this.matched = [];
+          for (let p = 0; p < pattern.length; ) {
+            let char = codePointAt2(pattern, p), size = codePointSize2(char);
+            this.chars.push(char);
+            let part = pattern.slice(p, p + size), upper = part.toUpperCase();
+            this.folded.push(codePointAt2(upper == part ? part.toLowerCase() : upper, 0));
+            p += size;
+          }
+          this.astral = pattern.length != this.chars.length;
+        }
+        ret(score2, matched) {
+          this.score = score2;
+          this.matched = matched;
+          return this;
+        }
+        // Matches a given word (completion) against the pattern (input).
+        // Will return a boolean indicating whether there was a match and,
+        // on success, set `this.score` to the score, `this.matched` to an
+        // array of `from, to` pairs indicating the matched parts of `word`.
+        //
+        // The score is a number that is more negative the worse the match
+        // is. See `Penalty` above.
+        match(word) {
+          if (this.pattern.length == 0)
+            return this.ret(-100, []);
+          if (word.length < this.pattern.length)
+            return null;
+          let { chars: chars2, folded, any, precise, byWord } = this;
+          if (chars2.length == 1) {
+            let first = codePointAt2(word, 0), firstSize = codePointSize2(first);
+            let score2 = firstSize == word.length ? 0 : -100;
+            if (first == chars2[0]) ;
+            else if (first == folded[0])
+              score2 += -200;
+            else
+              return null;
+            return this.ret(score2, [0, firstSize]);
+          }
+          let direct = word.indexOf(this.pattern);
+          if (direct == 0)
+            return this.ret(word.length == this.pattern.length ? 0 : -100, [0, this.pattern.length]);
+          let len = chars2.length, anyTo = 0;
+          if (direct < 0) {
+            for (let i = 0, e = Math.min(word.length, 200); i < e && anyTo < len; ) {
+              let next2 = codePointAt2(word, i);
+              if (next2 == chars2[anyTo] || next2 == folded[anyTo])
+                any[anyTo++] = i;
+              i += codePointSize2(next2);
+            }
+            if (anyTo < len)
+              return null;
+          }
+          let preciseTo = 0;
+          let byWordTo = 0, byWordFolded = false;
+          let adjacentTo = 0, adjacentStart = -1, adjacentEnd = -1;
+          let hasLower = /[a-z]/.test(word), wordAdjacent = true;
+          for (let i = 0, e = Math.min(word.length, 200), prevType = 0; i < e && byWordTo < len; ) {
+            let next2 = codePointAt2(word, i);
+            if (direct < 0) {
+              if (preciseTo < len && next2 == chars2[preciseTo])
+                precise[preciseTo++] = i;
+              if (adjacentTo < len) {
+                if (next2 == chars2[adjacentTo] || next2 == folded[adjacentTo]) {
+                  if (adjacentTo == 0)
+                    adjacentStart = i;
+                  adjacentEnd = i + 1;
+                  adjacentTo++;
+                } else {
+                  adjacentTo = 0;
+                }
+              }
+            }
+            let ch2, type7 = next2 < 255 ? next2 >= 48 && next2 <= 57 || next2 >= 97 && next2 <= 122 ? 2 : next2 >= 65 && next2 <= 90 ? 1 : 0 : (ch2 = fromCodePoint(next2)) != ch2.toLowerCase() ? 1 : ch2 != ch2.toUpperCase() ? 2 : 0;
+            if (!i || type7 == 1 && hasLower || prevType == 0 && type7 != 0) {
+              if (chars2[byWordTo] == next2 || folded[byWordTo] == next2 && (byWordFolded = true))
+                byWord[byWordTo++] = i;
+              else if (byWord.length)
+                wordAdjacent = false;
+            }
+            prevType = type7;
+            i += codePointSize2(next2);
+          }
+          if (byWordTo == len && byWord[0] == 0 && wordAdjacent)
+            return this.result(-100 + (byWordFolded ? -200 : 0), byWord, word);
+          if (adjacentTo == len && adjacentStart == 0)
+            return this.ret(-200 - word.length + (adjacentEnd == word.length ? 0 : -100), [0, adjacentEnd]);
+          if (direct > -1)
+            return this.ret(-700 - word.length, [direct, direct + this.pattern.length]);
+          if (adjacentTo == len)
+            return this.ret(-200 + -700 - word.length, [adjacentStart, adjacentEnd]);
+          if (byWordTo == len)
+            return this.result(-100 + (byWordFolded ? -200 : 0) + -700 + (wordAdjacent ? 0 : -1100), byWord, word);
+          return chars2.length == 2 ? null : this.result((any[0] ? -700 : 0) + -200 + -1100, any, word);
+        }
+        result(score2, positions, word) {
+          let result = [], i = 0;
+          for (let pos of positions) {
+            let to = pos + (this.astral ? codePointSize2(codePointAt2(word, pos)) : 1);
+            if (i && result[i - 1] == pos)
+              result[i - 1] = to;
+            else {
+              result[i++] = pos;
+              result[i++] = to;
+            }
+          }
+          return this.ret(score2 - word.length, result);
+        }
+      };
+      StrictMatcher = class {
+        constructor(pattern) {
+          this.pattern = pattern;
+          this.matched = [];
+          this.score = 0;
+          this.folded = pattern.toLowerCase();
+        }
+        match(word) {
+          if (word.length < this.pattern.length)
+            return null;
+          let start2 = word.slice(0, this.pattern.length);
+          let match2 = start2 == this.pattern ? 0 : start2.toLowerCase() == this.folded ? -200 : null;
+          if (match2 == null)
+            return null;
+          this.matched = [0, start2.length];
+          this.score = match2 + (word.length == this.pattern.length ? 0 : -100);
+          return this;
+        }
+      };
+      completionConfig = /* @__PURE__ */ Facet.define({
+        combine(configs) {
+          return combineConfig(configs, {
+            activateOnTyping: true,
+            activateOnCompletion: () => false,
+            activateOnTypingDelay: 100,
+            selectOnOpen: true,
+            override: null,
+            closeOnBlur: true,
+            maxRenderedOptions: 100,
+            defaultKeymap: true,
+            tooltipClass: () => "",
+            optionClass: () => "",
+            aboveCursor: false,
+            icons: true,
+            addToOptions: [],
+            positionInfo: defaultPositionInfo,
+            filterStrict: false,
+            compareCompletions: (a2, b) => (a2.sortText || a2.label).localeCompare(b.sortText || b.label),
+            interactionDelay: 75,
+            updateSyncTime: 100
+          }, {
+            defaultKeymap: (a2, b) => a2 && b,
+            closeOnBlur: (a2, b) => a2 && b,
+            icons: (a2, b) => a2 && b,
+            tooltipClass: (a2, b) => (c2) => joinClass(a2(c2), b(c2)),
+            optionClass: (a2, b) => (c2) => joinClass(a2(c2), b(c2)),
+            addToOptions: (a2, b) => a2.concat(b),
+            filterStrict: (a2, b) => a2 || b
+          });
+        }
+      });
+      setSelectedEffect = /* @__PURE__ */ StateEffect.define();
+      CompletionTooltip = class {
+        constructor(view2, stateField, applyCompletion2) {
+          this.view = view2;
+          this.stateField = stateField;
+          this.applyCompletion = applyCompletion2;
+          this.info = null;
+          this.infoDestroy = null;
+          this.placeInfoReq = {
+            read: () => this.measureInfo(),
+            write: (pos) => this.placeInfo(pos),
+            key: this
+          };
+          this.space = null;
+          this.currentClass = "";
+          let cState = view2.state.field(stateField);
+          let { options, selected } = cState.open;
+          let config2 = view2.state.facet(completionConfig);
+          this.optionContent = optionContent(config2);
+          this.optionClass = config2.optionClass;
+          this.tooltipClass = config2.tooltipClass;
+          this.range = rangeAroundSelected(options.length, selected, config2.maxRenderedOptions);
+          this.dom = document.createElement("div");
+          this.dom.className = "cm-tooltip-autocomplete";
+          this.updateTooltipClass(view2.state);
+          this.dom.addEventListener("mousedown", (e) => {
+            let { options: options2 } = view2.state.field(stateField).open;
+            for (let dom = e.target, match2; dom && dom != this.dom; dom = dom.parentNode) {
+              if (dom.nodeName == "LI" && (match2 = /-(\d+)$/.exec(dom.id)) && +match2[1] < options2.length) {
+                this.applyCompletion(view2, options2[+match2[1]]);
+                e.preventDefault();
+                return;
+              }
+            }
+            if (e.target == this.list) {
+              let move = this.list.classList.contains("cm-completionListIncompleteTop") && e.clientY < this.list.firstChild.getBoundingClientRect().top ? this.range.from - 1 : this.list.classList.contains("cm-completionListIncompleteBottom") && e.clientY > this.list.lastChild.getBoundingClientRect().bottom ? this.range.to : null;
+              if (move != null) {
+                view2.dispatch({ effects: setSelectedEffect.of(move) });
+                e.preventDefault();
+              }
+            }
+          });
+          this.dom.addEventListener("focusout", (e) => {
+            let state = view2.state.field(this.stateField, false);
+            if (state && state.tooltip && view2.state.facet(completionConfig).closeOnBlur && e.relatedTarget != view2.contentDOM)
+              view2.dispatch({ effects: closeCompletionEffect.of(null) });
+          });
+          this.showOptions(options, cState.id);
+        }
+        mount() {
+          this.updateSel();
+        }
+        showOptions(options, id3) {
+          if (this.list)
+            this.list.remove();
+          this.list = this.dom.appendChild(this.createListBox(options, id3, this.range));
+          this.list.addEventListener("scroll", () => {
+            if (this.info)
+              this.view.requestMeasure(this.placeInfoReq);
+          });
+        }
+        update(update) {
+          var _a2;
+          let cState = update.state.field(this.stateField);
+          let prevState = update.startState.field(this.stateField);
+          this.updateTooltipClass(update.state);
+          if (cState != prevState) {
+            let { options, selected, disabled } = cState.open;
+            if (!prevState.open || prevState.open.options != options) {
+              this.range = rangeAroundSelected(options.length, selected, update.state.facet(completionConfig).maxRenderedOptions);
+              this.showOptions(options, cState.id);
+            }
+            this.updateSel();
+            if (disabled != ((_a2 = prevState.open) === null || _a2 === void 0 ? void 0 : _a2.disabled))
+              this.dom.classList.toggle("cm-tooltip-autocomplete-disabled", !!disabled);
+          }
+        }
+        updateTooltipClass(state) {
+          let cls = this.tooltipClass(state);
+          if (cls != this.currentClass) {
+            for (let c2 of this.currentClass.split(" "))
+              if (c2)
+                this.dom.classList.remove(c2);
+            for (let c2 of cls.split(" "))
+              if (c2)
+                this.dom.classList.add(c2);
+            this.currentClass = cls;
+          }
+        }
+        positioned(space8) {
+          this.space = space8;
+          if (this.info)
+            this.view.requestMeasure(this.placeInfoReq);
+        }
+        updateSel() {
+          let cState = this.view.state.field(this.stateField), open2 = cState.open;
+          if (open2.selected > -1 && open2.selected < this.range.from || open2.selected >= this.range.to) {
+            this.range = rangeAroundSelected(open2.options.length, open2.selected, this.view.state.facet(completionConfig).maxRenderedOptions);
+            this.showOptions(open2.options, cState.id);
+          }
+          let newSel = this.updateSelectedOption(open2.selected);
+          if (newSel) {
+            this.destroyInfo();
+            let { completion } = open2.options[open2.selected];
+            let { info } = completion;
+            if (!info)
+              return;
+            let infoResult = typeof info === "string" ? document.createTextNode(info) : info(completion);
+            if (!infoResult)
+              return;
+            if ("then" in infoResult) {
+              infoResult.then((obj) => {
+                if (obj && this.view.state.field(this.stateField, false) == cState)
+                  this.addInfoPane(obj, completion);
+              }).catch((e) => logException(this.view.state, e, "completion info"));
+            } else {
+              this.addInfoPane(infoResult, completion);
+              newSel.setAttribute("aria-describedby", this.info.id);
+            }
+          }
+        }
+        addInfoPane(content3, completion) {
+          this.destroyInfo();
+          let wrap = this.info = document.createElement("div");
+          wrap.className = "cm-tooltip cm-completionInfo";
+          wrap.id = "cm-completionInfo-" + Math.floor(Math.random() * 65535).toString(16);
+          if (content3.nodeType != null) {
+            wrap.appendChild(content3);
+            this.infoDestroy = null;
+          } else {
+            let { dom, destroy } = content3;
+            wrap.appendChild(dom);
+            this.infoDestroy = destroy || null;
+          }
+          this.dom.appendChild(wrap);
+          this.view.requestMeasure(this.placeInfoReq);
+        }
+        updateSelectedOption(selected) {
+          let set2 = null;
+          for (let opt = this.list.firstChild, i = this.range.from; opt; opt = opt.nextSibling, i++) {
+            if (opt.nodeName != "LI" || !opt.id) {
+              i--;
+            } else if (i == selected) {
+              if (!opt.hasAttribute("aria-selected")) {
+                opt.setAttribute("aria-selected", "true");
+                set2 = opt;
+              }
+            } else {
+              if (opt.hasAttribute("aria-selected")) {
+                opt.removeAttribute("aria-selected");
+                opt.removeAttribute("aria-describedby");
+              }
+            }
+          }
+          if (set2)
+            scrollIntoView2(this.list, set2);
+          return set2;
+        }
+        measureInfo() {
+          let sel = this.dom.querySelector("[aria-selected]");
+          if (!sel || !this.info)
+            return null;
+          let listRect = this.dom.getBoundingClientRect();
+          let infoRect = this.info.getBoundingClientRect();
+          let selRect = sel.getBoundingClientRect();
+          let space8 = this.space;
+          if (!space8) {
+            let docElt = this.dom.ownerDocument.documentElement;
+            space8 = { left: 0, top: 0, right: docElt.clientWidth, bottom: docElt.clientHeight };
+          }
+          if (selRect.top > Math.min(space8.bottom, listRect.bottom) - 10 || selRect.bottom < Math.max(space8.top, listRect.top) + 10)
+            return null;
+          return this.view.state.facet(completionConfig).positionInfo(this.view, listRect, selRect, infoRect, space8, this.dom);
+        }
+        placeInfo(pos) {
+          if (this.info) {
+            if (pos) {
+              if (pos.style)
+                this.info.style.cssText = pos.style;
+              this.info.className = "cm-tooltip cm-completionInfo " + (pos.class || "");
+            } else {
+              this.info.style.cssText = "top: -1e6px";
+            }
+          }
+        }
+        createListBox(options, id3, range) {
+          const ul = document.createElement("ul");
+          ul.id = id3;
+          ul.setAttribute("role", "listbox");
+          ul.setAttribute("aria-expanded", "true");
+          ul.setAttribute("aria-label", this.view.state.phrase("Completions"));
+          ul.addEventListener("mousedown", (e) => {
+            if (e.target == ul)
+              e.preventDefault();
+          });
+          let curSection = null;
+          for (let i = range.from; i < range.to; i++) {
+            let { completion, match: match2 } = options[i], { section: section2 } = completion;
+            if (section2) {
+              let name2 = typeof section2 == "string" ? section2 : section2.name;
+              if (name2 != curSection && (i > range.from || range.from == 0)) {
+                curSection = name2;
+                if (typeof section2 != "string" && section2.header) {
+                  ul.appendChild(section2.header(section2));
+                } else {
+                  let header3 = ul.appendChild(document.createElement("completion-section"));
+                  header3.textContent = name2;
+                }
+              }
+            }
+            const li = ul.appendChild(document.createElement("li"));
+            li.id = id3 + "-" + i;
+            li.setAttribute("role", "option");
+            let cls = this.optionClass(completion);
+            if (cls)
+              li.className = cls;
+            for (let source of this.optionContent) {
+              let node = source(completion, this.view.state, this.view, match2);
+              if (node)
+                li.appendChild(node);
+            }
+          }
+          if (range.from)
+            ul.classList.add("cm-completionListIncompleteTop");
+          if (range.to < options.length)
+            ul.classList.add("cm-completionListIncompleteBottom");
+          return ul;
+        }
+        destroyInfo() {
+          if (this.info) {
+            if (this.infoDestroy)
+              this.infoDestroy();
+            this.info.remove();
+            this.info = null;
+          }
+        }
+        destroy() {
+          this.destroyInfo();
+        }
+      };
+      CompletionDialog = class _CompletionDialog {
+        constructor(options, attrs2, tooltip, timestamp, selected, disabled) {
+          this.options = options;
+          this.attrs = attrs2;
+          this.tooltip = tooltip;
+          this.timestamp = timestamp;
+          this.selected = selected;
+          this.disabled = disabled;
+        }
+        setSelected(selected, id3) {
+          return selected == this.selected || selected >= this.options.length ? this : new _CompletionDialog(this.options, makeAttrs(id3, selected), this.tooltip, this.timestamp, selected, this.disabled);
+        }
+        static build(active, state, id3, prev, conf, didSetActive) {
+          if (prev && !didSetActive && active.some((s) => s.isPending))
+            return prev.setDisabled();
+          let options = sortOptions(active, state);
+          if (!options.length)
+            return prev && active.some((a2) => a2.isPending) ? prev.setDisabled() : null;
+          let selected = state.facet(completionConfig).selectOnOpen ? 0 : -1;
+          if (prev && prev.selected != selected && prev.selected != -1) {
+            let selectedValue = prev.options[prev.selected].completion;
+            for (let i = 0; i < options.length; i++)
+              if (options[i].completion == selectedValue) {
+                selected = i;
+                break;
+              }
+          }
+          return new _CompletionDialog(options, makeAttrs(id3, selected), {
+            pos: active.reduce((a2, b) => b.hasResult() ? Math.min(a2, b.from) : a2, 1e8),
+            create: createTooltip,
+            above: conf.aboveCursor
+          }, prev ? prev.timestamp : Date.now(), selected, false);
+        }
+        map(changes) {
+          return new _CompletionDialog(this.options, this.attrs, { ...this.tooltip, pos: changes.mapPos(this.tooltip.pos) }, this.timestamp, this.selected, this.disabled);
+        }
+        setDisabled() {
+          return new _CompletionDialog(this.options, this.attrs, this.tooltip, this.timestamp, this.selected, true);
+        }
+      };
+      CompletionState = class _CompletionState {
+        constructor(active, id3, open2) {
+          this.active = active;
+          this.id = id3;
+          this.open = open2;
+        }
+        static start() {
+          return new _CompletionState(none3, "cm-ac-" + Math.floor(Math.random() * 2e6).toString(36), null);
+        }
+        update(tr) {
+          let { state } = tr, conf = state.facet(completionConfig);
+          let sources = conf.override || state.languageDataAt("autocomplete", cur(state)).map(asSource);
+          let active = sources.map((source) => {
+            let value = this.active.find((s) => s.source == source) || new ActiveSource(
+              source,
+              this.active.some(
+                (a2) => a2.state != 0
+                /* State.Inactive */
+              ) ? 1 : 0
+              /* State.Inactive */
+            );
+            return value.update(tr, conf);
+          });
+          if (active.length == this.active.length && active.every((a2, i) => a2 == this.active[i]))
+            active = this.active;
+          let open2 = this.open, didSet = tr.effects.some((e) => e.is(setActiveEffect));
+          if (open2 && tr.docChanged)
+            open2 = open2.map(tr.changes);
+          if (tr.selection || active.some((a2) => a2.hasResult() && tr.changes.touchesRange(a2.from, a2.to)) || !sameResults(active, this.active) || didSet)
+            open2 = CompletionDialog.build(active, state, this.id, open2, conf, didSet);
+          else if (open2 && open2.disabled && !active.some((a2) => a2.isPending))
+            open2 = null;
+          if (!open2 && active.every((a2) => !a2.isPending) && active.some((a2) => a2.hasResult()))
+            active = active.map((a2) => a2.hasResult() ? new ActiveSource(
+              a2.source,
+              0
+              /* State.Inactive */
+            ) : a2);
+          for (let effect of tr.effects)
+            if (effect.is(setSelectedEffect))
+              open2 = open2 && open2.setSelected(effect.value, this.id);
+          return active == this.active && open2 == this.open ? this : new _CompletionState(active, this.id, open2);
+        }
+        get tooltip() {
+          return this.open ? this.open.tooltip : null;
+        }
+        get attrs() {
+          return this.open ? this.open.attrs : this.active.length ? baseAttrs : noAttrs2;
+        }
+      };
+      baseAttrs = {
+        "aria-autocomplete": "list"
+      };
+      noAttrs2 = {};
+      none3 = [];
+      ActiveSource = class _ActiveSource {
+        constructor(source, state, explicit = false) {
+          this.source = source;
+          this.state = state;
+          this.explicit = explicit;
+        }
+        hasResult() {
+          return false;
+        }
+        get isPending() {
+          return this.state == 1;
+        }
+        update(tr, conf) {
+          let type7 = getUpdateType(tr, conf), value = this;
+          if (type7 & 8 || type7 & 16 && this.touches(tr))
+            value = new _ActiveSource(
+              value.source,
+              0
+              /* State.Inactive */
+            );
+          if (type7 & 4 && value.state == 0)
+            value = new _ActiveSource(
+              this.source,
+              1
+              /* State.Pending */
+            );
+          value = value.updateFor(tr, type7);
+          for (let effect of tr.effects) {
+            if (effect.is(startCompletionEffect))
+              value = new _ActiveSource(value.source, 1, effect.value);
+            else if (effect.is(closeCompletionEffect))
+              value = new _ActiveSource(
+                value.source,
+                0
+                /* State.Inactive */
+              );
+            else if (effect.is(setActiveEffect)) {
+              for (let active of effect.value)
+                if (active.source == value.source)
+                  value = active;
+            }
+          }
+          return value;
+        }
+        updateFor(tr, type7) {
+          return this.map(tr.changes);
+        }
+        map(changes) {
+          return this;
+        }
+        touches(tr) {
+          return tr.changes.touchesRange(cur(tr.state));
+        }
+      };
+      ActiveResult = class _ActiveResult extends ActiveSource {
+        constructor(source, explicit, limit, result, from3, to) {
+          super(source, 3, explicit);
+          this.limit = limit;
+          this.result = result;
+          this.from = from3;
+          this.to = to;
+        }
+        hasResult() {
+          return true;
+        }
+        updateFor(tr, type7) {
+          var _a2;
+          if (!(type7 & 3))
+            return this.map(tr.changes);
+          let result = this.result;
+          if (result.map && !tr.changes.empty)
+            result = result.map(result, tr.changes);
+          let from3 = tr.changes.mapPos(this.from), to = tr.changes.mapPos(this.to, 1);
+          let pos = cur(tr.state);
+          if (pos > to || !result || type7 & 2 && (cur(tr.startState) == this.from || pos < this.limit))
+            return new ActiveSource(
+              this.source,
+              type7 & 4 ? 1 : 0
+              /* State.Inactive */
+            );
+          let limit = tr.changes.mapPos(this.limit);
+          if (checkValid(result.validFor, tr.state, from3, to))
+            return new _ActiveResult(this.source, this.explicit, limit, result, from3, to);
+          if (result.update && (result = result.update(result, from3, to, new CompletionContext(tr.state, pos, false))))
+            return new _ActiveResult(this.source, this.explicit, limit, result, result.from, (_a2 = result.to) !== null && _a2 !== void 0 ? _a2 : cur(tr.state));
+          return new ActiveSource(this.source, 1, this.explicit);
+        }
+        map(mapping) {
+          if (mapping.empty)
+            return this;
+          let result = this.result.map ? this.result.map(this.result, mapping) : this.result;
+          if (!result)
+            return new ActiveSource(
+              this.source,
+              0
+              /* State.Inactive */
+            );
+          return new _ActiveResult(this.source, this.explicit, mapping.mapPos(this.limit), this.result, mapping.mapPos(this.from), mapping.mapPos(this.to, 1));
+        }
+        touches(tr) {
+          return tr.changes.touchesRange(this.from, this.to);
+        }
+      };
+      setActiveEffect = /* @__PURE__ */ StateEffect.define({
+        map(sources, mapping) {
+          return sources.map((s) => s.map(mapping));
+        }
+      });
+      completionState = /* @__PURE__ */ StateField.define({
+        create() {
+          return CompletionState.start();
+        },
+        update(value, tr) {
+          return value.update(tr);
+        },
+        provide: (f) => [
+          showTooltip.from(f, (val) => val.tooltip),
+          EditorView.contentAttributes.from(f, (state) => state.attrs)
+        ]
+      });
+      createTooltip = /* @__PURE__ */ completionTooltip(completionState, applyCompletion);
+      acceptCompletion = (view2) => {
+        let cState = view2.state.field(completionState, false);
+        if (view2.state.readOnly || !cState || !cState.open || cState.open.selected < 0 || cState.open.disabled || Date.now() - cState.open.timestamp < view2.state.facet(completionConfig).interactionDelay)
+          return false;
+        return applyCompletion(view2, cState.open.options[cState.open.selected]);
+      };
+      startCompletion = (view2) => {
+        let cState = view2.state.field(completionState, false);
+        if (!cState)
+          return false;
+        view2.dispatch({ effects: startCompletionEffect.of(true) });
+        return true;
+      };
+      closeCompletion = (view2) => {
+        let cState = view2.state.field(completionState, false);
+        if (!cState || !cState.active.some(
+          (a2) => a2.state != 0
+          /* State.Inactive */
+        ))
+          return false;
+        view2.dispatch({ effects: closeCompletionEffect.of(null) });
+        return true;
+      };
+      RunningQuery = class {
+        constructor(active, context) {
+          this.active = active;
+          this.context = context;
+          this.time = Date.now();
+          this.updates = [];
+          this.done = void 0;
+        }
+      };
+      MaxUpdateCount = 50;
+      MinAbortTime = 1e3;
+      completionPlugin = /* @__PURE__ */ ViewPlugin.fromClass(class {
+        constructor(view2) {
+          this.view = view2;
+          this.debounceUpdate = -1;
+          this.running = [];
+          this.debounceAccept = -1;
+          this.pendingStart = false;
+          this.composing = 0;
+          for (let active of view2.state.field(completionState).active)
+            if (active.isPending)
+              this.startQuery(active);
+        }
+        update(update) {
+          let cState = update.state.field(completionState);
+          let conf = update.state.facet(completionConfig);
+          if (!update.selectionSet && !update.docChanged && update.startState.field(completionState) == cState)
+            return;
+          let doesReset = update.transactions.some((tr) => {
+            let type7 = getUpdateType(tr, conf);
+            return type7 & 8 || (tr.selection || tr.docChanged) && !(type7 & 3);
+          });
+          for (let i = 0; i < this.running.length; i++) {
+            let query = this.running[i];
+            if (doesReset || query.context.abortOnDocChange && update.docChanged || query.updates.length + update.transactions.length > MaxUpdateCount && Date.now() - query.time > MinAbortTime) {
+              for (let handler2 of query.context.abortListeners) {
+                try {
+                  handler2();
+                } catch (e) {
+                  logException(this.view.state, e);
+                }
+              }
+              query.context.abortListeners = null;
+              this.running.splice(i--, 1);
+            } else {
+              query.updates.push(...update.transactions);
+            }
+          }
+          if (this.debounceUpdate > -1)
+            clearTimeout(this.debounceUpdate);
+          if (update.transactions.some((tr) => tr.effects.some((e) => e.is(startCompletionEffect))))
+            this.pendingStart = true;
+          let delay = this.pendingStart ? 50 : conf.activateOnTypingDelay;
+          this.debounceUpdate = cState.active.some((a2) => a2.isPending && !this.running.some((q2) => q2.active.source == a2.source)) ? setTimeout(() => this.startUpdate(), delay) : -1;
+          if (this.composing != 0)
+            for (let tr of update.transactions) {
+              if (tr.isUserEvent("input.type"))
+                this.composing = 2;
+              else if (this.composing == 2 && tr.selection)
+                this.composing = 3;
+            }
+        }
+        startUpdate() {
+          this.debounceUpdate = -1;
+          this.pendingStart = false;
+          let { state } = this.view, cState = state.field(completionState);
+          for (let active of cState.active) {
+            if (active.isPending && !this.running.some((r2) => r2.active.source == active.source))
+              this.startQuery(active);
+          }
+          if (this.running.length && cState.open && cState.open.disabled)
+            this.debounceAccept = setTimeout(() => this.accept(), this.view.state.facet(completionConfig).updateSyncTime);
+        }
+        startQuery(active) {
+          let { state } = this.view, pos = cur(state);
+          let context = new CompletionContext(state, pos, active.explicit, this.view);
+          let pending = new RunningQuery(active, context);
+          this.running.push(pending);
+          Promise.resolve(active.source(context)).then((result) => {
+            if (!pending.context.aborted) {
+              pending.done = result || null;
+              this.scheduleAccept();
+            }
+          }, (err) => {
+            this.view.dispatch({ effects: closeCompletionEffect.of(null) });
+            logException(this.view.state, err);
+          });
+        }
+        scheduleAccept() {
+          if (this.running.every((q2) => q2.done !== void 0))
+            this.accept();
+          else if (this.debounceAccept < 0)
+            this.debounceAccept = setTimeout(() => this.accept(), this.view.state.facet(completionConfig).updateSyncTime);
+        }
+        // For each finished query in this.running, try to create a result
+        // or, if appropriate, restart the query.
+        accept() {
+          var _a2;
+          if (this.debounceAccept > -1)
+            clearTimeout(this.debounceAccept);
+          this.debounceAccept = -1;
+          let updated = [];
+          let conf = this.view.state.facet(completionConfig), cState = this.view.state.field(completionState);
+          for (let i = 0; i < this.running.length; i++) {
+            let query = this.running[i];
+            if (query.done === void 0)
+              continue;
+            this.running.splice(i--, 1);
+            if (query.done) {
+              let pos = cur(query.updates.length ? query.updates[0].startState : this.view.state);
+              let limit = Math.min(pos, query.done.from + (query.active.explicit ? 0 : 1));
+              let active = new ActiveResult(query.active.source, query.active.explicit, limit, query.done, query.done.from, (_a2 = query.done.to) !== null && _a2 !== void 0 ? _a2 : pos);
+              for (let tr of query.updates)
+                active = active.update(tr, conf);
+              if (active.hasResult()) {
+                updated.push(active);
+                continue;
+              }
+            }
+            let current = cState.active.find((a2) => a2.source == query.active.source);
+            if (current && current.isPending) {
+              if (query.done == null) {
+                let active = new ActiveSource(
+                  query.active.source,
+                  0
+                  /* State.Inactive */
+                );
+                for (let tr of query.updates)
+                  active = active.update(tr, conf);
+                if (!active.isPending)
+                  updated.push(active);
+              } else {
+                this.startQuery(current);
+              }
+            }
+          }
+          if (updated.length || cState.open && cState.open.disabled)
+            this.view.dispatch({ effects: setActiveEffect.of(updated) });
+        }
+      }, {
+        eventHandlers: {
+          blur(event) {
+            let state = this.view.state.field(completionState, false);
+            if (state && state.tooltip && this.view.state.facet(completionConfig).closeOnBlur) {
+              let dialog = state.open && getTooltip(this.view, state.open.tooltip);
+              if (!dialog || !dialog.dom.contains(event.relatedTarget))
+                setTimeout(() => this.view.dispatch({ effects: closeCompletionEffect.of(null) }), 10);
+            }
+          },
+          compositionstart() {
+            this.composing = 1;
+          },
+          compositionend() {
+            if (this.composing == 3) {
+              setTimeout(() => this.view.dispatch({ effects: startCompletionEffect.of(false) }), 20);
+            }
+            this.composing = 0;
+          }
+        }
+      });
       windows = typeof navigator == "object" && /* @__PURE__ */ /Win/.test(navigator.platform);
+      commitCharacters = /* @__PURE__ */ Prec.highest(/* @__PURE__ */ EditorView.domEventHandlers({
+        keydown(event, view2) {
+          let field = view2.state.field(completionState, false);
+          if (!field || !field.open || field.open.disabled || field.open.selected < 0 || event.key.length > 1 || event.ctrlKey && !(windows && event.altKey) || event.metaKey)
+            return false;
+          let option = field.open.options[field.open.selected];
+          let result = field.active.find((a2) => a2.source == option.source);
+          let commitChars = option.completion.commitCharacters || result.result.commitCharacters;
+          if (commitChars && commitChars.indexOf(event.key) > -1)
+            applyCompletion(view2, option);
+          return false;
+        }
+      }));
       baseTheme3 = /* @__PURE__ */ EditorView.baseTheme({
         ".cm-tooltip.cm-tooltip-autocomplete": {
           "& > ul": {
@@ -17742,11 +19342,88 @@
           return true;
         }
       });
+      defaults = {
+        brackets: ["(", "[", "{", "'", '"'],
+        before: ")]}:;>",
+        stringPrefixes: []
+      };
+      closeBracketEffect = /* @__PURE__ */ StateEffect.define({
+        map(value, mapping) {
+          let mapped = mapping.mapPos(value, -1, MapMode.TrackAfter);
+          return mapped == null ? void 0 : mapped;
+        }
+      });
       closedBracket = /* @__PURE__ */ new class extends RangeValue {
       }();
       closedBracket.startSide = 1;
       closedBracket.endSide = -1;
+      bracketState = /* @__PURE__ */ StateField.define({
+        create() {
+          return RangeSet.empty;
+        },
+        update(value, tr) {
+          value = value.map(tr.changes);
+          if (tr.selection) {
+            let line = tr.state.doc.lineAt(tr.selection.main.head);
+            value = value.update({ filter: (from3) => from3 >= line.from && from3 <= line.to });
+          }
+          for (let effect of tr.effects)
+            if (effect.is(closeBracketEffect))
+              value = value.update({ add: [closedBracket.range(effect.value, effect.value + 1)] });
+          return value;
+        }
+      });
+      definedClosing = "()[]{}<>\xAB\xBB\xBB\xAB\uFF3B\uFF3D\uFF5B\uFF5D";
       android = typeof navigator == "object" && /* @__PURE__ */ /Android\b/.test(navigator.userAgent);
+      inputHandler2 = /* @__PURE__ */ EditorView.inputHandler.of((view2, from3, to, insert2) => {
+        if ((android ? view2.composing : view2.compositionStarted) || view2.state.readOnly)
+          return false;
+        let sel = view2.state.selection.main;
+        if (insert2.length > 2 || insert2.length == 2 && codePointSize2(codePointAt2(insert2, 0)) == 1 || from3 != sel.from || to != sel.to)
+          return false;
+        let tr = insertBracket(view2.state, insert2);
+        if (!tr)
+          return false;
+        view2.dispatch(tr);
+        return true;
+      });
+      deleteBracketPair = ({ state, dispatch }) => {
+        if (state.readOnly)
+          return false;
+        let conf = config(state, state.selection.main.head);
+        let tokens2 = conf.brackets || defaults.brackets;
+        let dont = null, changes = state.changeByRange((range) => {
+          if (range.empty) {
+            let before = prevChar(state.doc, range.head);
+            for (let token of tokens2) {
+              if (token == before && nextChar(state.doc, range.head) == closing(codePointAt2(token, 0)))
+                return {
+                  changes: { from: range.head - token.length, to: range.head + token.length },
+                  range: EditorSelection.cursor(range.head - token.length)
+                };
+            }
+          }
+          return { range: dont = range };
+        });
+        if (!dont)
+          dispatch(state.update(changes, { scrollIntoView: true, userEvent: "delete.backward" }));
+        return !dont;
+      };
+      closeBracketsKeymap = [
+        { key: "Backspace", run: deleteBracketPair }
+      ];
+      completionKeymap = [
+        { key: "Ctrl-Space", run: startCompletion },
+        { mac: "Alt-`", run: startCompletion },
+        { mac: "Alt-i", run: startCompletion },
+        { key: "Escape", run: closeCompletion },
+        { key: "ArrowDown", run: /* @__PURE__ */ moveCompletionSelection(true) },
+        { key: "ArrowUp", run: /* @__PURE__ */ moveCompletionSelection(false) },
+        { key: "PageDown", run: /* @__PURE__ */ moveCompletionSelection(true, "page") },
+        { key: "PageUp", run: /* @__PURE__ */ moveCompletionSelection(false, "page") },
+        { key: "Enter", run: acceptCompletion }
+      ];
+      completionKeymapExt = /* @__PURE__ */ Prec.highest(/* @__PURE__ */ keymap.computeN([completionConfig], (state) => state.facet(completionConfig).defaultKeymap ? [completionKeymap] : []));
     }
   });
 
@@ -17925,7 +19602,7 @@
     let rest = resolveConfig(spec.slice(1));
     if (!rest || !conf)
       return conf || rest;
-    let conc2 = (a2, b) => (a2 || none3).concat(b || none3);
+    let conc2 = (a2, b) => (a2 || none4).concat(b || none4);
     let wrapA = conf.wrap, wrapB = rest.wrap;
     return {
       props: conc2(conf.props, rest.props),
@@ -18084,8 +19761,8 @@
     }
     return ranges;
   }
-  function parseCode(config) {
-    let { codeParser, htmlParser } = config;
+  function parseCode(config2) {
+    let { codeParser, htmlParser } = config2;
     let wrap = parseMixed((node, input) => {
       let id3 = node.type.id;
       if (codeParser && (id3 == Type.CodeBlock || id3 == Type.FencedCode)) {
@@ -18195,7 +19872,7 @@
       return -1;
     };
   }
-  var CompositeBlock, Type, LeafBlock, Line2, DefaultSkipMarkup, EmptyLine, CommentEnd, ProcessingEnd, HTMLBlockStyle, DefaultBlockParsers, LinkReferenceParser, SetextHeadingParser, DefaultLeafBlocks, DefaultEndLeaf, scanLineResult, BlockContext, MarkdownParser, nodeTypes, none3, Buffer2, Element, TreeElement, EmphasisUnderscore, EmphasisAsterisk, LinkStart, ImageStart, InlineDelimiter, Escapable, Punctuation, DefaultInline, InlineContext, NotLast, FragmentCursor2, markdownHighlighting, parser, StrikethroughDelim, Strikethrough, delimiterLine, TableParser, Table, TaskParser, TaskList, autolinkRE, urlRE, lastTwoDomainWords, emailRE, xmppResourceRE, Autolink, GFM, Superscript, Subscript, Emoji;
+  var CompositeBlock, Type, LeafBlock, Line2, DefaultSkipMarkup, EmptyLine, CommentEnd, ProcessingEnd, HTMLBlockStyle, DefaultBlockParsers, LinkReferenceParser, SetextHeadingParser, DefaultLeafBlocks, DefaultEndLeaf, scanLineResult, BlockContext, MarkdownParser, nodeTypes, none4, Buffer2, Element, TreeElement, EmphasisUnderscore, EmphasisAsterisk, LinkStart, ImageStart, InlineDelimiter, Escapable, Punctuation, DefaultInline, InlineContext, NotLast, FragmentCursor2, markdownHighlighting, parser, StrikethroughDelim, Strikethrough, delimiterLine, TableParser, Table, TaskParser, TaskList, autolinkRE, urlRE, lastTwoDomainWords, emailRE, xmppResourceRE, Autolink, GFM, Superscript, Subscript, Emoji;
   var init_dist7 = __esm({
     "node_modules/@lezer/markdown/dist/index.js"() {
       init_dist3();
@@ -18935,7 +20612,7 @@
         */
         addNode(block3, from3, to) {
           if (typeof block3 == "number")
-            block3 = new Tree(this.parser.nodeSet.types[block3], none3, none3, (to !== null && to !== void 0 ? to : this.prevLineEnd()) - from3);
+            block3 = new Tree(this.parser.nodeSet.types[block3], none4, none4, (to !== null && to !== void 0 ? to : this.prevLineEnd()) - from3);
           this.block.addChild(block3, from3 - this.block.from);
         }
         /**
@@ -19021,15 +20698,15 @@
         Reconfigure the parser.
         */
         configure(spec) {
-          let config = resolveConfig(spec);
-          if (!config)
+          let config2 = resolveConfig(spec);
+          if (!config2)
             return this;
           let { nodeSet: nodeSet2, skipContextMarkup } = this;
           let blockParsers = this.blockParsers.slice(), leafBlockParsers = this.leafBlockParsers.slice(), blockNames = this.blockNames.slice(), inlineParsers = this.inlineParsers.slice(), inlineNames = this.inlineNames.slice(), endLeafBlock = this.endLeafBlock.slice(), wrappers = this.wrappers;
-          if (nonEmpty(config.defineNodes)) {
+          if (nonEmpty(config2.defineNodes)) {
             skipContextMarkup = Object.assign({}, skipContextMarkup);
             let nodeTypes2 = nodeSet2.types.slice(), styles3;
-            for (let s of config.defineNodes) {
+            for (let s of config2.defineNodes) {
               let { name: name2, block: block3, composite, style: style2 } = typeof s == "string" ? { name: s } : s;
               if (nodeTypes2.some((t2) => t2.name == name2))
                 continue;
@@ -19055,10 +20732,10 @@
             if (styles3)
               nodeSet2 = nodeSet2.extend(styleTags(styles3));
           }
-          if (nonEmpty(config.props))
-            nodeSet2 = nodeSet2.extend(...config.props);
-          if (nonEmpty(config.remove)) {
-            for (let rm2 of config.remove) {
+          if (nonEmpty(config2.props))
+            nodeSet2 = nodeSet2.extend(...config2.props);
+          if (nonEmpty(config2.remove)) {
+            for (let rm2 of config2.remove) {
               let block3 = this.blockNames.indexOf(rm2), inline = this.inlineNames.indexOf(rm2);
               if (block3 > -1)
                 blockParsers[block3] = leafBlockParsers[block3] = void 0;
@@ -19066,8 +20743,8 @@
                 inlineParsers[inline] = void 0;
             }
           }
-          if (nonEmpty(config.parseBlock)) {
-            for (let spec2 of config.parseBlock) {
+          if (nonEmpty(config2.parseBlock)) {
+            for (let spec2 of config2.parseBlock) {
               let found = blockNames.indexOf(spec2.name);
               if (found > -1) {
                 blockParsers[found] = spec2.parse;
@@ -19082,8 +20759,8 @@
                 endLeafBlock.push(spec2.endLeaf);
             }
           }
-          if (nonEmpty(config.parseInline)) {
-            for (let spec2 of config.parseInline) {
+          if (nonEmpty(config2.parseInline)) {
+            for (let spec2 of config2.parseInline) {
               let found = inlineNames.indexOf(spec2.name);
               if (found > -1) {
                 inlineParsers[found] = spec2.parse;
@@ -19094,8 +20771,8 @@
               }
             }
           }
-          if (config.wrap)
-            wrappers = wrappers.concat(config.wrap);
+          if (config2.wrap)
+            wrappers = wrappers.concat(config2.wrap);
           return new _MarkdownParser(nodeSet2, blockParsers, leafBlockParsers, blockNames, endLeafBlock, skipContextMarkup, inlineParsers, inlineNames, wrappers);
         }
         /**
@@ -19138,7 +20815,7 @@
           top: name2 == "Document"
         });
       }
-      none3 = [];
+      none4 = [];
       Buffer2 = class {
         constructor(nodeSet2) {
           this.nodeSet = nodeSet2;
@@ -19168,7 +20845,7 @@
         /**
         @internal
         */
-        constructor(type7, from3, to, children = none3) {
+        constructor(type7, from3, to, children = none4) {
           this.type = type7;
           this.from = from3;
           this.to = to;
@@ -19201,7 +20878,7 @@
           return this.tree.type.id;
         }
         get children() {
-          return none3;
+          return none4;
         }
         writeTo(buf, offset) {
           buf.nodes.push(this.tree);
@@ -19578,35 +21255,35 @@
           return tree && tree.prop(NodeProp.contextHash) == hash4;
         }
         takeNodes(cx2) {
-          let cur = this.cursor, off = this.fragment.offset, fragEnd = this.fragmentEnd - (this.fragment.openEnd ? 1 : 0);
+          let cur2 = this.cursor, off = this.fragment.offset, fragEnd = this.fragmentEnd - (this.fragment.openEnd ? 1 : 0);
           let start2 = cx2.absoluteLineStart, end2 = start2, blockI = cx2.block.children.length;
           let prevEnd = end2, prevI = blockI;
           for (; ; ) {
-            if (cur.to - off > fragEnd) {
-              if (cur.type.isAnonymous && cur.firstChild())
+            if (cur2.to - off > fragEnd) {
+              if (cur2.type.isAnonymous && cur2.firstChild())
                 continue;
               break;
             }
-            let pos = toRelative(cur.from - off, cx2.ranges);
-            if (cur.to - off <= cx2.ranges[cx2.rangeI].to) {
-              cx2.addNode(cur.tree, pos);
+            let pos = toRelative(cur2.from - off, cx2.ranges);
+            if (cur2.to - off <= cx2.ranges[cx2.rangeI].to) {
+              cx2.addNode(cur2.tree, pos);
             } else {
               let dummy = new Tree(cx2.parser.nodeSet.types[Type.Paragraph], [], [], 0, cx2.block.hashProp);
-              cx2.reusePlaceholders.set(dummy, cur.tree);
+              cx2.reusePlaceholders.set(dummy, cur2.tree);
               cx2.addNode(dummy, pos);
             }
-            if (cur.type.is("Block")) {
-              if (NotLast.indexOf(cur.type.id) < 0) {
-                end2 = cur.to - off;
+            if (cur2.type.is("Block")) {
+              if (NotLast.indexOf(cur2.type.id) < 0) {
+                end2 = cur2.to - off;
                 blockI = cx2.block.children.length;
               } else {
                 end2 = prevEnd;
                 blockI = prevI;
               }
-              prevEnd = cur.to - off;
+              prevEnd = cur2.to - off;
               prevI = cx2.block.children.length;
             }
-            if (!cur.nextSibling())
+            if (!cur2.nextSibling())
               break;
           }
           while (cx2.block.children.length > blockI) {
@@ -19962,13 +21639,13 @@
         /**
         @internal
         */
-        constructor(p, stack, state, reducePos, pos, score, buffer, bufferBase, curContext, lookAhead = 0, parent) {
+        constructor(p, stack, state, reducePos, pos, score2, buffer, bufferBase, curContext, lookAhead = 0, parent) {
           this.p = p;
           this.stack = stack;
           this.state = state;
           this.reducePos = reducePos;
           this.pos = pos;
-          this.score = score;
+          this.score = score2;
           this.buffer = buffer;
           this.bufferBase = bufferBase;
           this.curContext = curContext;
@@ -20063,16 +21740,16 @@
         */
         storeNode(term, start2, end2, size = 4, mustSink = false) {
           if (term == 0 && (!this.stack.length || this.stack[this.stack.length - 1] < this.buffer.length + this.bufferBase)) {
-            let cur = this, top3 = this.buffer.length;
-            if (top3 == 0 && cur.parent) {
-              top3 = cur.bufferBase - cur.parent.bufferBase;
-              cur = cur.parent;
+            let cur2 = this, top3 = this.buffer.length;
+            if (top3 == 0 && cur2.parent) {
+              top3 = cur2.bufferBase - cur2.parent.bufferBase;
+              cur2 = cur2.parent;
             }
-            if (top3 > 0 && cur.buffer[top3 - 4] == 0 && cur.buffer[top3 - 1] > -1) {
+            if (top3 > 0 && cur2.buffer[top3 - 4] == 0 && cur2.buffer[top3 - 1] > -1) {
               if (start2 == end2)
                 return;
-              if (cur.buffer[top3 - 2] >= start2) {
-                cur.buffer[top3 - 2] = end2;
+              if (cur2.buffer[top3 - 2] >= start2) {
+                cur2.buffer[top3 - 2] = end2;
                 return;
               }
             }
@@ -21478,25 +23155,25 @@
         given settings modified. Settings not provided in `config` are
         kept from the original parser.
         */
-        configure(config) {
+        configure(config2) {
           let copy = Object.assign(Object.create(_LRParser.prototype), this);
-          if (config.props)
-            copy.nodeSet = this.nodeSet.extend(...config.props);
-          if (config.top) {
-            let info = this.topRules[config.top];
+          if (config2.props)
+            copy.nodeSet = this.nodeSet.extend(...config2.props);
+          if (config2.top) {
+            let info = this.topRules[config2.top];
             if (!info)
-              throw new RangeError(`Invalid top rule name ${config.top}`);
+              throw new RangeError(`Invalid top rule name ${config2.top}`);
             copy.top = info;
           }
-          if (config.tokenizers)
+          if (config2.tokenizers)
             copy.tokenizers = this.tokenizers.map((t2) => {
-              let found = config.tokenizers.find((r2) => r2.from == t2);
+              let found = config2.tokenizers.find((r2) => r2.from == t2);
               return found ? found.to : t2;
             });
-          if (config.specializers) {
+          if (config2.specializers) {
             copy.specializers = this.specializers.slice();
             copy.specializerSpecs = this.specializerSpecs.map((s, i) => {
-              let found = config.specializers.find((r2) => r2.from == s.external);
+              let found = config2.specializers.find((r2) => r2.from == s.external);
               if (!found)
                 return s;
               let spec = Object.assign(Object.assign({}, s), { external: found.to });
@@ -21504,16 +23181,16 @@
               return spec;
             });
           }
-          if (config.contextTracker)
-            copy.context = config.contextTracker;
-          if (config.dialect)
-            copy.dialect = this.parseDialect(config.dialect);
-          if (config.strict != null)
-            copy.strict = config.strict;
-          if (config.wrap)
-            copy.wrappers = copy.wrappers.concat(config.wrap);
-          if (config.bufferLength != null)
-            copy.bufferLength = config.bufferLength;
+          if (config2.contextTracker)
+            copy.context = config2.contextTracker;
+          if (config2.dialect)
+            copy.dialect = this.parseDialect(config2.dialect);
+          if (config2.strict != null)
+            copy.strict = config2.strict;
+          if (config2.wrap)
+            copy.wrappers = copy.wrappers.concat(config2.wrap);
+          if (config2.bufferLength != null)
+            copy.bufferLength = config2.bufferLength;
           return copy;
         }
         /**
@@ -22154,10 +23831,10 @@
     return doc2.sliceString(callee3.from, callee3.to) == "var";
   }
   function astTop(node) {
-    for (let cur = node; ; ) {
-      if (cur.type.isTop)
-        return cur;
-      if (!(cur = cur.parent))
+    for (let cur2 = node; ; ) {
+      if (cur2.type.isTop)
+        return cur2;
+      if (!(cur2 = cur2.parent))
         return node;
     }
   }
@@ -23359,9 +25036,9 @@
       };
     };
   }
-  function javascript(config = {}) {
-    let lang = config.jsx ? config.typescript ? tsxLanguage : jsxLanguage : config.typescript ? typescriptLanguage : javascriptLanguage;
-    let completions4 = config.typescript ? typescriptSnippets.concat(typescriptKeywords) : snippets.concat(keywords);
+  function javascript(config2 = {}) {
+    let lang = config2.jsx ? config2.typescript ? tsxLanguage : jsxLanguage : config2.typescript ? typescriptLanguage : javascriptLanguage;
+    let completions4 = config2.typescript ? typescriptSnippets.concat(typescriptKeywords) : snippets.concat(keywords);
     return new LanguageSupport(lang, [
       javascriptLanguage.data.of({
         autocomplete: ifNotIn(dontComplete, completeFromList(completions4))
@@ -23369,7 +25046,7 @@
       javascriptLanguage.data.of({
         autocomplete: localCompletionSource
       }),
-      config.jsx ? autoCloseTags : []
+      config2.jsx ? autoCloseTags : []
     ]);
   }
   function findOpenTag(node) {
@@ -23388,9 +25065,9 @@
     }
     return "";
   }
-  function esLint(eslint, config) {
-    if (!config) {
-      config = {
+  function esLint(eslint, config2) {
+    if (!config2) {
+      config2 = {
         parserOptions: { ecmaVersion: 2019, sourceType: "module" },
         env: { browser: true, node: true, es6: true, es2015: true, es2017: true, es2020: true },
         rules: {}
@@ -23398,14 +25075,14 @@
       eslint.getRules().forEach((desc, name2) => {
         var _a2;
         if ((_a2 = desc.meta.docs) === null || _a2 === void 0 ? void 0 : _a2.recommended)
-          config.rules[name2] = 2;
+          config2.rules[name2] = 2;
       });
     }
     return (view2) => {
       let { state } = view2, found = [];
       for (let { from: from3, to } of javascriptLanguage.findRegions(state)) {
         let fromLine = state.doc.lineAt(from3), offset = { line: fromLine.number - 1, col: from3 - fromLine.from, pos: from3 };
-        for (let d3 of eslint.verify(state.sliceDoc(from3, to), config))
+        for (let d3 of eslint.verify(state.sliceDoc(from3, to), config2))
           found.push(translateDiagnostic(d3, state.doc, offset));
       }
       return found;
@@ -23816,23 +25493,23 @@
   function htmlCompletionSource(context) {
     return htmlCompletionFor(Schema.default, context);
   }
-  function htmlCompletionSourceWith(config) {
-    let { extraTags, extraGlobalAttributes: extraAttrs } = config;
+  function htmlCompletionSourceWith(config2) {
+    let { extraTags, extraGlobalAttributes: extraAttrs } = config2;
     let schema = extraAttrs || extraTags ? new Schema(extraTags, extraAttrs) : Schema.default;
     return (context) => htmlCompletionFor(schema, context);
   }
-  function html(config = {}) {
+  function html(config2 = {}) {
     let dialect2 = "", wrap;
-    if (config.matchClosingTags === false)
+    if (config2.matchClosingTags === false)
       dialect2 = "noMatch";
-    if (config.selfClosingTags === true)
+    if (config2.selfClosingTags === true)
       dialect2 = (dialect2 ? dialect2 + " " : "") + "selfClosing";
-    if (config.nestedLanguages && config.nestedLanguages.length || config.nestedAttributes && config.nestedAttributes.length)
-      wrap = configureNesting((config.nestedLanguages || []).concat(defaultNesting), (config.nestedAttributes || []).concat(defaultAttrs));
+    if (config2.nestedLanguages && config2.nestedLanguages.length || config2.nestedAttributes && config2.nestedAttributes.length)
+      wrap = configureNesting((config2.nestedLanguages || []).concat(defaultNesting), (config2.nestedAttributes || []).concat(defaultAttrs));
     let lang = wrap ? htmlPlain.configure({ wrap, dialect: dialect2 }) : dialect2 ? htmlLanguage.configure({ dialect: dialect2 }) : htmlLanguage;
     return new LanguageSupport(lang, [
-      htmlLanguage.data.of({ autocomplete: htmlCompletionSourceWith(config) }),
-      config.autoCloseTags !== false ? autoCloseTags2 : [],
+      htmlLanguage.data.of({ autocomplete: htmlCompletionSourceWith(config2) }),
+      config2.autoCloseTags !== false ? autoCloseTags2 : [],
       javascript().support,
       css().support
     ]);
@@ -24348,11 +26025,11 @@
                 if (context.pos + /\s*/.exec(context.textAfter)[0].length < context.node.to)
                   return context.continue();
                 let endElt = null, close2;
-                for (let cur = context.node; ; ) {
-                  let last = cur.lastChild;
-                  if (!last || last.name != "Element" || last.to != cur.to)
+                for (let cur2 = context.node; ; ) {
+                  let last = cur2.lastChild;
+                  if (!last || last.name != "Element" || last.to != cur2.to)
                     break;
-                  endElt = cur = last;
+                  endElt = cur2 = last;
                 }
                 if (endElt && !((close2 = endElt.lastChild) && (close2.name == "CloseTag" || close2.name == "SelfClosingTag")))
                   return context.lineIndent(endElt.from) + context.unit;
@@ -24475,11 +26152,11 @@
   }
   function getContext(node, doc2) {
     let nodes = [], context = [];
-    for (let cur = node; cur; cur = cur.parent) {
-      if (cur.name == "FencedCode")
+    for (let cur2 = node; cur2; cur2 = cur2.parent) {
+      if (cur2.name == "FencedCode")
         return context;
-      if (cur.name == "ListItem" || cur.name == "Blockquote")
-        nodes.push(cur);
+      if (cur2.name == "ListItem" || cur2.name == "Blockquote")
+        nodes.push(cur2);
     }
     for (let i = nodes.length - 1; i >= 0; i--) {
       let node2 = nodes[i], match2;
@@ -24583,11 +26260,11 @@
     }
     return node;
   }
-  function markdown(config = {}) {
-    let { codeLanguages, defaultCodeLanguage, addKeymap = true, base: { parser: parser23 } = commonmarkLanguage, completeHTMLTags = true, pasteURLAsLink: pasteURL = true, htmlTagLanguage = htmlNoMatch } = config;
+  function markdown(config2 = {}) {
+    let { codeLanguages, defaultCodeLanguage, addKeymap = true, base: { parser: parser23 } = commonmarkLanguage, completeHTMLTags = true, pasteURLAsLink: pasteURL = true, htmlTagLanguage = htmlNoMatch } = config2;
     if (!(parser23 instanceof MarkdownParser))
       throw new RangeError("Base parser provided to `markdown` should be a Markdown parser");
-    let extensions = config.extensions ? [config.extensions] : [];
+    let extensions = config2.extensions ? [config2.extensions] : [];
     let support = [htmlTagLanguage.support, headerIndent], defaultCode;
     if (pasteURL)
       support.push(pasteURLAsLink);
@@ -24704,7 +26381,7 @@
           return this.spaceBefore + number2 + this.type + this.spaceAfter;
         }
       };
-      insertNewlineContinueMarkupCommand = (config = {}) => ({ state, dispatch }) => {
+      insertNewlineContinueMarkupCommand = (config2 = {}) => ({ state, dispatch }) => {
         let tree = syntaxTree(state), { doc: doc2 } = state;
         let dont = null, changes = state.changeByRange((range) => {
           if (!range.empty || !markdownLanguage.isActiveAt(state, range.from, -1) && !markdownLanguage.isActiveAt(state, range.from, 1))
@@ -24721,7 +26398,7 @@
           let emptyLine = pos >= inner2.to - inner2.spaceAfter.length && !/\S/.test(line.text.slice(inner2.to));
           if (inner2.item && emptyLine) {
             let first = inner2.node.firstChild, second = inner2.node.getChild("ListItem", "ListItem");
-            if (first.to >= pos || second && second.to < pos || line.from > 0 && !/[^\s>]/.test(doc2.lineAt(line.from - 1).text) || config.nonTightLists === false) {
+            if (first.to >= pos || second && second.to < pos || line.from > 0 && !/[^\s>]/.test(doc2.lineAt(line.from - 1).text) || config2.nonTightLists === false) {
               let next2 = context.length > 1 ? context[context.length - 2] : null;
               let delTo, insert3 = "";
               if (next2 && next2.item) {
@@ -25004,8 +26681,8 @@
   }
   function dialect(spec, kws, types8, builtin5) {
     let dialect2 = {};
-    for (let prop in defaults)
-      dialect2[prop] = (spec.hasOwnProperty(prop) ? spec : defaults)[prop];
+    for (let prop in defaults2)
+      dialect2[prop] = (spec.hasOwnProperty(prop) ? spec : defaults2)[prop];
     if (kws)
       dialect2.words = keywords2(kws, types8 || "", builtin5);
     return dialect2;
@@ -25038,16 +26715,16 @@
       } else if (next2 == 47 && input.next == 42) {
         input.advance();
         for (let depth = 1; ; ) {
-          let cur = input.next;
+          let cur2 = input.next;
           if (input.next < 0)
             break;
           input.advance();
-          if (cur == 42 && input.next == 47) {
+          if (cur2 == 42 && input.next == 47) {
             depth--;
             input.advance();
             if (!depth)
               break;
-          } else if (cur == 47 && input.next == 42) {
+          } else if (cur2 == 47 && input.next == 42) {
             depth++;
             input.advance();
           }
@@ -25309,24 +26986,24 @@
   function keywordCompletionSource(dialect2, upperCase = false, build) {
     return completeKeywords(dialect2.dialect.words, upperCase, build || defaultKeyword);
   }
-  function schemaCompletionSource(config) {
-    return config.schema ? completeFromSchema(config.schema, config.tables, config.schemas, config.defaultTable, config.defaultSchema, config.dialect || StandardSQL) : () => null;
+  function schemaCompletionSource(config2) {
+    return config2.schema ? completeFromSchema(config2.schema, config2.tables, config2.schemas, config2.defaultTable, config2.defaultSchema, config2.dialect || StandardSQL) : () => null;
   }
-  function schemaCompletion(config) {
-    return config.schema ? (config.dialect || StandardSQL).language.data.of({
-      autocomplete: schemaCompletionSource(config)
+  function schemaCompletion(config2) {
+    return config2.schema ? (config2.dialect || StandardSQL).language.data.of({
+      autocomplete: schemaCompletionSource(config2)
     }) : [];
   }
-  function sql(config = {}) {
-    let lang = config.dialect || StandardSQL;
+  function sql(config2 = {}) {
+    let lang = config2.dialect || StandardSQL;
     return new LanguageSupport(lang.language, [
-      schemaCompletion(config),
+      schemaCompletion(config2),
       lang.language.data.of({
-        autocomplete: keywordCompletionSource(lang, config.upperCaseKeywords, config.keywordCompletion)
+        autocomplete: keywordCompletionSource(lang, config2.upperCaseKeywords, config2.keywordCompletion)
       })
     ]);
   }
-  var whitespace, LineComment2, BlockComment2, String$1, Number2, Bool2, Null, ParenL, ParenR, BraceL, BraceR, BracketL, BracketR, Semi, Dot, Operator, Punctuation2, SpecialVar, Identifier2, QuotedIdentifier, Keyword, Type2, Bits, Bytes, Builtin, Space, SQLTypes, SQLKeywords, defaults, tokens, parser$1, EndFrom, Span, QuotedSpan, CompletionLevel, parser5, SQLDialect, StandardSQL, PostgreSQL, MySQLKeywords, MySQLTypes, MySQLBuiltin, MySQL, MariaSQL, MSSQLBuiltin, MSSQL, SQLite, Cassandra, PLSQL;
+  var whitespace, LineComment2, BlockComment2, String$1, Number2, Bool2, Null, ParenL, ParenR, BraceL, BraceR, BracketL, BracketR, Semi, Dot, Operator, Punctuation2, SpecialVar, Identifier2, QuotedIdentifier, Keyword, Type2, Bits, Bytes, Builtin, Space, SQLTypes, SQLKeywords, defaults2, tokens, parser$1, EndFrom, Span, QuotedSpan, CompletionLevel, parser5, SQLDialect, StandardSQL, PostgreSQL, MySQLKeywords, MySQLTypes, MySQLBuiltin, MySQL, MariaSQL, MSSQLBuiltin, MSSQL, SQLite, Cassandra, PLSQL;
   var init_dist16 = __esm({
     "node_modules/@codemirror/lang-sql/dist/index.js"() {
       init_dist5();
@@ -25361,7 +27038,7 @@
       Space = " 	\r\n";
       SQLTypes = "array binary bit boolean char character clob date decimal double float int integer interval large national nchar nclob numeric object precision real smallint time timestamp varchar varying ";
       SQLKeywords = "absolute action add after all allocate alter and any are as asc assertion at authorization before begin between both breadth by call cascade cascaded case cast catalog check close collate collation column commit condition connect connection constraint constraints constructor continue corresponding count create cross cube current current_date current_default_transform_group current_transform_group_for_type current_path current_role current_time current_timestamp current_user cursor cycle data day deallocate declare default deferrable deferred delete depth deref desc describe descriptor deterministic diagnostics disconnect distinct do domain drop dynamic each else elseif end end-exec equals escape except exception exec execute exists exit external fetch first for foreign found from free full function general get global go goto grant group grouping handle having hold hour identity if immediate in indicator initially inner inout input insert intersect into is isolation join key language last lateral leading leave left level like limit local localtime localtimestamp locator loop map match method minute modifies module month names natural nesting new next no none not of old on only open option or order ordinality out outer output overlaps pad parameter partial path prepare preserve primary prior privileges procedure public read reads recursive redo ref references referencing relative release repeat resignal restrict result return returns revoke right role rollback rollup routine row rows savepoint schema scroll search second section select session session_user set sets signal similar size some space specific specifictype sql sqlexception sqlstate sqlwarning start state static system_user table temporary then timezone_hour timezone_minute to trailing transaction translation treat trigger under undo union unique unnest until update usage user using value values view when whenever where while with without work write year zone ";
-      defaults = {
+      defaults2 = {
         backslashEscapes: false,
         hashComments: false,
         spaceAfterDashes: false,
@@ -25378,7 +27055,7 @@
         caseInsensitiveIdentifiers: false,
         words: /* @__PURE__ */ keywords2(SQLKeywords, SQLTypes)
       };
-      tokens = /* @__PURE__ */ tokensFor(defaults);
+      tokens = /* @__PURE__ */ tokensFor(defaults2);
       parser$1 = /* @__PURE__ */ LRParser.deserialize({
         version: 14,
         states: "%vQ]QQOOO#wQRO'#DSO$OQQO'#CwO%eQQO'#CxO%lQQO'#CyO%sQQO'#CzOOQQ'#DS'#DSOOQQ'#C}'#C}O'UQRO'#C{OOQQ'#Cv'#CvOOQQ'#C|'#C|Q]QQOOQOQQOOO'`QQO'#DOO(xQRO,59cO)PQQO,59cO)UQQO'#DSOOQQ,59d,59dO)cQQO,59dOOQQ,59e,59eO)jQQO,59eOOQQ,59f,59fO)qQQO,59fOOQQ-E6{-E6{OOQQ,59b,59bOOQQ-E6z-E6zOOQQ,59j,59jOOQQ-E6|-E6|O+VQRO1G.}O+^QQO,59cOOQQ1G/O1G/OOOQQ1G/P1G/POOQQ1G/Q1G/QP+kQQO'#C}O+rQQO1G.}O)PQQO,59cO,PQQO'#Cw",
@@ -25919,22 +27596,22 @@
   });
   function defIDs(type7, spec) {
     return (node, def) => {
-      outer: for (let cur = node.node.firstChild, depth = 0, parent = null; ; ) {
-        while (!cur) {
+      outer: for (let cur2 = node.node.firstChild, depth = 0, parent = null; ; ) {
+        while (!cur2) {
           if (!depth)
             break outer;
           depth--;
-          cur = parent.nextSibling;
+          cur2 = parent.nextSibling;
           parent = parent.parent;
         }
-        if (spec && cur.name == spec || cur.name == "SpecList") {
+        if (spec && cur2.name == spec || cur2.name == "SpecList") {
           depth++;
-          parent = cur;
-          cur = cur.firstChild;
+          parent = cur2;
+          cur2 = cur2.firstChild;
         } else {
-          if (cur.name == "DefName")
-            def(cur, type7);
-          cur = cur.nextSibling;
+          if (cur2.name == "DefName")
+            def(cur2, type7);
+          cur2 = cur2.nextSibling;
         }
       }
       return true;
@@ -26357,10 +28034,10 @@
     }
     return properties3(path2, state, context);
   }
-  function jinjaCompletionSource(config = {}) {
-    let tags3 = config.tags ? config.tags.concat(Tags2) : Tags2;
-    let exprs = config.variables ? config.variables.concat(Expressions) : Expressions;
-    let { properties: properties3 } = config;
+  function jinjaCompletionSource(config2 = {}) {
+    let tags3 = config2.tags ? config2.tags.concat(Tags2) : Tags2;
+    let exprs = config2.variables ? config2.variables.concat(Expressions) : Expressions;
+    let { properties: properties3 } = config2;
     return (context) => {
       var _a2;
       let cx2 = findContext(context);
@@ -26393,12 +28070,12 @@
       } : null)
     }, "jinja");
   }
-  function jinja(config = {}) {
-    let base6 = config.base || baseHTML;
+  function jinja(config2 = {}) {
+    let base6 = config2.base || baseHTML;
     let lang = base6.language == baseHTML.language ? jinjaLanguage : makeJinja(base6.language);
     return new LanguageSupport(lang, [
       base6.support,
-      lang.data.of({ autocomplete: jinjaCompletionSource(config) }),
+      lang.data.of({ autocomplete: jinjaCompletionSource(config2) }),
       base6.language.data.of({ closeBrackets: { brackets: ["{"] } }),
       closePercentBrace
     ]);
@@ -26931,11 +28608,11 @@
     }
     return properties3 ? properties3(path2, state, context) : [];
   }
-  function liquidCompletionSource(config = {}) {
-    let filters = config.filters ? config.filters.concat(Filters2) : Filters2;
-    let tags3 = config.tags ? config.tags.concat(Tags3) : Tags3;
-    let exprs = config.variables ? config.variables.concat(Expressions2) : Expressions2;
-    let { properties: properties3 } = config;
+  function liquidCompletionSource(config2 = {}) {
+    let filters = config2.filters ? config2.filters.concat(Filters2) : Filters2;
+    let tags3 = config2.tags ? config2.tags.concat(Tags3) : Tags3;
+    let exprs = config2.variables ? config2.variables.concat(Expressions2) : Expressions2;
+    let { properties: properties3 } = config2;
     return (context) => {
       var _a2;
       let cx2 = findContext2(context);
@@ -26968,12 +28645,12 @@
       } : null)
     }, "liquid");
   }
-  function liquid(config = {}) {
-    let base6 = config.base || baseHTML2;
+  function liquid(config2 = {}) {
+    let base6 = config2.base || baseHTML2;
     let lang = base6.language == baseHTML2.language ? liquidLanguage : makeLiquid(base6.language);
     return new LanguageSupport(lang, [
       base6.support,
-      lang.data.of({ autocomplete: liquidCompletionSource(config) }),
+      lang.data.of({ autocomplete: liquidCompletionSource(config2) }),
       base6.language.data.of({ closeBrackets: { brackets: ["{"] } }),
       closePercentBrace2
     ]);
@@ -27503,11 +29180,11 @@
     php: () => php,
     phpLanguage: () => phpLanguage
   });
-  function php(config = {}) {
+  function php(config2 = {}) {
     let support = [], base6;
-    if (config.baseLanguage === null) ;
-    else if (config.baseLanguage) {
-      base6 = config.baseLanguage;
+    if (config2.baseLanguage === null) ;
+    else if (config2.baseLanguage) {
+      base6 = config2.baseLanguage;
     } else {
       let htmlSupport = html({ matchClosingTags: false });
       support.push(htmlSupport.support);
@@ -27522,7 +29199,7 @@
           overlay: (node2) => node2.name == "Text"
         };
       }),
-      top: config.plain ? "Program" : "Template"
+      top: config2.plain ? "Program" : "Template"
     }), support);
   }
   var phpLanguage;
@@ -28894,8 +30571,8 @@
     sassCompletionSource: () => sassCompletionSource,
     sassLanguage: () => sassLanguage
   });
-  function sass(config) {
-    return new LanguageSupport((config === null || config === void 0 ? void 0 : config.indented) ? indentedSassLanguage : sassLanguage, sassLanguage.data.of({ autocomplete: sassCompletionSource }));
+  function sass(config2) {
+    return new LanguageSupport((config2 === null || config2 === void 0 ? void 0 : config2.indented) ? indentedSassLanguage : sassLanguage, sassLanguage.data.of({ autocomplete: sassCompletionSource }));
   }
   var sassLanguage, indentedSassLanguage, sassCompletionSource;
   var init_dist35 = __esm({
@@ -29158,17 +30835,17 @@
     return name2 ? doc2.sliceString(name2.from, name2.to) : "";
   }
   function findParentElement2(tree) {
-    for (let cur = tree && tree.parent; cur; cur = cur.parent)
-      if (cur.name == "Element")
-        return cur;
+    for (let cur2 = tree && tree.parent; cur2; cur2 = cur2.parent)
+      if (cur2.name == "Element")
+        return cur2;
     return null;
   }
   function findLocation(state, pos) {
     var _a2;
     let at = syntaxTree(state).resolveInner(pos, -1), inTag = null;
-    for (let cur = at; !inTag && cur.parent; cur = cur.parent)
-      if (cur.name == "OpenTag" || cur.name == "CloseTag" || cur.name == "SelfClosingTag" || cur.name == "MismatchedCloseTag")
-        inTag = cur;
+    for (let cur2 = at; !inTag && cur2.parent; cur2 = cur2.parent)
+      if (cur2.name == "OpenTag" || cur2.name == "CloseTag" || cur2.name == "SelfClosingTag" || cur2.name == "MismatchedCloseTag")
+        inTag = cur2;
     if (inTag && (inTag.to > pos || inTag.lastChild.type.isError)) {
       let elt2 = inTag.parent;
       if (at.name == "TagName")
@@ -29295,10 +30972,10 @@
         };
       } else if (type7 == "tag") {
         let parentName = elementName$1(doc2, context), parent = byName[parentName];
-        let closing3 = [], last = context && context.lastChild;
+        let closing4 = [], last = context && context.lastChild;
         if (parentName && (!last || last.name != "CloseTag" || tagName(doc2, last) != parentName))
-          closing3.push(parent ? parent.closeCompletion : { label: "</" + parentName + ">", type: "type", boost: 2 });
-        let options = closing3.concat(((parent === null || parent === void 0 ? void 0 : parent.children) || (context ? allElements : topElements)).map((e) => e.openCompletion));
+          closing4.push(parent ? parent.closeCompletion : { label: "</" + parentName + ">", type: "type", boost: 2 });
+        let options = closing4.concat(((parent === null || parent === void 0 ? void 0 : parent.children) || (context ? allElements : topElements)).map((e) => e.openCompletion));
         if (context && (parent === null || parent === void 0 ? void 0 : parent.text.length)) {
           let openTag = context.firstChild;
           if (openTag.to > cx2.pos - 20 && !/\S/.test(cx2.state.sliceDoc(openTag.to, cx2.pos)))
@@ -29798,8 +31475,8 @@
   function yaml() {
     return new LanguageSupport(yamlLanguage);
   }
-  function yamlFrontmatter(config) {
-    let { language: language2, support } = config.content instanceof LanguageSupport ? config.content : { language: config.content, support: [] };
+  function yamlFrontmatter(config2) {
+    let { language: language2, support } = config2.content instanceof LanguageSupport ? config2.content : { language: config2.content, support: [] };
     return new LanguageSupport(frontmatterLanguage.configure({
       wrap: parseMixed((node) => {
         return node.name == "FrontmatterContent" ? { parser: yamlLanguage.parser } : node.name == "Body" ? { parser: language2.parser } : null;
@@ -30099,7 +31776,7 @@
     return obj;
   }
   function asn1(parserConfig4) {
-    var keywords45 = parserConfig4.keywords || defaults2.keywords, cmipVerbs = parserConfig4.cmipVerbs || defaults2.cmipVerbs, compareTypes = parserConfig4.compareTypes || defaults2.compareTypes, status = parserConfig4.status || defaults2.status, tags3 = parserConfig4.tags || defaults2.tags, storage = parserConfig4.storage || defaults2.storage, modifier = parserConfig4.modifier || defaults2.modifier, accessTypes = parserConfig4.accessTypes || defaults2.accessTypes, multiLineStrings5 = parserConfig4.multiLineStrings || defaults2.multiLineStrings, indentStatements3 = parserConfig4.indentStatements !== false;
+    var keywords45 = parserConfig4.keywords || defaults3.keywords, cmipVerbs = parserConfig4.cmipVerbs || defaults3.cmipVerbs, compareTypes = parserConfig4.compareTypes || defaults3.compareTypes, status = parserConfig4.status || defaults3.status, tags3 = parserConfig4.tags || defaults3.tags, storage = parserConfig4.storage || defaults3.storage, modifier = parserConfig4.modifier || defaults3.modifier, accessTypes = parserConfig4.accessTypes || defaults3.accessTypes, multiLineStrings5 = parserConfig4.multiLineStrings || defaults3.multiLineStrings, indentStatements3 = parserConfig4.indentStatements !== false;
     var isOperatorChar15 = /[\|\^]/;
     var curPunc13;
     function tokenBase45(stream, state) {
@@ -30127,15 +31804,15 @@
         return "operator";
       }
       stream.eatWhile(/[\w\-]/);
-      var cur = stream.current();
-      if (keywords45.propertyIsEnumerable(cur)) return "keyword";
-      if (cmipVerbs.propertyIsEnumerable(cur)) return "variableName";
-      if (compareTypes.propertyIsEnumerable(cur)) return "atom";
-      if (status.propertyIsEnumerable(cur)) return "comment";
-      if (tags3.propertyIsEnumerable(cur)) return "typeName";
-      if (storage.propertyIsEnumerable(cur)) return "modifier";
-      if (modifier.propertyIsEnumerable(cur)) return "modifier";
-      if (accessTypes.propertyIsEnumerable(cur)) return "modifier";
+      var cur2 = stream.current();
+      if (keywords45.propertyIsEnumerable(cur2)) return "keyword";
+      if (cmipVerbs.propertyIsEnumerable(cur2)) return "variableName";
+      if (compareTypes.propertyIsEnumerable(cur2)) return "atom";
+      if (status.propertyIsEnumerable(cur2)) return "comment";
+      if (tags3.propertyIsEnumerable(cur2)) return "typeName";
+      if (storage.propertyIsEnumerable(cur2)) return "modifier";
+      if (modifier.propertyIsEnumerable(cur2)) return "modifier";
+      if (accessTypes.propertyIsEnumerable(cur2)) return "modifier";
       return "variableName";
     }
     function tokenString29(quote2) {
@@ -30221,10 +31898,10 @@
       }
     };
   }
-  var defaults2;
+  var defaults3;
   var init_asn1 = __esm({
     "node_modules/@codemirror/legacy-modes/mode/asn1.js"() {
-      defaults2 = {
+      defaults3 = {
         keywords: words("DEFINITIONS OBJECTS IF DERIVED INFORMATION ACTION REPLY ANY NAMED CHARACTERIZED BEHAVIOUR REGISTERED WITH AS IDENTIFIED CONSTRAINED BY PRESENT BEGIN IMPORTS FROM UNITS SYNTAX MIN-ACCESS MAX-ACCESS MINACCESS MAXACCESS REVISION STATUS DESCRIPTION SEQUENCE SET COMPONENTS OF CHOICE DistinguishedName ENUMERATED SIZE MODULE END INDEX AUGMENTS EXTENSIBILITY IMPLIED EXPORTS"),
         cmipVerbs: words("ACTIONS ADD GET NOTIFICATIONS REPLACE REMOVE"),
         compareTypes: words("OPTIONAL DEFAULT MANAGED MODULE-TYPE MODULE_IDENTITY MODULE-COMPLIANCE OBJECT-TYPE OBJECT-IDENTITY OBJECT-COMPLIANCE MODE CONFIRMED CONDITIONAL SUBORDINATE SUPERIOR CLASS TRUE FALSE NULL TEXTUAL-CONVENTION"),
@@ -30244,7 +31921,7 @@
     asterisk: () => asterisk3
   });
   function basicToken(stream, state) {
-    var cur = "";
+    var cur2 = "";
     var ch2 = stream.next();
     if (state.blockComment) {
       if (ch2 == "-" && stream.match("-;", true)) {
@@ -30284,8 +31961,8 @@
     }
     if (ch2 == "#") {
       stream.eatWhile(/\w/);
-      cur = stream.current();
-      if (dpcmd.indexOf(cur) !== -1) {
+      cur2 = stream.current();
+      if (dpcmd.indexOf(cur2) !== -1) {
         stream.skipToEnd();
         return "strong";
       }
@@ -30299,10 +31976,10 @@
       }
     }
     stream.eatWhile(/\w/);
-    cur = stream.current();
-    if (atoms.indexOf(cur) !== -1) {
+    cur2 = stream.current();
+    if (atoms.indexOf(cur2) !== -1) {
       state.extenStart = true;
-      switch (cur) {
+      switch (cur2) {
         case "same":
           state.extenSame = true;
           break;
@@ -30537,12 +32214,12 @@
           };
         },
         token: function(stream, state) {
-          var cur = "";
+          var cur2 = "";
           if (stream.eatSpace()) return null;
           if (state.extenStart) {
             stream.eatWhile(/[^\s]/);
-            cur = stream.current();
-            if (/^=>?$/.test(cur)) {
+            cur2 = stream.current();
+            if (/^=>?$/.test(cur2)) {
               state.extenExten = true;
               state.extenStart = false;
               return "strong";
@@ -30575,12 +32252,12 @@
             return "number";
           } else if (state.extenApplication) {
             stream.eatWhile(/,/);
-            cur = stream.current();
-            if (cur === ",") return null;
+            cur2 = stream.current();
+            if (cur2 === ",") return null;
             stream.eatWhile(/\w/);
-            cur = stream.current().toLowerCase();
+            cur2 = stream.current().toLowerCase();
             state.extenApplication = false;
-            if (apps.indexOf(cur) !== -1) {
+            if (apps.indexOf(cur2) !== -1) {
               return "def";
             }
           } else {
@@ -30883,18 +32560,18 @@
       stream.eatWhile(isIdentifierChar);
       if (namespaceSeparator) while (stream.match(namespaceSeparator))
         stream.eatWhile(isIdentifierChar);
-      var cur = stream.current();
-      if (contains2(keywords45, cur)) {
-        if (contains2(blockKeywords6, cur)) curPunc13 = "newstatement";
-        if (contains2(defKeywords, cur)) isDefKeyword = true;
+      var cur2 = stream.current();
+      if (contains2(keywords45, cur2)) {
+        if (contains2(blockKeywords6, cur2)) curPunc13 = "newstatement";
+        if (contains2(defKeywords, cur2)) isDefKeyword = true;
         return "keyword";
       }
-      if (contains2(types8, cur)) return "type";
-      if (contains2(builtin5, cur) || isReservedIdentifier && isReservedIdentifier(cur)) {
-        if (contains2(blockKeywords6, cur)) curPunc13 = "newstatement";
+      if (contains2(types8, cur2)) return "type";
+      if (contains2(builtin5, cur2) || isReservedIdentifier && isReservedIdentifier(cur2)) {
+        if (contains2(blockKeywords6, cur2)) curPunc13 = "newstatement";
         return "builtin";
       }
-      if (contains2(atoms16, cur)) return "atom";
+      if (contains2(atoms16, cur2)) return "atom";
       return "variable";
     }
     function tokenString29(quote2) {
@@ -30982,7 +32659,7 @@
         if (state.tokenize != tokenBase45 && state.tokenize != null || state.typeAtEndOfLine && isTopScope(state.context))
           return null;
         var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
-        var closing3 = firstChar == ctx.type;
+        var closing4 = firstChar == ctx.type;
         if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
         if (parserConfig4.dontIndentStatements)
           while (ctx.type == "statement" && parserConfig4.dontIndentStatements.test(ctx.info))
@@ -30999,10 +32676,10 @@
         if (ctx.type == "statement")
           return ctx.indented + (firstChar == "{" ? 0 : statementIndentUnit2 || context.unit);
         if (ctx.align && (!dontAlignCalls || ctx.type != ")"))
-          return ctx.column + (closing3 ? 0 : 1);
-        if (ctx.type == ")" && !closing3)
+          return ctx.column + (closing4 ? 0 : 1);
+        if (ctx.type == ")" && !closing4)
           return ctx.indented + (statementIndentUnit2 || context.unit);
-        return ctx.indented + (closing3 ? 0 : context.unit) + (!closing3 && switchBlock && !/^(?:case|default)\b/.test(textAfter) ? context.unit : 0);
+        return ctx.indented + (closing4 ? 0 : context.unit) + (!closing4 && switchBlock && !/^(?:case|default)\b/.test(textAfter) ? context.unit : 0);
       },
       languageData: {
         indentOnInput: indentSwitch ? /^\s*(?:case .*?:|default:|\{\}?|\})$/ : /^\s*[{}]$/,
@@ -32475,7 +34152,7 @@
     sCSS: () => sCSS
   });
   function mkCSS(parserConfig4) {
-    parserConfig4 = { ...defaults3, ...parserConfig4 };
+    parserConfig4 = { ...defaults4, ...parserConfig4 };
     var inline = parserConfig4.inline;
     var tokenHooks = parserConfig4.tokenHooks, documentTypes3 = parserConfig4.documentTypes || {}, mediaTypes3 = parserConfig4.mediaTypes || {}, mediaFeatures3 = parserConfig4.mediaFeatures || {}, mediaValueKeywords2 = parserConfig4.mediaValueKeywords || {}, propertyKeywords3 = parserConfig4.propertyKeywords || {}, nonStandardPropertyKeywords3 = parserConfig4.nonStandardPropertyKeywords || {}, fontProperties3 = parserConfig4.fontProperties || {}, counterDescriptors2 = parserConfig4.counterDescriptors || {}, colorKeywords3 = parserConfig4.colorKeywords || {}, valueKeywords3 = parserConfig4.valueKeywords || {}, allowNested = parserConfig4.allowNested, lineComment = parserConfig4.lineComment, supportsAtComponent = parserConfig4.supportsAtComponent === true, highlightNonStandardPropertyKeywords = parserConfig4.highlightNonStandardPropertyKeywords !== false;
     var type7, override2;
@@ -32846,7 +34523,7 @@
     }
     return ["comment", "comment"];
   }
-  var documentTypes_, documentTypes, mediaTypes_, mediaTypes, mediaFeatures_, mediaFeatures, mediaValueKeywords_, mediaValueKeywords, propertyKeywords_, propertyKeywords, nonStandardPropertyKeywords_, nonStandardPropertyKeywords, fontProperties_, fontProperties, counterDescriptors_, counterDescriptors, colorKeywords_, colorKeywords, valueKeywords_, valueKeywords, allWords, keywords6, defaults3, css2, sCSS, less2, gss;
+  var documentTypes_, documentTypes, mediaTypes_, mediaTypes, mediaFeatures_, mediaFeatures, mediaValueKeywords_, mediaValueKeywords, propertyKeywords_, propertyKeywords, nonStandardPropertyKeywords_, nonStandardPropertyKeywords, fontProperties_, fontProperties, counterDescriptors_, counterDescriptors, colorKeywords_, colorKeywords, valueKeywords_, valueKeywords, allWords, keywords6, defaults4, css2, sCSS, less2, gss;
   var init_css = __esm({
     "node_modules/@codemirror/legacy-modes/mode/css.js"() {
       documentTypes_ = [
@@ -34144,7 +35821,7 @@
         values: valueKeywords_,
         all: allWords
       };
-      defaults3 = {
+      defaults4 = {
         documentTypes,
         mediaTypes,
         mediaFeatures,
@@ -34915,11 +36592,11 @@
               context = context.prev;
             }
           }
-          var closing3 = context && firstChar === context.type;
+          var closing4 = context && firstChar === context.type;
           if (!context) return 0;
           if (context.type === "keywords") return null;
-          if (context.align) return context.col + (closing3 ? 0 : 1);
-          return context.indent + (closing3 ? 0 : cx2.unit);
+          if (context.align) return context.col + (closing4 ? 0 : 1);
+          return context.indent + (closing4 ? 0 : cx2.unit);
         }
       };
     }
@@ -35234,11 +36911,11 @@
         if (state.tokenize != tokenBase45)
           return state.tokenize.isString ? null : 0;
         var scope = top2(state);
-        var closing3 = scope.type == textAfter.charAt(0) || scope.type == "py" && !state.dedent && /^(else:|elif |except |finally:)/.test(textAfter);
+        var closing4 = scope.type == textAfter.charAt(0) || scope.type == "py" && !state.dedent && /^(else:|elif |except |finally:)/.test(textAfter);
         if (scope.align != null)
-          return scope.align - (closing3 ? 1 : 0);
+          return scope.align - (closing4 ? 1 : 0);
         else
-          return scope.offset - (closing3 ? hangingIndent || cx2.unit : 0);
+          return scope.offset - (closing4 ? hangingIndent || cx2.unit : 0);
       },
       languageData: {
         autocomplete: commonKeywords2.concat(commonBuiltins).concat(["exec", "print"]),
@@ -35813,16 +37490,16 @@
       return "operator";
     }
     stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-    var cur = stream.current();
-    if (keywords10.propertyIsEnumerable(cur)) {
-      if (blockKeywords.propertyIsEnumerable(cur)) curPunc2 = "newstatement";
+    var cur2 = stream.current();
+    if (keywords10.propertyIsEnumerable(cur2)) {
+      if (blockKeywords.propertyIsEnumerable(cur2)) curPunc2 = "newstatement";
       return "keyword";
     }
-    if (builtin.propertyIsEnumerable(cur)) {
-      if (blockKeywords.propertyIsEnumerable(cur)) curPunc2 = "newstatement";
+    if (builtin.propertyIsEnumerable(cur2)) {
+      if (blockKeywords.propertyIsEnumerable(cur2)) curPunc2 = "newstatement";
       return "builtin";
     }
-    if (atoms4.propertyIsEnumerable(cur)) return "atom";
+    if (atoms4.propertyIsEnumerable(cur2)) return "atom";
     return "variable";
   }
   function tokenString2(quote2) {
@@ -35945,10 +37622,10 @@
           if (state.tokenize != tokenBase4 && state.tokenize != null) return null;
           var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
           if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
-          var closing3 = firstChar == ctx.type;
+          var closing4 = firstChar == ctx.type;
           if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : statementIndentUnit || cx2.unit);
-          else if (ctx.align) return ctx.column + (closing3 ? 0 : 1);
-          else return ctx.indented + (closing3 ? 0 : cx2.unit);
+          else if (ctx.align) return ctx.column + (closing4 ? 0 : 1);
+          else return ctx.indented + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           indentOnInput: /^\s*[{}]$/,
@@ -36975,35 +38652,35 @@
       return "operator";
     }
     stream.eatWhile(/[\w\$_]/);
-    var cur = stream.current().toLowerCase();
-    if (keyword2.propertyIsEnumerable(cur)) {
-      if (blockKeywords2.propertyIsEnumerable(cur)) curPunc3 = "newstatement";
+    var cur2 = stream.current().toLowerCase();
+    if (keyword2.propertyIsEnumerable(cur2)) {
+      if (blockKeywords2.propertyIsEnumerable(cur2)) curPunc3 = "newstatement";
       return "keyword";
-    } else if (variable2.propertyIsEnumerable(cur)) {
-      if (blockKeywords2.propertyIsEnumerable(cur)) curPunc3 = "newstatement";
+    } else if (variable2.propertyIsEnumerable(cur2)) {
+      if (blockKeywords2.propertyIsEnumerable(cur2)) curPunc3 = "newstatement";
       return "variable";
-    } else if (variable_2.propertyIsEnumerable(cur)) {
-      if (blockKeywords2.propertyIsEnumerable(cur)) curPunc3 = "newstatement";
+    } else if (variable_2.propertyIsEnumerable(cur2)) {
+      if (blockKeywords2.propertyIsEnumerable(cur2)) curPunc3 = "newstatement";
       return "modifier";
-    } else if (variable_3.propertyIsEnumerable(cur)) {
-      if (blockKeywords2.propertyIsEnumerable(cur)) curPunc3 = "newstatement";
+    } else if (variable_3.propertyIsEnumerable(cur2)) {
+      if (blockKeywords2.propertyIsEnumerable(cur2)) curPunc3 = "newstatement";
       return "type";
-    } else if (builtin2.propertyIsEnumerable(cur)) {
-      if (blockKeywords2.propertyIsEnumerable(cur)) curPunc3 = "newstatement";
+    } else if (builtin2.propertyIsEnumerable(cur2)) {
+      if (blockKeywords2.propertyIsEnumerable(cur2)) curPunc3 = "newstatement";
       return "builtin";
     } else {
-      var i = cur.length - 1;
-      while (i >= 0 && (!isNaN(cur[i]) || cur[i] == "_"))
+      var i = cur2.length - 1;
+      while (i >= 0 && (!isNaN(cur2[i]) || cur2[i] == "_"))
         --i;
       if (i > 0) {
-        var cur2 = cur.substr(0, i + 1);
-        if (variable_3.propertyIsEnumerable(cur2)) {
-          if (blockKeywords2.propertyIsEnumerable(cur2)) curPunc3 = "newstatement";
+        var cur22 = cur2.substr(0, i + 1);
+        if (variable_3.propertyIsEnumerable(cur22)) {
+          if (blockKeywords2.propertyIsEnumerable(cur22)) curPunc3 = "newstatement";
           return "type";
         }
       }
     }
-    if (atoms5.propertyIsEnumerable(cur)) return "atom";
+    if (atoms5.propertyIsEnumerable(cur2)) return "atom";
     return null;
   }
   function tokenString5(quote2) {
@@ -37100,10 +38777,10 @@
           if (state.tokenize != tokenBase7 && state.tokenize != null) return 0;
           var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
           if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
-          var closing3 = firstChar == ctx.type;
+          var closing4 = firstChar == ctx.type;
           if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : cx2.unit);
-          else if (ctx.align) return ctx.column + (closing3 ? 0 : 1);
-          else return ctx.indented + (closing3 ? 0 : cx2.unit);
+          else if (ctx.align) return ctx.column + (closing4 ? 0 : 1);
+          else return ctx.indented + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           indentOnInput: /^\s*[{}]$/
@@ -38266,9 +39943,9 @@
       indent: function(state, textAfter, iCx) {
         var cx2 = state.context;
         if (!cx2) return null;
-        var closing3 = textAfter.charAt(0) == cx2.type;
-        if (cx2.align) return cx2.col + (closing3 ? 0 : 1);
-        else return cx2.indent + (closing3 ? 0 : iCx.unit);
+        var closing4 = textAfter.charAt(0) == cx2.type;
+        if (cx2.align) return cx2.col + (closing4 ? 0 : 1);
+        else return cx2.indent + (closing4 ? 0 : iCx.unit);
       },
       languageData: {
         commentTokens: {
@@ -38589,11 +40266,11 @@
       return "operator";
     }
     stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-    var cur = stream.current().toLowerCase();
-    if (keywords12.propertyIsEnumerable(cur) || start_blocks.propertyIsEnumerable(cur) || end_blocks.propertyIsEnumerable(cur)) {
+    var cur2 = stream.current().toLowerCase();
+    if (keywords12.propertyIsEnumerable(cur2) || start_blocks.propertyIsEnumerable(cur2) || end_blocks.propertyIsEnumerable(cur2)) {
       return "keyword";
     }
-    if (atoms6.propertyIsEnumerable(cur)) return "atom";
+    if (atoms6.propertyIsEnumerable(cur2)) return "atom";
     return "variable";
   }
   function tokenComment4(stream, state) {
@@ -38686,18 +40363,18 @@
           var style2 = (state.tokenize || tokenBase9)(stream, state);
           if (style2 == "comment") return style2;
           if (ctx.align == null) ctx.align = true;
-          var cur = stream.current().toLowerCase();
-          if (start_blocks.propertyIsEnumerable(cur)) pushContext5(state, stream.column(), "end_block");
-          else if (end_blocks.propertyIsEnumerable(cur)) popContext5(state);
+          var cur2 = stream.current().toLowerCase();
+          if (start_blocks.propertyIsEnumerable(cur2)) pushContext5(state, stream.column(), "end_block");
+          else if (end_blocks.propertyIsEnumerable(cur2)) popContext5(state);
           state.startOfLine = false;
           return style2;
         },
         indent: function(state, textAfter, cx2) {
           if (state.tokenize != tokenBase9 && state.tokenize != null) return 0;
           var ctx = state.context;
-          var closing3 = end_blocks.propertyIsEnumerable(textAfter);
-          if (ctx.align) return ctx.column + (closing3 ? 0 : 1);
-          else return ctx.indented + (closing3 ? 0 : cx2.unit);
+          var closing4 = end_blocks.propertyIsEnumerable(textAfter);
+          if (ctx.align) return ctx.column + (closing4 ? 0 : 1);
+          else return ctx.indented + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           commentTokens: { line: "//", block: { open: "(*", close: "*)" } }
@@ -39402,8 +41079,8 @@
       }
       if (/[\w\xa1-\uffff]/.test(ch2)) {
         stream.eatWhile(/[\w\xa1-\uffff]/);
-        var cur = stream.current();
-        return words22.hasOwnProperty(cur) ? words22[cur] : "variable";
+        var cur2 = stream.current();
+        return words22.hasOwnProperty(cur2) ? words22[cur2] : "variable";
       }
       return null;
     }
@@ -39882,7 +41559,7 @@
         if (stream.eatSpace()) {
           return null;
         }
-        var style2, cur, ch2 = stream.next();
+        var style2, cur2, ch2 = stream.next();
         if (ch2 === "/") {
           if (stream.eat("*")) {
             state.tokenize = clikeComment;
@@ -39899,8 +41576,8 @@
         }
         if (ch2 === ".") {
           stream.eatWhile(/\w/);
-          cur = stream.current().toLowerCase();
-          style2 = directives[cur];
+          cur2 = stream.current().toLowerCase();
+          style2 = directives[cur2];
           return style2 || null;
         }
         if (ch2 === "=") {
@@ -39926,8 +41603,8 @@
           if (stream.eat(":")) {
             return "tag";
           }
-          cur = stream.current().toLowerCase();
-          style2 = registers[cur];
+          cur2 = stream.current().toLowerCase();
+          style2 = registers[cur2];
           return style2 || null;
         }
         for (var i = 0; i < custom.length; i++) {
@@ -40134,13 +41811,13 @@
       curPunc4 = "proplabel";
       return "property";
     }
-    var cur = stream.current();
-    if (atoms7.propertyIsEnumerable(cur)) {
+    var cur2 = stream.current();
+    if (atoms7.propertyIsEnumerable(cur2)) {
       return "atom";
     }
-    if (keywords14.propertyIsEnumerable(cur)) {
-      if (blockKeywords3.propertyIsEnumerable(cur)) curPunc4 = "newstatement";
-      else if (standaloneKeywords.propertyIsEnumerable(cur)) curPunc4 = "standalone";
+    if (keywords14.propertyIsEnumerable(cur2)) {
+      if (blockKeywords3.propertyIsEnumerable(cur2)) curPunc4 = "newstatement";
+      else if (standaloneKeywords.propertyIsEnumerable(cur2)) curPunc4 = "standalone";
       return "keyword";
     }
     return "variable";
@@ -40292,10 +41969,10 @@
           if (!state.tokenize[state.tokenize.length - 1].isBase) return null;
           var firstChar = textAfter && textAfter.charAt(0), ctx = state.context;
           if (ctx.type == "statement" && !expectExpression(state.lastToken, true)) ctx = ctx.prev;
-          var closing3 = firstChar == ctx.type;
+          var closing4 = firstChar == ctx.type;
           if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : cx2.unit);
-          else if (ctx.align) return ctx.column + (closing3 ? 0 : 1);
-          else return ctx.indented + (closing3 ? 0 : cx2.unit);
+          else if (ctx.align) return ctx.column + (closing4 ? 0 : 1);
+          else return ctx.indented + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           indentOnInput: /^\s*[{}]$/,
@@ -41228,14 +42905,14 @@
           if (state.tokenize != haxeTokenBase) return 0;
           var firstChar = textAfter && textAfter.charAt(0), lexical = state.lexical;
           if (lexical.type == "stat" && firstChar == "}") lexical = lexical.prev;
-          var type7 = lexical.type, closing3 = firstChar == type7;
+          var type7 = lexical.type, closing4 = firstChar == type7;
           if (type7 == "vardef") return lexical.indented + 4;
           else if (type7 == "form" && firstChar == "{") return lexical.indented;
           else if (type7 == "stat" || type7 == "form") return lexical.indented + cx2.unit;
-          else if (lexical.info == "switch" && !closing3)
+          else if (lexical.info == "switch" && !closing4)
             return lexical.indented + (/^(?:case|default)\b/.test(textAfter) ? cx2.unit : 2 * cx2.unit);
-          else if (lexical.align) return lexical.column + (closing3 ? 0 : 1);
-          else return lexical.indented + (closing3 ? 0 : cx2.unit);
+          else if (lexical.align) return lexical.column + (closing4 ? 0 : 1);
+          else return lexical.indented + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           indentOnInput: /^\s*[{}]$/,
@@ -41371,9 +43048,9 @@
       http = {
         name: "http",
         token: function(stream, state) {
-          var cur = state.cur;
-          if (cur != header && cur != body && stream.eatSpace()) return null;
-          return cur(stream, state);
+          var cur2 = state.cur;
+          if (cur2 != header && cur2 != body && stream.eatSpace()) return null;
+          return cur2(stream, state);
         },
         blankLine: function(state) {
           state.cur = body;
@@ -43352,16 +45029,16 @@
           lexical = lexical.prev;
         if (statementIndent2 && lexical.type == ")" && lexical.prev.type == "stat")
           lexical = lexical.prev;
-        var type8 = lexical.type, closing3 = firstChar == type8;
+        var type8 = lexical.type, closing4 = firstChar == type8;
         if (type8 == "vardef") return lexical.indented + (state.lastType == "operator" || state.lastType == "," ? lexical.info.length + 1 : 0);
         else if (type8 == "form" && firstChar == "{") return lexical.indented;
         else if (type8 == "form") return lexical.indented + cx3.unit;
         else if (type8 == "stat")
           return lexical.indented + (isContinuedStatement(state, textAfter) ? statementIndent2 || cx3.unit : 0);
-        else if (lexical.info == "switch" && !closing3 && parserConfig4.doubleIndentSwitch != false)
+        else if (lexical.info == "switch" && !closing4 && parserConfig4.doubleIndentSwitch != false)
           return lexical.indented + (/^(?:case|default)\b/.test(textAfter) ? cx3.unit : 2 * cx3.unit);
-        else if (lexical.align) return lexical.column + (closing3 ? 0 : 1);
-        else return lexical.indented + (closing3 ? 0 : cx3.unit);
+        else if (lexical.align) return lexical.column + (closing4 ? 0 : 1);
+        else return lexical.indented + (closing4 ? 0 : cx3.unit);
       },
       languageData: {
         indentOnInput: /^\s*(?:case .*?:|default:|\{|\})$/,
@@ -44353,8 +46030,8 @@
           return style2;
         },
         indent: function(state, textAfter, cx2) {
-          var closing3 = dedentPartial.test(textAfter);
-          return state.basecol + cx2.unit * (state.indentDepth - (closing3 ? 1 : 0));
+          var closing4 = dedentPartial.test(textAfter);
+          return state.basecol + cx2.unit * (state.indentDepth - (closing4 ? 1 : 0));
         },
         languageData: {
           indentOnInput: /^\s*(?:end|until|else|\)|\})$/,
@@ -44640,14 +46317,14 @@
     stream.eatWhile(isDigit4);
     while (stream.eat(isDigit4) || stream.eat(isNonDigit)) {
     }
-    var cur = stream.current();
-    if (state.sol && (cur == "package" || cur == "model" || cur == "when" || cur == "connector")) state.level++;
-    else if (state.sol && cur == "end" && state.level > 0) state.level--;
+    var cur2 = stream.current();
+    if (state.sol && (cur2 == "package" || cur2 == "model" || cur2 == "when" || cur2 == "connector")) state.level++;
+    else if (state.sol && cur2 == "end" && state.level > 0) state.level--;
     state.tokenize = null;
     state.sol = false;
-    if (keywords20.propertyIsEnumerable(cur)) return "keyword";
-    else if (builtin3.propertyIsEnumerable(cur)) return "builtin";
-    else if (atoms8.propertyIsEnumerable(cur)) return "atom";
+    if (keywords20.propertyIsEnumerable(cur2)) return "keyword";
+    else if (builtin3.propertyIsEnumerable(cur2)) return "builtin";
+    else if (atoms8.propertyIsEnumerable(cur2)) return "atom";
     else return "variable";
   }
   function tokenQIdent(stream, state) {
@@ -44994,12 +46671,12 @@
   }
   function tokenBase18(stream, state) {
     stream.eatWhile(/[\w\$_]/);
-    var cur = stream.current();
-    if (keywords21.propertyIsEnumerable(cur)) {
+    var cur2 = stream.current();
+    if (keywords21.propertyIsEnumerable(cur2)) {
       return "keyword";
-    } else if (keywords_block.propertyIsEnumerable(cur)) {
+    } else if (keywords_block.propertyIsEnumerable(cur2)) {
       return "controlKeyword";
-    } else if (keywords_important.propertyIsEnumerable(cur)) {
+    } else if (keywords_important.propertyIsEnumerable(cur2)) {
       return "controlKeyword";
     }
     var ch2 = stream.next();
@@ -45861,9 +47538,9 @@
       return "operator";
     }
     stream.eatWhile(/[\w\$_]/);
-    var cur = stream.current().toLowerCase();
-    if (keywords23.propertyIsEnumerable(cur)) return "keyword";
-    if (atoms10.propertyIsEnumerable(cur)) return "atom";
+    var cur2 = stream.current().toLowerCase();
+    if (keywords23.propertyIsEnumerable(cur2)) return "keyword";
+    if (atoms10.propertyIsEnumerable(cur2)) return "atom";
     return "variable";
   }
   function tokenString11(quote2) {
@@ -48321,15 +49998,15 @@
           var context = state.context;
           if (/[\]\}]/.test(firstChar))
             while (context && context.type == "pattern") context = context.prev;
-          var closing3 = context && firstChar == context.type;
+          var closing4 = context && firstChar == context.type;
           if (!context)
             return 0;
           else if (context.type == "pattern")
             return context.col;
           else if (context.align)
-            return context.col + (closing3 ? 0 : 1);
+            return context.col + (closing4 ? 0 : 1);
           else
-            return context.indent + (closing3 ? 0 : cx2.unit);
+            return context.indent + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           commentTokens: { line: "/" }
@@ -48502,11 +50179,11 @@
         },
         indent: function(state, textAfter, cx2) {
           if (state.tokenize != tokenBase26) return 0;
-          var firstChar = textAfter && textAfter.charAt(0), ctx = state.ctx, closing3 = firstChar == ctx.type;
+          var firstChar = textAfter && textAfter.charAt(0), ctx = state.ctx, closing4 = firstChar == ctx.type;
           if (ctx.flags & BRACELESS) ctx = ctx.prev;
           if (ctx.type == "block") return ctx.indent + (firstChar == "{" ? 0 : cx2.unit);
-          else if (ctx.flags & ALIGN_YES) return ctx.column + (closing3 ? 0 : 1);
-          else return ctx.indent + (closing3 ? 0 : cx2.unit);
+          else if (ctx.flags & ALIGN_YES) return ctx.column + (closing4 ? 0 : 1);
+          else return ctx.indent + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           wordChars: ".",
@@ -48835,7 +50512,7 @@
     stream.skipToEnd();
     return "comment";
   }
-  var keywordList, keywords29, indentWords, dedentWords, opening, closing, curPunc7, ruby;
+  var keywordList, keywords29, indentWords, dedentWords, opening, closing2, curPunc7, ruby;
   var init_ruby = __esm({
     "node_modules/@codemirror/legacy-modes/mode/ruby.js"() {
       keywordList = [
@@ -48915,7 +50592,7 @@
       ]);
       dedentWords = wordObj3(["end", "until"]);
       opening = { "[": "]", "{": "}", "(": ")" };
-      closing = { "]": "[", "}": "{", ")": "(" };
+      closing2 = { "]": "[", "}": "{", ")": "(" };
       ruby = {
         name: "ruby",
         startState: function(indentUnit2) {
@@ -48960,7 +50637,7 @@
           if (state.tokenize[state.tokenize.length - 1] != tokenBase27) return null;
           var firstChar = textAfter && textAfter.charAt(0);
           var ct = state.context;
-          var closed = ct.type == closing[firstChar] || ct.type == "keyword" && /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter);
+          var closed = ct.type == closing2[firstChar] || ct.type == "keyword" && /^(?:end|until|else|elsif|when|rescue)\b/.test(textAfter);
           return ct.indented + (closed ? 0 : cx2.unit) + (state.continuedLine ? cx2.unit : 0);
         },
         languageData: {
@@ -49480,9 +51157,9 @@
       }
     }
     stream.eatWhile(/[\w-]/);
-    var cur = stream.current();
-    if (stream.peek() === "=" && /\w+/.test(cur)) return "def";
-    return words15.hasOwnProperty(cur) ? words15[cur] : null;
+    var cur2 = stream.current();
+    if (stream.peek() === "=" && /\w+/.test(cur2)) return "def";
+    return words15.hasOwnProperty(cur2) ? words15[cur2] : null;
   }
   function tokenString16(quote2, style2) {
     var close2 = quote2 == "(" ? ")" : quote2 == "{" ? "}" : quote2;
@@ -49711,14 +51388,14 @@
       return "operator";
     }
     stream.eatWhile(/\w/);
-    var cur = stream.current();
-    if (cur == "text" && stream.eat(":")) {
+    var cur2 = stream.current();
+    if (cur2 == "text" && stream.eat(":")) {
       state.tokenize = tokenMultiLineString;
       return "string";
     }
-    if (keywords31.propertyIsEnumerable(cur))
+    if (keywords31.propertyIsEnumerable(cur2))
       return "keyword";
-    if (atoms12.propertyIsEnumerable(cur))
+    if (atoms12.propertyIsEnumerable(cur2))
       return "atom";
     return null;
   }
@@ -50241,15 +51918,15 @@
           var context = state.context;
           if (/[\]\}]/.test(firstChar))
             while (context && context.type == "pattern") context = context.prev;
-          var closing3 = context && firstChar == context.type;
+          var closing4 = context && firstChar == context.type;
           if (!context)
             return 0;
           else if (context.type == "pattern")
             return context.col;
           else if (context.align)
-            return context.col + (closing3 ? 0 : 1);
+            return context.col + (closing4 ? 0 : 1);
           else
-            return context.indent + (closing3 ? 0 : cx2.unit);
+            return context.indent + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           commentTokens: { line: "#" }
@@ -51232,9 +52909,9 @@
         indent: function(state, textAfter, iCx) {
           var cx2 = state.context;
           if (!cx2) return 0;
-          var closing3 = /^[\]\}\)]/.test(textAfter);
-          if (cx2.align != null) return cx2.align - (closing3 ? 1 : 0);
-          return cx2.indented + (closing3 ? 0 : iCx.unit);
+          var closing4 = /^[\]\}\)]/.test(textAfter);
+          if (cx2.align != null) return cx2.align - (closing4 ? 1 : 0);
+          return cx2.indented + (closing4 ? 0 : iCx.unit);
         },
         languageData: {
           indentOnInput: /^\s*[\)\}\]]$/,
@@ -51590,15 +53267,15 @@
         return "meta";
       }
       if (stream.eatWhile(/[\w\$_]/)) {
-        var cur = stream.current();
-        if (keywords45[cur]) {
-          if (openClose[cur]) {
+        var cur2 = stream.current();
+        if (keywords45[cur2]) {
+          if (openClose[cur2]) {
             curPunc13 = "newblock";
           }
-          if (statementKeywords[cur]) {
+          if (statementKeywords[cur2]) {
             curPunc13 = "newstatement";
           }
-          curKeyword = cur;
+          curKeyword = cur2;
           return "keyword";
         }
         return "variable";
@@ -51742,14 +53419,14 @@
         }
         var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
         if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
-        var closing3 = false;
+        var closing4 = false;
         var possibleClosing = textAfter.match(closingBracketOrWord);
         if (possibleClosing)
-          closing3 = isClosing(possibleClosing[0], ctx.type);
+          closing4 = isClosing(possibleClosing[0], ctx.type);
         if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : statementIndentUnit2 || cx2.unit);
-        else if (closingBracket.test(ctx.type) && ctx.align && !dontAlignCalls) return ctx.column + (closing3 ? 0 : 1);
-        else if (ctx.type == ")" && !closing3) return ctx.indented + (statementIndentUnit2 || cx2.unit);
-        else return ctx.indented + (closing3 ? 0 : cx2.unit);
+        else if (closingBracket.test(ctx.type) && ctx.align && !dontAlignCalls) return ctx.column + (closing4 ? 0 : 1);
+        else if (ctx.type == ")" && !closing4) return ctx.indented + (statementIndentUnit2 || cx2.unit);
+        else return ctx.indented + (closing4 ? 0 : cx2.unit);
       },
       languageData: {
         indentOnInput: buildElectricInputRegEx2(),
@@ -53136,8 +54813,8 @@
       }
     }
     stream.eatWhile(/[\w-]/);
-    var cur = stream.current();
-    return words17.hasOwnProperty(cur) ? words17[cur] : null;
+    var cur2 = stream.current();
+    return words17.hasOwnProperty(cur2) ? words17[cur2] : null;
   }
   function tokenize5(stream, state) {
     return (state.tokens[0] || tokenBase36)(stream, state);
@@ -53216,22 +54893,22 @@
       return "operator";
     }
     stream.eatWhile(/[\w\$_\xa1-\uffff]/);
-    var cur = stream.current();
-    if (keywords37.propertyIsEnumerable(cur)) return "keyword";
-    if (builtin4.propertyIsEnumerable(cur)) return "builtin";
-    if (timerOps.propertyIsEnumerable(cur)) return "def";
-    if (configOps.propertyIsEnumerable(cur)) return "def";
-    if (verdictOps.propertyIsEnumerable(cur)) return "def";
-    if (portOps.propertyIsEnumerable(cur)) return "def";
-    if (sutOps.propertyIsEnumerable(cur)) return "def";
-    if (functionOps.propertyIsEnumerable(cur)) return "def";
-    if (verdictConsts.propertyIsEnumerable(cur)) return "string";
-    if (booleanConsts.propertyIsEnumerable(cur)) return "string";
-    if (otherConsts.propertyIsEnumerable(cur)) return "string";
-    if (types5.propertyIsEnumerable(cur)) return "typeName.standard";
-    if (visibilityModifiers.propertyIsEnumerable(cur))
+    var cur2 = stream.current();
+    if (keywords37.propertyIsEnumerable(cur2)) return "keyword";
+    if (builtin4.propertyIsEnumerable(cur2)) return "builtin";
+    if (timerOps.propertyIsEnumerable(cur2)) return "def";
+    if (configOps.propertyIsEnumerable(cur2)) return "def";
+    if (verdictOps.propertyIsEnumerable(cur2)) return "def";
+    if (portOps.propertyIsEnumerable(cur2)) return "def";
+    if (sutOps.propertyIsEnumerable(cur2)) return "def";
+    if (functionOps.propertyIsEnumerable(cur2)) return "def";
+    if (verdictConsts.propertyIsEnumerable(cur2)) return "string";
+    if (booleanConsts.propertyIsEnumerable(cur2)) return "string";
+    if (otherConsts.propertyIsEnumerable(cur2)) return "string";
+    if (types5.propertyIsEnumerable(cur2)) return "typeName.standard";
+    if (visibilityModifiers.propertyIsEnumerable(cur2))
       return "modifier";
-    if (templateMatch.propertyIsEnumerable(cur)) return "atom";
+    if (templateMatch.propertyIsEnumerable(cur2)) return "atom";
     return "variable";
   }
   function tokenString22(quote2) {
@@ -53412,11 +55089,11 @@
       return "number";
     }
     stream.eatWhile(/[\w\$_]/);
-    var cur = stream.current();
-    if (keywords38.propertyIsEnumerable(cur)) return "keyword";
-    if (fileNCtrlMaskOptions.propertyIsEnumerable(cur))
+    var cur2 = stream.current();
+    if (keywords38.propertyIsEnumerable(cur2)) return "keyword";
+    if (fileNCtrlMaskOptions.propertyIsEnumerable(cur2))
       return "atom";
-    if (externalCommands.propertyIsEnumerable(cur)) return "deleted";
+    if (externalCommands.propertyIsEnumerable(cur2)) return "deleted";
     return "variable";
   }
   function tokenString23(quote2) {
@@ -53640,15 +55317,15 @@
           var context = state.context;
           if (/[\]\}]/.test(firstChar))
             while (context && context.type == "pattern") context = context.prev;
-          var closing3 = context && firstChar == context.type;
+          var closing4 = context && firstChar == context.type;
           if (!context)
             return 0;
           else if (context.type == "pattern")
             return context.col;
           else if (context.align)
-            return context.col + (closing3 ? 0 : 1);
+            return context.col + (closing4 ? 0 : 1);
           else
-            return context.indent + (closing3 ? 0 : cx2.unit);
+            return context.indent + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           commentTokens: { line: "#" }
@@ -53851,11 +55528,11 @@
         token: function(stream, state) {
           var style2 = readToken4(stream, state);
           if (style2) {
-            var cur = stream.current();
-            state.lastToken = cur;
+            var cur2 = stream.current();
+            state.lastToken = cur2;
             if (style2 === "keyword") {
-              state.startDef = startDefs.test(cur);
-              state.endDef = state.endDef || endDefs.test(cur);
+              state.startDef = startDefs.test(cur2);
+              state.endDef = state.endDef || endDefs.test(cur2);
             } else {
               state.startDef = false;
             }
@@ -53954,7 +55631,7 @@
       dedent4(stream, state);
       return "keyword";
     }
-    if (stream.match(closing2)) {
+    if (stream.match(closing3)) {
       dedent4(stream, state);
       return "keyword";
     }
@@ -54017,7 +55694,7 @@
     }
     return style2;
   }
-  var ERRORCLASS2, singleOperators6, singleDelimiters3, doubleOperators4, doubleDelimiters2, tripleDelimiters2, identifiers11, openingKeywords2, middleKeywords2, endKeywords2, operatorKeywords, wordOperators4, commonKeywords6, commontypes, keywords41, types7, stringPrefixes3, opening2, middle2, closing2, doubleClosing, doOpening, indentInfo, vb;
+  var ERRORCLASS2, singleOperators6, singleDelimiters3, doubleOperators4, doubleDelimiters2, tripleDelimiters2, identifiers11, openingKeywords2, middleKeywords2, endKeywords2, operatorKeywords, wordOperators4, commonKeywords6, commontypes, keywords41, types7, stringPrefixes3, opening2, middle2, closing3, doubleClosing, doOpening, indentInfo, vb;
   var init_vb = __esm({
     "node_modules/@codemirror/legacy-modes/mode/vb.js"() {
       ERRORCLASS2 = "error";
@@ -54039,7 +55716,7 @@
       stringPrefixes3 = '"';
       opening2 = wordRegexp14(openingKeywords2);
       middle2 = wordRegexp14(middleKeywords2);
-      closing2 = wordRegexp14(endKeywords2);
+      closing3 = wordRegexp14(endKeywords2);
       doubleClosing = wordRegexp14(["end"]);
       doOpening = wordRegexp14(["do"]);
       indentInfo = null;
@@ -54066,7 +55743,7 @@
         },
         indent: function(state, textAfter, cx2) {
           var trueText = textAfter.replace(/^\s+|\s+$/g, "");
-          if (trueText.match(closing2) || trueText.match(doubleClosing) || trueText.match(middle2)) return cx2.unit * (state.currentIndent - 1);
+          if (trueText.match(closing3) || trueText.match(doubleClosing) || trueText.match(middle2)) return cx2.unit * (state.currentIndent - 1);
           if (state.currentIndent < 0) return 0;
           return state.currentIndent * cx2.unit;
         },
@@ -54375,7 +56052,7 @@
     var stringPrefixes4 = '"';
     var opening3 = wordRegexp16(openingKeywords3);
     var middle3 = wordRegexp16(middleKeywords3);
-    var closing3 = wordRegexp16(endKeywords3);
+    var closing4 = wordRegexp16(endKeywords3);
     var doubleClosing2 = wordRegexp16(["end"]);
     var doOpening2 = wordRegexp16(["do"]);
     var noIndentWords = wordRegexp16(["on error resume next", "exit"]);
@@ -54465,7 +56142,7 @@
         dedent5(stream, state);
         return "keyword";
       }
-      if (stream.match(closing3)) {
+      if (stream.match(closing4)) {
         if (!state.doInCurrentLine)
           dedent5(stream, state);
         else
@@ -54553,7 +56230,7 @@
       },
       indent: function(state, textAfter, cx2) {
         var trueText = textAfter.replace(/^\s+|\s+$/g, "");
-        if (trueText.match(closing3) || trueText.match(doubleClosing2) || trueText.match(middle3)) return cx2.unit * (state.currentIndent - 1);
+        if (trueText.match(closing4) || trueText.match(doubleClosing2) || trueText.match(middle3)) return cx2.unit * (state.currentIndent - 1);
         if (state.currentIndent < 0) return 0;
         return state.currentIndent * cx2.unit;
       }
@@ -54777,12 +56454,12 @@
       return "operator";
     }
     stream.eatWhile(/[\w\$_]/);
-    var cur = stream.current();
-    if (keywords43.propertyIsEnumerable(cur.toLowerCase())) {
-      if (blockKeywords5.propertyIsEnumerable(cur)) curPunc12 = "newstatement";
+    var cur2 = stream.current();
+    if (keywords43.propertyIsEnumerable(cur2.toLowerCase())) {
+      if (blockKeywords5.propertyIsEnumerable(cur2)) curPunc12 = "newstatement";
       return "keyword";
     }
-    if (atoms15.propertyIsEnumerable(cur)) return "atom";
+    if (atoms15.propertyIsEnumerable(cur2)) return "atom";
     return "variable";
   }
   function tokenString25(quote2) {
@@ -54878,10 +56555,10 @@
         },
         indent: function(state, textAfter, cx2) {
           if (state.tokenize != tokenBase42 && state.tokenize != null) return 0;
-          var firstChar = textAfter && textAfter.charAt(0), ctx = state.context, closing3 = firstChar == ctx.type;
+          var firstChar = textAfter && textAfter.charAt(0), ctx = state.context, closing4 = firstChar == ctx.type;
           if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : cx2.unit);
-          else if (ctx.align) return ctx.column + (closing3 ? 0 : 1);
-          else return ctx.indented + (closing3 ? 0 : cx2.unit);
+          else if (ctx.align) return ctx.column + (closing4 ? 0 : 1);
+          else return ctx.indented + (closing4 ? 0 : cx2.unit);
         },
         languageData: {
           indentOnInput: /^\s*[{}]$/,
@@ -55832,12 +57509,12 @@
     }
     return null;
   }
-  function vue(config = {}) {
+  function vue(config2 = {}) {
     let base6 = baseHTML3;
-    if (config.base) {
-      if (config.base.language.name != "html" || !(config.base.language instanceof LRLanguage))
+    if (config2.base) {
+      if (config2.base.language.name != "html" || !(config2.base.language instanceof LRLanguage))
         throw new RangeError("The base option must be the result of calling html(...)");
-      base6 = config.base;
+      base6 = config2.base;
     }
     return new LanguageSupport(base6.language == baseHTML3.language ? vueLanguage : makeVue(base6.language), [
       base6.support,
@@ -55930,12 +57607,12 @@
     }
     return null;
   }
-  function angular(config = {}) {
+  function angular(config2 = {}) {
     let base6 = baseHTML4;
-    if (config.base) {
-      if (config.base.language.name != "html" || !(config.base.language instanceof LRLanguage))
+    if (config2.base) {
+      if (config2.base.language.name != "html" || !(config2.base.language instanceof LRLanguage))
         throw new RangeError("The base option must be the result of calling html(...)");
-      base6 = config.base;
+      base6 = config2.base;
     }
     return new LanguageSupport(base6.language == baseHTML4.language ? angularLanguage : mkAngular(base6.language), [base6.support, base6.language.data.of({
       closeBrackets: { brackets: ["[", "{", '"'] },
@@ -56045,8 +57722,8 @@
   init_dist5();
   init_dist3();
   var toggleComment = (target) => {
-    let { state } = target, line = state.doc.lineAt(state.selection.main.from), config = getConfig(target.state, line.from);
-    return config.line ? toggleLineComment(target) : config.block ? toggleBlockCommentByLine(target) : false;
+    let { state } = target, line = state.doc.lineAt(state.selection.main.from), config2 = getConfig(target.state, line.from);
+    return config2.line ? toggleLineComment(target) : config2.block ? toggleBlockCommentByLine(target) : false;
   };
   function command(f, option) {
     return ({ state, dispatch }) => {
@@ -56222,13 +57899,13 @@
       return HistoryState.empty;
     },
     update(state, tr) {
-      let config = tr.state.facet(historyConfig);
+      let config2 = tr.state.facet(historyConfig);
       let fromHist = tr.annotation(fromHistory);
       if (fromHist) {
         let item = HistEvent.fromTransaction(tr, fromHist.selection), from3 = fromHist.side;
         let other = from3 == 0 ? state.undone : state.done;
         if (item)
-          other = updateBranch(other, other.length, config.minDepth, item);
+          other = updateBranch(other, other.length, config2.minDepth, item);
         else
           other = addSelection(other, tr.startState.selection);
         return new HistoryState(from3 == 0 ? fromHist.rest : other, from3 == 0 ? other : fromHist.rest);
@@ -56241,9 +57918,9 @@
       let event = HistEvent.fromTransaction(tr);
       let time = tr.annotation(Transaction.time), userEvent = tr.annotation(Transaction.userEvent);
       if (event)
-        state = state.addChanges(event, time, userEvent, config, tr);
+        state = state.addChanges(event, time, userEvent, config2, tr);
       else if (tr.selection)
-        state = state.addSelection(tr.startState.selection, time, userEvent, config.newGroupDelay);
+        state = state.addSelection(tr.startState.selection, time, userEvent, config2.newGroupDelay);
       if (isolate == "full" || isolate == "after")
         state = state.isolate();
       return state;
@@ -56255,10 +57932,10 @@
       return new HistoryState(json3.done.map(HistEvent.fromJSON), json3.undone.map(HistEvent.fromJSON));
     }
   });
-  function history(config = {}) {
+  function history(config2 = {}) {
     return [
       historyField_,
-      historyConfig.of(config),
+      historyConfig.of(config2),
       EditorView.domEventHandlers({
         beforeinput(e, view2) {
           let command3 = e.inputType == "historyUndo" ? undo : e.inputType == "historyRedo" ? redo : null;
@@ -56410,13 +58087,13 @@
     isolate() {
       return this.prevTime ? new _HistoryState(this.done, this.undone) : this;
     }
-    addChanges(event, time, userEvent, config, tr) {
+    addChanges(event, time, userEvent, config2, tr) {
       let done = this.done, lastEvent = done[done.length - 1];
-      if (lastEvent && lastEvent.changes && !lastEvent.changes.empty && event.changes && (!userEvent || joinableUserEvent.test(userEvent)) && (!lastEvent.selectionsAfter.length && time - this.prevTime < config.newGroupDelay && config.joinToEvent(tr, isAdjacent(lastEvent.changes, event.changes)) || // For compose (but not compose.start) events, always join with previous event
+      if (lastEvent && lastEvent.changes && !lastEvent.changes.empty && event.changes && (!userEvent || joinableUserEvent.test(userEvent)) && (!lastEvent.selectionsAfter.length && time - this.prevTime < config2.newGroupDelay && config2.joinToEvent(tr, isAdjacent(lastEvent.changes, event.changes)) || // For compose (but not compose.start) events, always join with previous event
       userEvent == "input.type.compose")) {
-        done = updateBranch(done, done.length - 1, config.minDepth, new HistEvent(event.changes.compose(lastEvent.changes), conc(StateEffect.mapEffects(event.effects, lastEvent.changes), lastEvent.effects), lastEvent.mapped, lastEvent.startSelection, none2));
+        done = updateBranch(done, done.length - 1, config2.minDepth, new HistEvent(event.changes.compose(lastEvent.changes), conc(StateEffect.mapEffects(event.effects, lastEvent.changes), lastEvent.effects), lastEvent.mapped, lastEvent.startSelection, none2));
       } else {
-        done = updateBranch(done, done.length, config.minDepth, event);
+        done = updateBranch(done, done.length, config2.minDepth, event);
       }
       return new _HistoryState(done, none2, time, userEvent);
     }
@@ -56679,9 +58356,9 @@
         if (stackBefore.node.from >= stack.node.from && stackBefore.node.to <= stack.node.to)
           stack = stackBefore;
       }
-      for (let cur = stack; cur; cur = cur.next) {
-        let { node } = cur;
-        if ((node.from < range.from && node.to >= range.to || node.to > range.to && node.from <= range.from) && cur.next)
+      for (let cur2 = stack; cur2; cur2 = cur2.next) {
+        let { node } = cur2;
+        if ((node.from < range.from && node.to >= range.to || node.to > range.to && node.from <= range.from) && cur2.next)
           return EditorSelection.range(node.to, node.from);
       }
       return range;
@@ -56696,16 +58373,16 @@
     for (let range of state.selection.ranges) {
       let line = state.doc.lineAt(range.head);
       if (forward ? line.to < view2.state.doc.length : line.from > 0)
-        for (let cur = range; ; ) {
-          let next2 = view2.moveVertically(cur, forward);
+        for (let cur2 = range; ; ) {
+          let next2 = view2.moveVertically(cur2, forward);
           if (next2.head < line.from || next2.head > line.to) {
             if (!ranges.some((r2) => r2.head == next2.head))
               ranges.push(next2);
             break;
-          } else if (next2.head == cur.head) {
+          } else if (next2.head == cur2.head) {
             break;
           } else {
-            cur = next2;
+            cur2 = next2;
           }
         }
     }
@@ -56717,11 +58394,11 @@
   var addCursorAbove = (view2) => addCursorVertically(view2, false);
   var addCursorBelow = (view2) => addCursorVertically(view2, true);
   var simplifySelection = ({ state, dispatch }) => {
-    let cur = state.selection, selection = null;
-    if (cur.ranges.length > 1)
-      selection = EditorSelection.create([cur.main]);
-    else if (!cur.main.empty)
-      selection = EditorSelection.create([EditorSelection.cursor(cur.main.head)]);
+    let cur2 = state.selection, selection = null;
+    if (cur2.ranges.length > 1)
+      selection = EditorSelection.create([cur2.main]);
+    else if (!cur2.main.empty)
+      selection = EditorSelection.create([EditorSelection.cursor(cur2.main.head)]);
     if (!selection)
       return false;
     dispatch(setSel(state, selection));
@@ -56798,11 +58475,11 @@
         break;
       }
       let next2 = findClusterBreak2(line.text, pos - line.from, forward) + line.from;
-      let nextChar = line.text.slice(Math.min(pos, next2) - line.from, Math.max(pos, next2) - line.from);
-      let nextCat = categorize(nextChar);
+      let nextChar2 = line.text.slice(Math.min(pos, next2) - line.from, Math.max(pos, next2) - line.from);
+      let nextCat = categorize(nextChar2);
       if (cat != null && nextCat != cat)
         break;
-      if (nextChar != " " || pos != range.head)
+      if (nextChar2 != " " || pos != range.head)
         cat = nextCat;
       pos = next2;
     }
@@ -57019,11 +58696,11 @@
         return;
       if (!/\S/.test(line.text))
         indent6 = 0;
-      let cur = /^\s*/.exec(line.text)[0];
+      let cur2 = /^\s*/.exec(line.text)[0];
       let norm = indentString(state, indent6);
-      if (cur != norm || range.from < line.from + cur.length) {
+      if (cur2 != norm || range.from < line.from + cur2.length) {
         updated[line.from] = indent6;
-        changes2.push({ from: line.from, to: line.from + cur.length, insert: norm });
+        changes2.push({ from: line.from, to: line.from + cur2.length, insert: norm });
       }
     });
     if (!changes.changes.empty)
@@ -57503,23 +59180,23 @@
       });
     }
   });
-  function search(config) {
-    return config ? [searchConfigFacet.of(config), searchExtensions] : searchExtensions;
+  function search(config2) {
+    return config2 ? [searchConfigFacet.of(config2), searchExtensions] : searchExtensions;
   }
   var SearchQuery = class {
     /**
     Create a query object.
     */
-    constructor(config) {
-      this.search = config.search;
-      this.caseSensitive = !!config.caseSensitive;
-      this.literal = !!config.literal;
-      this.regexp = !!config.regexp;
-      this.replace = config.replace || "";
+    constructor(config2) {
+      this.search = config2.search;
+      this.caseSensitive = !!config2.caseSensitive;
+      this.literal = !!config2.literal;
+      this.regexp = !!config2.regexp;
+      this.replace = config2.replace || "";
       this.valid = !!this.search && (!this.regexp || validRegExp(this.search));
       this.unquoted = this.unquote(this.search);
-      this.wholeWord = !!config.wholeWord;
-      this.test = config.test;
+      this.wholeWord = !!config2.wholeWord;
+      this.test = config2.test;
     }
     /**
     @internal
@@ -57782,10 +59459,10 @@
     if (!next2)
       return false;
     let selection = EditorSelection.single(next2.from, next2.to);
-    let config = view2.state.facet(searchConfigFacet);
+    let config2 = view2.state.facet(searchConfigFacet);
     view2.dispatch({
       selection,
-      effects: [announceMatch(view2, next2), config.scrollToMatch(selection.main, view2)],
+      effects: [announceMatch(view2, next2), config2.scrollToMatch(selection.main, view2)],
       userEvent: "select.search"
     });
     selectSearchInput(view2);
@@ -57797,10 +59474,10 @@
     if (!prev)
       return false;
     let selection = EditorSelection.single(prev.from, prev.to);
-    let config = view2.state.facet(searchConfigFacet);
+    let config2 = view2.state.facet(searchConfigFacet);
     view2.dispatch({
       selection,
-      effects: [announceMatch(view2, prev), config.scrollToMatch(selection.main, view2)],
+      effects: [announceMatch(view2, prev), config2.scrollToMatch(selection.main, view2)],
       userEvent: "select.search"
     });
     selectSearchInput(view2);
@@ -57822,12 +59499,12 @@
       return false;
     let { from: from3, to } = sel.main;
     let ranges = [], main2 = 0;
-    for (let cur = new SearchCursor(state.doc, state.sliceDoc(from3, to)); !cur.next().done; ) {
+    for (let cur2 = new SearchCursor(state.doc, state.sliceDoc(from3, to)); !cur2.next().done; ) {
       if (ranges.length > 1e3)
         return false;
-      if (cur.value.from == from3)
+      if (cur2.value.from == from3)
         main2 = ranges.length;
-      ranges.push(EditorSelection.range(cur.value.from, cur.value.to));
+      ranges.push(EditorSelection.range(cur2.value.from, cur2.value.to));
     }
     dispatch(state.update({
       selection: EditorSelection.create(ranges, main2),
@@ -57895,13 +59572,13 @@
     let selText = sel.empty || sel.to > sel.from + 100 ? "" : state.sliceDoc(sel.from, sel.to);
     if (fallback2 && !selText)
       return fallback2;
-    let config = state.facet(searchConfigFacet);
+    let config2 = state.facet(searchConfigFacet);
     return new SearchQuery({
-      search: ((_a2 = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.literal) !== null && _a2 !== void 0 ? _a2 : config.literal) ? selText : selText.replace(/\n/g, "\\n"),
-      caseSensitive: (_b2 = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.caseSensitive) !== null && _b2 !== void 0 ? _b2 : config.caseSensitive,
-      literal: (_c = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.literal) !== null && _c !== void 0 ? _c : config.literal,
-      regexp: (_d = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.regexp) !== null && _d !== void 0 ? _d : config.regexp,
-      wholeWord: (_e2 = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.wholeWord) !== null && _e2 !== void 0 ? _e2 : config.wholeWord
+      search: ((_a2 = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.literal) !== null && _a2 !== void 0 ? _a2 : config2.literal) ? selText : selText.replace(/\n/g, "\\n"),
+      caseSensitive: (_b2 = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.caseSensitive) !== null && _b2 !== void 0 ? _b2 : config2.caseSensitive,
+      literal: (_c = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.literal) !== null && _c !== void 0 ? _c : config2.literal,
+      regexp: (_d = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.regexp) !== null && _d !== void 0 ? _d : config2.regexp,
+      wholeWord: (_e2 = fallback2 === null || fallback2 === void 0 ? void 0 : fallback2.wholeWord) !== null && _e2 !== void 0 ? _e2 : config2.wholeWord
     });
   }
   function getSearchInput(view2) {
@@ -73808,6 +75485,155 @@ $$
   }
 
   // src/editor.js
+  init_dist6();
+
+  // src/commands/completion.js
+  var CALLOUT_TYPES = [
+    { label: "NOTE", detail: "\u2139\uFE0F  Informational note", type: "keyword" },
+    { label: "TIP", detail: "\u{1F4A1} Helpful tip", type: "keyword" },
+    { label: "IMPORTANT", detail: "\u2757 Important information", type: "keyword" },
+    { label: "WARNING", detail: "\u26A0\uFE0F  Warning notice", type: "keyword" },
+    { label: "CAUTION", detail: "\u{1F534} Dangerous action", type: "keyword" },
+    { label: "ABSTRACT", detail: "\u{1F4CB} Summary / TLDR", type: "keyword" },
+    { label: "TODO", detail: "\u2705 Task / to-do", type: "keyword" },
+    { label: "SUCCESS", detail: "\u2714\uFE0F  Success message", type: "keyword" },
+    { label: "QUESTION", detail: "\u2753 Question", type: "keyword" },
+    { label: "FAILURE", detail: "\u274C Failure message", type: "keyword" },
+    { label: "DANGER", detail: "\u26A1 Danger notice", type: "keyword" },
+    { label: "BUG", detail: "\u{1F41B} Bug report", type: "keyword" },
+    { label: "EXAMPLE", detail: "\u{1F4DD} Example", type: "keyword" },
+    { label: "QUOTE", detail: "\u{1F4AC} Quote / citation", type: "keyword" },
+    { label: "INFO", detail: "\u2139\uFE0F  Information", type: "keyword" }
+  ];
+  function calloutCompletion(context) {
+    const match2 = context.matchBefore(/>\s*\[!(\w*)$/);
+    if (!match2 && !context.explicit) return null;
+    if (!match2) return null;
+    const bangPos = match2.text.indexOf("[!");
+    const from3 = match2.from + bangPos + 2;
+    return {
+      from: from3,
+      options: CALLOUT_TYPES,
+      validFor: /^\w*$/
+    };
+  }
+  var FENCE_LANGUAGES = [
+    // Popular / web
+    { label: "javascript", detail: "JavaScript", type: "type" },
+    { label: "typescript", detail: "TypeScript", type: "type" },
+    { label: "jsx", detail: "JSX", type: "type" },
+    { label: "tsx", detail: "TSX", type: "type" },
+    { label: "html", detail: "HTML", type: "type" },
+    { label: "css", detail: "CSS", type: "type" },
+    { label: "scss", detail: "SCSS", type: "type" },
+    { label: "less", detail: "Less", type: "type" },
+    { label: "json", detail: "JSON", type: "type" },
+    { label: "xml", detail: "XML", type: "type" },
+    { label: "svg", detail: "SVG", type: "type" },
+    { label: "yaml", detail: "YAML", type: "type" },
+    { label: "toml", detail: "TOML", type: "type" },
+    { label: "markdown", detail: "Markdown", type: "type" },
+    // Systems
+    { label: "python", detail: "Python", type: "type" },
+    { label: "rust", detail: "Rust", type: "type" },
+    { label: "go", detail: "Go", type: "type" },
+    { label: "c", detail: "C", type: "type" },
+    { label: "cpp", detail: "C++", type: "type" },
+    { label: "java", detail: "Java", type: "type" },
+    { label: "kotlin", detail: "Kotlin", type: "type" },
+    { label: "swift", detail: "Swift", type: "type" },
+    { label: "csharp", detail: "C#", type: "type" },
+    // Scripting & config
+    { label: "bash", detail: "Bash / Shell", type: "type" },
+    { label: "shell", detail: "Shell", type: "type" },
+    { label: "powershell", detail: "PowerShell", type: "type" },
+    { label: "sql", detail: "SQL", type: "type" },
+    { label: "graphql", detail: "GraphQL", type: "type" },
+    { label: "php", detail: "PHP", type: "type" },
+    { label: "ruby", detail: "Ruby", type: "type" },
+    { label: "lua", detail: "Lua", type: "type" },
+    { label: "perl", detail: "Perl", type: "type" },
+    { label: "r", detail: "R", type: "type" },
+    // Data / markup
+    { label: "latex", detail: "LaTeX", type: "type" },
+    { label: "dockerfile", detail: "Dockerfile", type: "type" },
+    { label: "makefile", detail: "Makefile", type: "type" },
+    { label: "diff", detail: "Diff / Patch", type: "type" },
+    { label: "csv", detail: "CSV", type: "type" },
+    { label: "ini", detail: "INI", type: "type" },
+    // Other
+    { label: "plaintext", detail: "Plain Text", type: "type" },
+    { label: "mermaid", detail: "Mermaid diagram", type: "type" },
+    { label: "math", detail: "Math / KaTeX", type: "type" }
+  ];
+  function fenceLanguageCompletion(context) {
+    const match2 = context.matchBefore(/^`{3,}(\w*)$/m);
+    if (!match2 && !context.explicit) return null;
+    if (!match2) return null;
+    const backtickMatch = match2.text.match(/^`{3,}/);
+    if (!backtickMatch) return null;
+    const from3 = match2.from + backtickMatch[0].length;
+    return {
+      from: from3,
+      options: FENCE_LANGUAGES,
+      validFor: /^\w*$/
+    };
+  }
+  var COMMON_EMOJIS = [
+    { label: ":smile:", apply: "\u{1F604}", detail: "\u{1F604}", type: "text" },
+    { label: ":laughing:", apply: "\u{1F606}", detail: "\u{1F606}", type: "text" },
+    { label: ":blush:", apply: "\u{1F60A}", detail: "\u{1F60A}", type: "text" },
+    { label: ":heart_eyes:", apply: "\u{1F60D}", detail: "\u{1F60D}", type: "text" },
+    { label: ":thumbsup:", apply: "\u{1F44D}", detail: "\u{1F44D}", type: "text" },
+    { label: ":thumbsdown:", apply: "\u{1F44E}", detail: "\u{1F44E}", type: "text" },
+    { label: ":clap:", apply: "\u{1F44F}", detail: "\u{1F44F}", type: "text" },
+    { label: ":fire:", apply: "\u{1F525}", detail: "\u{1F525}", type: "text" },
+    { label: ":rocket:", apply: "\u{1F680}", detail: "\u{1F680}", type: "text" },
+    { label: ":star:", apply: "\u2B50", detail: "\u2B50", type: "text" },
+    { label: ":sparkles:", apply: "\u2728", detail: "\u2728", type: "text" },
+    { label: ":tada:", apply: "\u{1F389}", detail: "\u{1F389}", type: "text" },
+    { label: ":100:", apply: "\u{1F4AF}", detail: "\u{1F4AF}", type: "text" },
+    { label: ":thinking:", apply: "\u{1F914}", detail: "\u{1F914}", type: "text" },
+    { label: ":eyes:", apply: "\u{1F440}", detail: "\u{1F440}", type: "text" },
+    { label: ":wave:", apply: "\u{1F44B}", detail: "\u{1F44B}", type: "text" },
+    { label: ":pray:", apply: "\u{1F64F}", detail: "\u{1F64F}", type: "text" },
+    { label: ":muscle:", apply: "\u{1F4AA}", detail: "\u{1F4AA}", type: "text" },
+    { label: ":warning:", apply: "\u26A0\uFE0F", detail: "\u26A0\uFE0F", type: "text" },
+    { label: ":bulb:", apply: "\u{1F4A1}", detail: "\u{1F4A1}", type: "text" },
+    { label: ":memo:", apply: "\u{1F4DD}", detail: "\u{1F4DD}", type: "text" },
+    { label: ":bug:", apply: "\u{1F41B}", detail: "\u{1F41B}", type: "text" },
+    { label: ":white_check_mark:", apply: "\u2705", detail: "\u2705", type: "text" },
+    { label: ":x:", apply: "\u274C", detail: "\u274C", type: "text" },
+    { label: ":question:", apply: "\u2753", detail: "\u2753", type: "text" },
+    { label: ":exclamation:", apply: "\u2757", detail: "\u2757", type: "text" },
+    { label: ":link:", apply: "\u{1F517}", detail: "\u{1F517}", type: "text" },
+    { label: ":gear:", apply: "\u2699\uFE0F", detail: "\u2699\uFE0F", type: "text" },
+    { label: ":lock:", apply: "\u{1F512}", detail: "\u{1F512}", type: "text" },
+    { label: ":key:", apply: "\u{1F511}", detail: "\u{1F511}", type: "text" },
+    { label: ":calendar:", apply: "\u{1F4C5}", detail: "\u{1F4C5}", type: "text" },
+    { label: ":clock:", apply: "\u{1F550}", detail: "\u{1F550}", type: "text" },
+    { label: ":zap:", apply: "\u26A1", detail: "\u26A1", type: "text" },
+    { label: ":heart:", apply: "\u2764\uFE0F", detail: "\u2764\uFE0F", type: "text" },
+    { label: ":coffee:", apply: "\u2615", detail: "\u2615", type: "text" },
+    { label: ":package:", apply: "\u{1F4E6}", detail: "\u{1F4E6}", type: "text" },
+    { label: ":arrow_right:", apply: "\u27A1\uFE0F", detail: "\u27A1\uFE0F", type: "text" },
+    { label: ":arrow_left:", apply: "\u2B05\uFE0F", detail: "\u2B05\uFE0F", type: "text" },
+    { label: ":heavy_plus_sign:", apply: "\u2795", detail: "\u2795", type: "text" },
+    { label: ":heavy_minus_sign:", apply: "\u2796", detail: "\u2796", type: "text" }
+  ];
+  function emojiCompletion(context) {
+    const match2 = context.matchBefore(/:[a-zA-Z_][a-zA-Z0-9_]*$/);
+    if (!match2 && !context.explicit) return null;
+    if (!match2) return null;
+    if (!context.explicit && match2.text.length < 3) return null;
+    return {
+      from: match2.from,
+      options: COMMON_EMOJIS,
+      validFor: /^:[a-zA-Z0-9_]*$/
+    };
+  }
+
+  // src/editor.js
   var HIDE = Decoration.replace({});
   var refreshEffect = StateEffect.define();
   var interaction = { dragging: false };
@@ -75426,8 +77252,8 @@ $$
   var MAX_LIST_DEPTH = 4;
   function listItemDepth(node) {
     let depth = 0;
-    for (let cur = node.parent; cur; cur = cur.parent) {
-      if (cur.name === "ListItem") depth++;
+    for (let cur2 = node.parent; cur2; cur2 = cur2.parent) {
+      if (cur2.name === "ListItem") depth++;
     }
     return Math.max(0, Math.min(MAX_LIST_DEPTH, depth - 1));
   }
@@ -75712,9 +77538,9 @@ $$
     const lang = infoNode ? doc2.sliceString(infoNode.from, infoNode.to).trim().split(/\s+/)[0] : "";
     const first = node.firstChild;
     const last = node.lastChild;
-    const closing3 = last && last.name === "CodeMark" && endLine.number > startLine.number && (!first || last.from > first.from) ? last : null;
+    const closing4 = last && last.name === "CodeMark" && endLine.number > startLine.number && (!first || last.from > first.from) ? last : null;
     const contentFrom = Math.min(doc2.length, startLine.to + 1);
-    const contentTo = closing3 ? closing3.from : endLine.to;
+    const contentTo = closing4 ? closing4.from : endLine.to;
     const copied = copiedBadge.key === node.from && copiedBadge.until > Date.now();
     for (let n = startLine.number; n <= endLine.number; n++) {
       const line = doc2.line(n);
@@ -75734,8 +77560,8 @@ $$
     if (first && first.name === "CodeMark") {
       decos.push(HIDE.range(first.from, startLine.to));
     }
-    if (closing3) {
-      decos.push(HIDE.range(closing3.from, endLine.to));
+    if (closing4) {
+      decos.push(HIDE.range(closing4.from, endLine.to));
     }
   }
   var activeSyntaxPlugin = ViewPlugin.fromClass(class {
@@ -76010,7 +77836,23 @@ Just start writing.
         history(),
         drawSelection(),
         dropCursor(),
+        closeBrackets(),
+        autocompletion({
+          activateOnTyping: true,
+          override: [calloutCompletion, fenceLanguageCompletion, emojiCompletion],
+          icons: true,
+          maxRenderedOptions: 20
+        }),
+        // Markdown-specific bracket pairs for closeBrackets
+        markdownLanguage.data.of({
+          closeBrackets: {
+            brackets: ["(", "[", "{", '"', "'", "`", "$"],
+            before: ")]}:;>\n\r "
+          }
+        }),
         keymap.of([
+          ...closeBracketsKeymap,
+          ...completionKeymap,
           ...defaultKeymap,
           ...historyKeymap,
           { key: "Ctrl-n", run: () => {

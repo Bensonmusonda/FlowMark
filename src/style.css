@@ -1465,3 +1465,66 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
   opacity: 0.5;
   border-radius: 2px;
 }
+
+/* ── Autocomplete tooltip ── */
+.cm-tooltip.cm-tooltip-autocomplete {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  overflow: hidden;
+}
+
+.cm-tooltip-autocomplete ul {
+  padding: 4px 0;
+  max-height: 300px;
+}
+
+.cm-tooltip-autocomplete ul li {
+  padding: 4px 12px 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected] {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cm-tooltip-autocomplete .cm-completionIcon {
+  width: 16px;
+  font-size: 14px;
+  opacity: 0.7;
+  padding: 0;
+  margin: 0;
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected] .cm-completionIcon {
+  opacity: 1;
+}
+
+.cm-tooltip-autocomplete .cm-completionLabel {
+  flex: 1;
+}
+
+.cm-tooltip-autocomplete .cm-completionDetail {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: auto;
+  padding-left: 12px;
+  font-style: normal;
+}
+
+.cm-tooltip-autocomplete ul li[aria-selected] .cm-completionDetail {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Completion icon types */
+.cm-completionIcon-keyword::after { content: '📋'; }
+.cm-completionIcon-type::after { content: '🏷️'; }
+.cm-completionIcon-text::after { content: ''; }
