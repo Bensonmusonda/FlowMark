@@ -78113,6 +78113,60 @@ $$
       ".cm-syntax-show": { color: accentColor, opacity: "0.6" }
     }, { dark: true });
   }
+  var THEMES = ["theme-dark", "theme-light", "theme-sepia"];
+  var currentTheme = localStorage.getItem("fm-theme") || "theme-dark";
+  var ACCENTS = {
+    // Blues
+    blue: { dark: "#7cb8f0", light: "#2970c8" },
+    steel: { dark: "#90aac8", light: "#3a5878" },
+    sky: { dark: "#80d0e8", light: "#1888a8" },
+    // Greens
+    sage: { dark: "#90c8a0", light: "#2a7a48" },
+    mint: { dark: "#80e0c0", light: "#0a8060" },
+    olive: { dark: "#b0c880", light: "#506820" },
+    // Reds / Pinks
+    rose: { dark: "#f0a0b0", light: "#b83050" },
+    coral: { dark: "#f0907a", light: "#c04030" },
+    blush: { dark: "#e8b0c8", light: "#a03870" },
+    // Purples
+    lavender: { dark: "#b8a8f0", light: "#5040b8" },
+    mauve: { dark: "#d0a0d0", light: "#883888" },
+    violet: { dark: "#c0a0e8", light: "#6030b0" },
+    // Warm neutrals
+    peach: { dark: "#f0b890", light: "#b05820" },
+    sand: { dark: "#d4b896", light: "#7a5030" },
+    amber: { dark: "#e8c870", light: "#987010" },
+    // Cool neutral
+    slate: { dark: "#a0b8c8", light: "#305068" }
+  };
+  var currentAccent = localStorage.getItem("fm-accent") || "blue";
+  function applyAccent(name2) {
+    const isLight = currentTheme !== "theme-dark";
+    const color = ACCENTS[name2]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+    document.documentElement.style.setProperty("--accent", color);
+    currentAccent = name2;
+    localStorage.setItem("fm-accent", name2);
+    if (typeof view !== "undefined" && view) {
+      view.dispatch({ effects: [
+        themeCompartment.reconfigure(makeTheme(color)),
+        highlightCompartment.reconfigure(makeHighlight(!isLight, color))
+      ] });
+    }
+  }
+  function syncWindowBackground() {
+    const bg = getComputedStyle(document.body).getPropertyValue("--bg").trim();
+    if (bg && window.windowAPI && window.windowAPI.setBackgroundColor) {
+      window.windowAPI.setBackgroundColor(bg);
+    }
+  }
+  function applyTheme(theme2) {
+    document.body.classList.remove(...THEMES);
+    if (theme2 !== "theme-dark") document.body.classList.add(theme2);
+    currentTheme = theme2;
+    localStorage.setItem("fm-theme", theme2);
+    applyAccent(currentAccent);
+    syncWindowBackground();
+  }
   var tabManager = new TabManager();
   function updateAppName() {
     const doc2 = tabManager.activeDocument;
@@ -78881,60 +78935,6 @@ Just start writing.
     items.forEach((li, i) => li.classList.toggle("focused", i === focusedRecentIndex));
     items[focusedRecentIndex]?.scrollIntoView({ block: "nearest" });
   });
-  var THEMES = ["theme-dark", "theme-light", "theme-sepia"];
-  var currentTheme = localStorage.getItem("fm-theme") || "theme-dark";
-  var ACCENTS = {
-    // Blues
-    blue: { dark: "#7cb8f0", light: "#2970c8" },
-    steel: { dark: "#90aac8", light: "#3a5878" },
-    sky: { dark: "#80d0e8", light: "#1888a8" },
-    // Greens
-    sage: { dark: "#90c8a0", light: "#2a7a48" },
-    mint: { dark: "#80e0c0", light: "#0a8060" },
-    olive: { dark: "#b0c880", light: "#506820" },
-    // Reds / Pinks
-    rose: { dark: "#f0a0b0", light: "#b83050" },
-    coral: { dark: "#f0907a", light: "#c04030" },
-    blush: { dark: "#e8b0c8", light: "#a03870" },
-    // Purples
-    lavender: { dark: "#b8a8f0", light: "#5040b8" },
-    mauve: { dark: "#d0a0d0", light: "#883888" },
-    violet: { dark: "#c0a0e8", light: "#6030b0" },
-    // Warm neutrals
-    peach: { dark: "#f0b890", light: "#b05820" },
-    sand: { dark: "#d4b896", light: "#7a5030" },
-    amber: { dark: "#e8c870", light: "#987010" },
-    // Cool neutral
-    slate: { dark: "#a0b8c8", light: "#305068" }
-  };
-  var currentAccent = localStorage.getItem("fm-accent") || "blue";
-  function applyAccent(name2) {
-    const isLight = currentTheme !== "theme-dark";
-    const color = ACCENTS[name2]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
-    document.documentElement.style.setProperty("--accent", color);
-    currentAccent = name2;
-    localStorage.setItem("fm-accent", name2);
-    if (typeof view !== "undefined") {
-      view.dispatch({ effects: [
-        themeCompartment.reconfigure(makeTheme(color)),
-        highlightCompartment.reconfigure(makeHighlight(!isLight, color))
-      ] });
-    }
-  }
-  function syncWindowBackground() {
-    const bg = getComputedStyle(document.body).getPropertyValue("--bg").trim();
-    if (bg && window.windowAPI && window.windowAPI.setBackgroundColor) {
-      window.windowAPI.setBackgroundColor(bg);
-    }
-  }
-  function applyTheme(theme2) {
-    document.body.classList.remove(...THEMES);
-    if (theme2 !== "theme-dark") document.body.classList.add(theme2);
-    currentTheme = theme2;
-    localStorage.setItem("fm-theme", theme2);
-    applyAccent(currentAccent);
-    syncWindowBackground();
-  }
   document.addEventListener("keydown", (e) => {
     if (e.defaultPrevented) return;
     if (e.key === "F11") {

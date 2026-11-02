@@ -27,7 +27,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      devTools: Boolean(process.env.FLOWMARK_DEBUG),
+      devTools: true,
     },
   });
 
@@ -36,6 +36,15 @@ function createWindow() {
   win.webContents.on('did-finish-load', () => {
     win.focus();
     win.webContents.focus();
+    win.webContents.openDevTools({ mode: 'detach' });
+  });
+
+  // Toggle DevTools with F12 or Ctrl+Shift+I
+  win.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
+      win.webContents.toggleDevTools();
+      event.preventDefault();
+    }
   });
 
   Menu.setApplicationMenu(null);

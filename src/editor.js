@@ -2534,6 +2534,68 @@ function makeTheme(accentColor) {
   }, { dark: true });
 }
 
+// ── Theme & Accent ───────────────────────────────────────────────────────────
+const THEMES = ['theme-dark', 'theme-light', 'theme-sepia'];
+let currentTheme = localStorage.getItem('fm-theme') || 'theme-dark';
+
+const ACCENTS = {
+  // Blues
+  blue:       { dark: '#7cb8f0', light: '#2970c8' },
+  steel:      { dark: '#90aac8', light: '#3a5878' },
+  sky:        { dark: '#80d0e8', light: '#1888a8' },
+  // Greens
+  sage:       { dark: '#90c8a0', light: '#2a7a48' },
+  mint:       { dark: '#80e0c0', light: '#0a8060' },
+  olive:      { dark: '#b0c880', light: '#506820' },
+  // Reds / Pinks
+  rose:       { dark: '#f0a0b0', light: '#b83050' },
+  coral:      { dark: '#f0907a', light: '#c04030' },
+  blush:      { dark: '#e8b0c8', light: '#a03870' },
+  // Purples
+  lavender:   { dark: '#b8a8f0', light: '#5040b8' },
+  mauve:      { dark: '#d0a0d0', light: '#883888' },
+  violet:     { dark: '#c0a0e8', light: '#6030b0' },
+  // Warm neutrals
+  peach:      { dark: '#f0b890', light: '#b05820' },
+  sand:       { dark: '#d4b896', light: '#7a5030' },
+  amber:      { dark: '#e8c870', light: '#987010' },
+  // Cool neutral
+  slate:      { dark: '#a0b8c8', light: '#305068' },
+};
+
+let currentAccent = localStorage.getItem('fm-accent') || 'blue';
+
+function applyAccent(name) {
+  const isLight = currentTheme !== 'theme-dark';
+  const color = ACCENTS[name]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
+  document.documentElement.style.setProperty('--accent', color);
+  currentAccent = name;
+  localStorage.setItem('fm-accent', name);
+  if (typeof view !== 'undefined' && view) {
+    view.dispatch({ effects: [
+      themeCompartment.reconfigure(makeTheme(color)),
+      highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
+    ]});
+  }
+}
+
+/** Keep the native window background in step with the theme's `--bg`. */
+function syncWindowBackground() {
+  const bg = getComputedStyle(document.body).getPropertyValue('--bg').trim();
+  if (bg && window.windowAPI && window.windowAPI.setBackgroundColor) {
+    window.windowAPI.setBackgroundColor(bg);
+  }
+}
+
+function applyTheme(theme) {
+  document.body.classList.remove(...THEMES);
+  if (theme !== 'theme-dark') document.body.classList.add(theme);
+  currentTheme = theme;
+  localStorage.setItem('fm-theme', theme);
+  applyAccent(currentAccent);
+  syncWindowBackground();
+}
+
 // ── State & Tab Management ───────────────────────────────────────────────────
 const tabManager = new TabManager();
 
@@ -3361,68 +3423,6 @@ quickOpen.addEventListener('keydown', e => {
   items.forEach((li, i) => li.classList.toggle('focused', i === focusedRecentIndex));
   items[focusedRecentIndex]?.scrollIntoView({ block: 'nearest' });
 });
-
-// ── Theme & Accent ───────────────────────────────────────────────────────────
-const THEMES = ['theme-dark', 'theme-light', 'theme-sepia'];
-let currentTheme = localStorage.getItem('fm-theme') || 'theme-dark';
-
-const ACCENTS = {
-  // Blues
-  blue:       { dark: '#7cb8f0', light: '#2970c8' },
-  steel:      { dark: '#90aac8', light: '#3a5878' },
-  sky:        { dark: '#80d0e8', light: '#1888a8' },
-  // Greens
-  sage:       { dark: '#90c8a0', light: '#2a7a48' },
-  mint:       { dark: '#80e0c0', light: '#0a8060' },
-  olive:      { dark: '#b0c880', light: '#506820' },
-  // Reds / Pinks
-  rose:       { dark: '#f0a0b0', light: '#b83050' },
-  coral:      { dark: '#f0907a', light: '#c04030' },
-  blush:      { dark: '#e8b0c8', light: '#a03870' },
-  // Purples
-  lavender:   { dark: '#b8a8f0', light: '#5040b8' },
-  mauve:      { dark: '#d0a0d0', light: '#883888' },
-  violet:     { dark: '#c0a0e8', light: '#6030b0' },
-  // Warm neutrals
-  peach:      { dark: '#f0b890', light: '#b05820' },
-  sand:       { dark: '#d4b896', light: '#7a5030' },
-  amber:      { dark: '#e8c870', light: '#987010' },
-  // Cool neutral
-  slate:      { dark: '#a0b8c8', light: '#305068' },
-};
-
-let currentAccent = localStorage.getItem('fm-accent') || 'blue';
-
-function applyAccent(name) {
-  const isLight = currentTheme !== 'theme-dark';
-  const color = ACCENTS[name]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
-  document.documentElement.style.setProperty('--accent', color);
-  currentAccent = name;
-  localStorage.setItem('fm-accent', name);
-  if (typeof view !== 'undefined') {
-    view.dispatch({ effects: [
-      themeCompartment.reconfigure(makeTheme(color)),
-      highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
-    ]});
-  }
-}
-
-/** Keep the native window background in step with the theme's `--bg`. */
-function syncWindowBackground() {
-  const bg = getComputedStyle(document.body).getPropertyValue('--bg').trim();
-  if (bg && window.windowAPI && window.windowAPI.setBackgroundColor) {
-    window.windowAPI.setBackgroundColor(bg);
-  }
-}
-
-function applyTheme(theme) {
-  document.body.classList.remove(...THEMES);
-  if (theme !== 'theme-dark') document.body.classList.add(theme);
-  currentTheme = theme;
-  localStorage.setItem('fm-theme', theme);
-  applyAccent(currentAccent);
-  syncWindowBackground();
-}
 
 // ── Zen mode ──────────────────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {

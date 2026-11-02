@@ -88,6 +88,7 @@ body {
   overflow-y: hidden;
   user-select: none;
   scrollbar-width: none;
+  -webkit-app-region: no-drag;
 }
 #tabbar::-webkit-scrollbar {
   display: none;
@@ -209,6 +210,7 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
   padding: 0;
   background: var(--bg);
   position: relative;
+  -webkit-app-region: no-drag;
 }
 
 .cm-scroller {
