@@ -1077,6 +1077,17 @@ body.theme-sepia #window-controls button:hover {
   color: #ffffff !important;
   opacity: 1 !important;
 }
+#window-controls button:active {
+  background: rgba(255, 255, 255, 0.16);
+}
+body.theme-light #window-controls button:active,
+body.theme-sepia #window-controls button:active {
+  background: rgba(0, 0, 0, 0.14);
+}
+#btn-close:active {
+  background: #c4101e !important;
+  color: #ffffff !important;
+}
 
 /* ── Status bar ── */
 #statusbar {

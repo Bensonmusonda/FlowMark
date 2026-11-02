@@ -2915,8 +2915,8 @@ document.getElementById('btn-max').addEventListener('click', () => window.window
 document.getElementById('btn-close').addEventListener('click', () => window.windowAPI.close());
 
 if (window.windowAPI?.onMaximizedChange) {
-  const maxIcon = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path fill="currentColor" d="M1,1 L9,1 L9,9 L1,9 L1,1 Z M2,2 L8,2 L8,8 L2,8 L2,2 Z"/></svg>';
-  const restoreIcon = '<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path fill="currentColor" d="M2.5,0 L10,0 L10,7.5 L8.5,7.5 L8.5,1.5 L2.5,1.5 Z M0,2.5 L7.5,2.5 L7.5,10 L0,10 Z M1.5,4 L6,4 L6,8.5 L1.5,8.5 Z"/></svg>';
+  const maxIcon = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path stroke="currentColor" stroke-width="1" d="M1.5 1.5h7v7h-7z"/></svg>';
+  const restoreIcon = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path stroke="currentColor" stroke-width="1" d="M3.5 1.5h5v5h-1v-4h-4zm-2 2h5v5h-5z"/></svg>';
   window.windowAPI.onMaximizedChange((isMax) => {
     const btnMax = document.getElementById('btn-max');
     if (btnMax) {
