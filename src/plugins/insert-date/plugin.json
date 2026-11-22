@@ -1,0 +1,33 @@
+{
+  "name": "insert-date",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "Insert current date/time at cursor position",
+  "author": "FlowMark",
+  "entry_point": "index.js",
+  "permissions": [
+    "editor.read",
+    "editor.write",
+    "editor.selection",
+    "editor.commands",
+    "ui.menus",
+    "settings.read",
+    "settings.write"
+  ],
+  "commands": [
+    {
+      "id": "insert-date:insert",
+      "label": "Insert Date",
+      "shortcut": "Ctrl+Shift+D",
+      "section": "insert"
+    }
+  ],
+  "menu_items": [
+    {
+      "id": "insert-date:insert",
+      "label": "Date",
+      "section": "insert",
+      "order": 10
+    }
+  ]
+}

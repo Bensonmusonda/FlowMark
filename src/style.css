@@ -12,7 +12,8 @@
   --muted:      #555;
   --accent:     #7cb8f0;
   --heading:    #f0f0f0;
-  --selection:  rgba(124,184,240,0.18);
+  --selection:  rgba(124,184,240,0.28);
+  --selection-active: rgba(124,184,240,0.45);
   --font-prose: 'Merriweather', 'Georgia', 'Cambria', serif;
   --font-mono:  'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   --font-ui:    'Segoe UI', system-ui, sans-serif;
@@ -28,7 +29,8 @@ body.theme-light {
   --text:       #222222;
   --muted:      #8c8c8c;
   --heading:    #000000;
-  --selection:  rgba(0,0,0,0.08);
+  --selection:  rgba(41,112,200,0.20);
+  --selection-active: rgba(41,112,200,0.35);
 }
 
 /* ── Base: sepia ── */
@@ -39,7 +41,8 @@ body.theme-sepia {
   --text:       #3b3020;
   --muted:      #a0917a;
   --heading:    #1e1812;
-  --selection:  rgba(100,70,20,0.12);
+  --selection:  rgba(152,112,16,0.20);
+  --selection-active: rgba(152,112,16,0.35);
 }
 
 html, body {
@@ -366,18 +369,7 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
 }
 
 /* ── Placeholder ── */
-#editor.empty::before {
-  content: 'Start writing or open a file';
-  position: absolute;
-  top: 64px;
-  left: max(40px, calc(50% - 360px));
-  color: var(--accent);
-  font-family: var(--font-prose);
-  font-size: 17px;
-  pointer-events: none;
-  opacity: 0.35;
-  font-style: italic;
-}
+/* Removed legacy absolute placeholder that conflicted with inline title */
 
 /* ── CodeMirror resets ── */
 .cm-editor {
@@ -388,8 +380,32 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
 .cm-content { padding: 0; white-space: pre-wrap; word-break: break-word; }
 .cm-line { padding: 0; }
 .cm-gutters { display: none !important; }
-.cm-selectionBackground { background: rgba(124,184,240,0.15) !important; }
-::selection { background: rgba(124,184,240,0.15); }
+.cm-selectionBackground {
+  background: var(--selection) !important;
+}
+.cm-editor.cm-focused .cm-selectionBackground {
+  background: var(--selection-active, var(--selection)) !important;
+}
+
+/* Inside CodeMirror, drawSelection paints .cm-selectionBackground.
+   Keep native ::selection transparent to prevent double-saturated overlapping highlights. */
+.cm-editor .cm-line ::selection,
+.cm-editor .cm-line::selection,
+.cm-editor .cm-content ::selection {
+  background: transparent !important;
+}
+
+/* Outside CodeMirror text (inputs, frontmatter, document title), use native selection */
+input::selection, textarea::selection {
+  background: var(--selection-active, var(--selection)) !important;
+}
+
+.fm-properties-card ::selection,
+.fm-properties-card input::selection,
+.fm-title-container ::selection,
+.fm-title-input::selection {
+  background: var(--selection-active, var(--selection)) !important;
+}
 
 /* smooth cursor */
 .cm-cursor {
@@ -428,8 +444,9 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
    the flow (transparent) so its advance width is preserved. Active lines draw
    the dash itself in normal text colour. Ordered markers keep their number in
    both states. */
-.cm-list-mark {
+.cm-editor .cm-list-mark {
   display: inline-block;
+  width: 1.2em;
   min-width: 1.2em;
   /* Pull the marker box back out of the line's left padding by exactly its own
      width. The bare `text-indent` approach is avoided on purpose: a negative
@@ -437,36 +454,88 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
      drags the marker left of the paragraph edge. A negative margin only moves
      this one box, and never further left than the line start. */
   margin-left: -1.2em;
+  text-align: center;
+  position: relative;
+  vertical-align: baseline;
   color: var(--muted);
 }
-.cm-list-mark-bullet {
+.cm-editor .cm-list-mark-bullet {
   position: relative;
-  color: transparent;
+  color: transparent !important;
 }
-.cm-list-mark-bullet::before {
+.cm-editor .cm-list-mark-bullet,
+.cm-editor .cm-list-mark-bullet * {
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+.cm-editor .cm-list-mark-bullet::before {
   content: '•';
   position: absolute;
   inset: 0;
-  color: var(--muted);
+  display: inline-block;
+  width: 100%;
   text-align: center;
+  color: var(--muted) !important;
+  -webkit-text-fill-color: var(--muted) !important;
+  pointer-events: none;
 }
-.cm-list-mark.cm-list-mark-active { color: var(--text); }
-.cm-list-mark.cm-list-mark-active::before { content: none; }
+.cm-editor .cm-list-mark-bullet.cm-list-mark-active::before {
+  content: none;
+}
+.cm-editor .cm-list-mark-bullet.cm-list-mark-active,
+.cm-editor .cm-list-mark-bullet.cm-list-mark-active * {
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text) !important;
+}
+.cm-editor .cm-list-mark-number.cm-list-mark-active { color: var(--text); }
+
+/* Muted, revealed strikethrough `~~` syntax markers without strikethrough line */
+.cm-editor .cm-strikethrough-mark {
+  text-decoration: none !important;
+  display: inline-block;
+  opacity: 0.5;
+}
+
+/* Muted, scaled-down heading `#` markers to prevent horizontal layout jolt */
+.cm-editor .cm-header-mark {
+  font-size: 0.7em;
+  opacity: 0.4;
+  font-weight: normal;
+  display: inline-block;
+  vertical-align: baseline;
+  letter-spacing: -0.05em;
+  margin-right: 0.25em;
+  color: var(--muted);
+}
 
 /* Hanging indent: the marker starts at the paragraph edge, body text and any
-   wrapped lines align one marker-box further in. Indentation is pure CSS —
-   the source spaces were concealed by the decoration plugin.
+   wrapped lines align one marker-box further in. Indentation uses margin-left
+   so .cm-line maintains uniform padding-left: 0 for CodeMirror's drawSelection layer.
 
    Every rule below is scoped through `.cm-editor` on purpose: EditorView.theme
    emits `.ͼ… .cm-line { padding: 0 }` at specificity (0,2,0), which would beat
    a bare `.cm-list-line` (0,1,0) and silently drop the indent. */
 .cm-editor .cm-line.cm-list-line {
   --fm-list-pad: 1.2em;
+  padding-left: 0 !important;
+  margin-left: var(--fm-list-pad);
 }
-.cm-editor .cm-line.cm-list-line.cm-list-depth-1 { --fm-list-pad: 2.4em; }
-.cm-editor .cm-line.cm-list-line.cm-list-depth-2 { --fm-list-pad: 3.6em; }
-.cm-editor .cm-line.cm-list-line.cm-list-depth-3 { --fm-list-pad: 4.8em; }
-.cm-editor .cm-line.cm-list-line.cm-list-depth-4 { --fm-list-pad: 6em; }
+.cm-editor .cm-line.cm-list-line.cm-list-depth-1 {
+  --fm-list-pad: 2.4em;
+  margin-left: var(--fm-list-pad);
+}
+.cm-editor .cm-line.cm-list-line.cm-list-depth-2 {
+  --fm-list-pad: 3.6em;
+  margin-left: var(--fm-list-pad);
+}
+.cm-editor .cm-line.cm-list-line.cm-list-depth-3 {
+  --fm-list-pad: 4.8em;
+  margin-left: var(--fm-list-pad);
+}
+.cm-editor .cm-line.cm-list-line.cm-list-depth-4 {
+  --fm-list-pad: 6em;
+  margin-left: var(--fm-list-pad);
+}
 
 /* The checkbox replaces the marker, so it needs the same pull-back to sit on
    the paragraph edge. 18px box + 2px gap ≈ the 1.2em marker column. */
@@ -475,23 +544,32 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
   margin-right: 2px;
 }
 
-/* Quote chrome on the line: padding and border are constant whether the `>`
-   marker is revealed or concealed. Base padding leaves a readable gap between
-   the border and the first glyph. */
+/* Keep quote indentation independent of line padding so selection geometry
+   remains stable; the pseudo-element preserves the border at the content edge. */
 .cm-editor .cm-line.cm-quote-line {
   --fm-quote-pad: 20px;
-  border-left: 3px solid var(--border);
+  border-left: 0;
+  margin-left: 17px;
+  padding-left: 0;
+  position: relative;
+}
+.cm-editor .cm-line.cm-quote-line::before {
+  content: '';
+  position: absolute;
+  left: -17px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--border);
+  pointer-events: none;
 }
 .cm-editor .cm-line.cm-quote-line.cm-quote-depth-2 { --fm-quote-pad: 36px; }
 .cm-editor .cm-line.cm-quote-line.cm-quote-depth-3 { --fm-quote-pad: 52px; }
-.cm-editor .cm-line.cm-quote-line.cm-quote-depth-2,
-.cm-editor .cm-line.cm-quote-line.cm-quote-depth-3 { border-left-color: var(--muted); }
+.cm-editor .cm-line.cm-quote-line.cm-quote-depth-2::before,
+.cm-editor .cm-line.cm-quote-line.cm-quote-depth-3::before { background: var(--muted); }
 
-/* Padding composes: a list inside a blockquote gets both offsets, while the
-   marker's negative margin only pulls back the marker box. */
-.cm-editor .cm-line.cm-quote-line,
-.cm-editor .cm-line.cm-list-line {
-  padding-left: calc(var(--fm-quote-pad, 0px) + var(--fm-list-pad, 0px));
+.cm-editor .cm-line.cm-quote-line.cm-list-line {
+  margin-left: calc(var(--fm-quote-pad, 20px) + var(--fm-list-pad, 1.2em) + 17px);
 }
 
 /* ── Callouts ──────────────────────────────────────────────────────────────── */
@@ -664,13 +742,24 @@ body.zen #editor-wrap { height: 100vh; flex: 1; }
    concealed when inactive, so revealing a fence cannot change a line box.
    Scoped through `.cm-editor .cm-line` to outrank the theme's `.cm-line` rules. */
 .cm-editor .cm-line.cm-codeblock-line {
-  background: rgba(127, 127, 127, 0.09);
+  margin-left: 14px;
+  margin-right: 14px;
+  padding-left: 0;
+  padding-right: 0;
+  isolation: isolate;
   font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   font-size: 14px;
   line-height: var(--fm-line-height);
-  padding-left: 14px;
-  padding-right: 14px;
   position: relative;
+}
+.cm-editor .cm-line.cm-codeblock-line::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 -14px;
+  background: rgba(127, 127, 127, 0.09);
+  border-radius: inherit;
+  pointer-events: none;
 }
 .cm-editor .cm-line.cm-codeblock-begin {
   border-top-left-radius: 6px;
@@ -1102,6 +1191,10 @@ body.theme-sepia #window-controls button:active {
   user-select: none;
   opacity: 0.6;
   transition: opacity 0.2s;
+}
+#statusbar span + span::before {
+  content: ' · ';
+  opacity: 0.5;
 }
 #statusbar:hover { opacity: 1; }
 body.zen #statusbar { display: none; }
@@ -1712,3 +1805,473 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
 .cm-completionIcon-keyword::after { content: '📋'; }
 .cm-completionIcon-type::after { content: '🏷️'; }
 .cm-completionIcon-text::after { content: ''; }
+
+/* ── Document Title (Obsidian-style inline file name) ── */
+.fm-title-container {
+  /* Lives inside .cm-content so it inherits the scroller's reading-column
+     padding automatically. */
+  padding: 0 0 16px 0;
+  box-sizing: border-box;
+  cursor: text;
+}
+
+.fm-title-container.hidden {
+  display: none !important;
+}
+
+.fm-title-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--heading);
+  font-family: var(--font-prose);
+  font-size: 2.5em;
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  caret-color: var(--accent);
+  cursor: text;
+  transition: color 0.15s ease;
+}
+
+.fm-title-input::placeholder {
+  color: var(--muted);
+  opacity: 0.35;
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ── Properties Card (Frontmatter metadata) ── */
+.cm-embed-block.cm-properties-card-wrap {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto 20px auto;
+  padding: 0;
+}
+
+.fm-properties-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.fm-properties-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
+.fm-prop-btn,
+.fm-prop-type-btn,
+.fm-prop-fold-btn,
+.fm-prop-del-btn,
+.fm-prop-type-icon,
+.fm-prop-count,
+.fm-prop-title {
+  user-select: none;
+}
+
+.fm-properties-card input,
+.fm-prop-key-name,
+.fm-prop-val-col {
+  user-select: text;
+}
+
+.fm-prop-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.fm-prop-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fm-prop-fold-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 3px;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.fm-prop-fold-btn:hover {
+  color: var(--text);
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.fm-properties-card.collapsed .fm-prop-fold-btn svg {
+  transform: rotate(-90deg);
+}
+
+.fm-prop-title {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.fm-prop-count {
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(128, 128, 128, 0.15);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.fm-prop-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fm-prop-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+}
+
+.fm-prop-btn:hover {
+  color: var(--text);
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.fm-prop-btn svg {
+  stroke: currentColor;
+}
+
+.fm-prop-body {
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-properties-card.collapsed .fm-prop-body {
+  display: none;
+}
+
+.fm-prop-row {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  gap: 8px;
+  transition: background 0.1s;
+}
+
+.fm-prop-row:hover {
+  background: rgba(128, 128, 128, 0.08);
+}
+
+.fm-prop-key-col {
+  width: 140px;
+  min-width: 100px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.fm-prop-type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.fm-prop-type-btn {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.fm-prop-type-btn:hover {
+  background: rgba(128, 128, 128, 0.2);
+  opacity: 1;
+}
+
+.fm-prop-key-name {
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.fm-prop-key-name:hover {
+  color: var(--text);
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.fm-prop-key-input {
+  width: 100%;
+  background: transparent !important;
+  color: var(--text);
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 12px;
+  font-family: var(--font-ui);
+}
+
+.fm-prop-key-input:focus {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.fm-prop-val-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.fm-prop-text-input {
+  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  padding: 3px 6px;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.fm-prop-text-input:focus {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.fm-prop-text-input::placeholder {
+  color: var(--muted);
+  opacity: 0.4;
+}
+
+.fm-prop-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.fm-tag-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.fm-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--selection);
+  color: var(--accent);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.fm-tag-remove-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.fm-tag-remove-btn:hover {
+  opacity: 1;
+}
+
+.fm-tag-input-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.fm-tag-add-input {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  padding: 2px 4px;
+  outline: none;
+  width: 60px;
+}
+
+.fm-tag-add-input::placeholder {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.fm-tag-add-input:focus {
+  width: 100px;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.fm-tag-autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 100;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-height: 160px;
+  overflow-y: auto;
+  min-width: 120px;
+  margin-top: 4px;
+}
+
+.fm-tag-autocomplete-item {
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.fm-tag-autocomplete-item:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.fm-prop-del-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.fm-prop-row:hover .fm-prop-del-btn {
+  opacity: 1;
+}
+
+.fm-prop-del-btn:hover {
+  color: #f07a7a;
+  background: rgba(240, 122, 122, 0.15);
+}
+
+/* ── Properties Type Selector & Context Menus ── */
+.fm-prop-context-menu,
+.fm-prop-type-dropdown {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  min-width: 140px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text);
+  animation: fm-menu-fade-in 0.1s ease;
+}
+
+@keyframes fm-menu-fade-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.fm-prop-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  user-select: none;
+}
+
+.fm-prop-menu-item:hover {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--heading);
+}
+
+.fm-prop-menu-item.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.fm-prop-menu-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.fm-list-chip {
+  background: rgba(128, 128, 128, 0.15);
+  color: var(--text);
+}

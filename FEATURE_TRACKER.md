@@ -89,48 +89,62 @@ Based on the feature planning session — tracks implementation phases for the e
 
 ---
 
-## Phase 4 — Metadata / Properties Card
-**Status:** `pending`  
+## Phase 4 — Metadata / Properties Card + Obsidian-Style Document Title
+**Status:** `done` ✅
 **Effort:** Medium  
 **Dependencies:** Phase 3 (per-tab document model)  
-**Goal:** Frontmatter rendered as editable properties card at top of document.
+**Goal:** Frontmatter rendered as editable properties card at top of document + seamless Obsidian-style inline filename editing area.
 
 ### Tasks
-- [ ] Lightweight YAML subset parser (`src/parser/frontmatter.js`)
-  - [ ] `key: value` (strings, numbers, booleans)
-  - [ ] Quoted strings (`"..."`, `'...'`)
-  - [ ] Inline arrays: `[a, b, c]`
-  - [ ] Block lists (`- a\n- b`)
-  - [ ] Nested objects (shallow, for tags/category)
-- [ ] Detect frontmatter at line 1 (before HR scanner)
-- [ ] Properties card UI (`src/ui/propertiesCard.js`)
-  - [ ] Key/value rows with inline edit
-  - [ ] Tag chips (add/remove, autocomplete from existing tags)
-  - [ ] "Add property" button → new row
-  - [ ] Raw YAML revealed when caret enters frontmatter region
-  - [ ] Same interaction model as math/table: click to edit, Enter to commit, Escape to cancel
-- [ ] Sync card ↔ editor state (changes in card update frontmatter, vice versa)
-- [ ] Tags feed into search/sidebar (future)
+- [x] Lightweight YAML subset parser (`src/parser/frontmatter.js`)
+  - [x] `key: value` (strings, numbers, booleans)
+  - [x] Quoted strings (`"..."`, `'...'`)
+  - [x] Inline arrays: `[a, b, c]`
+  - [x] Block lists (`- a\n- b`)
+  - [x] Nested objects (shallow, for tags/category)
+- [x] Detect frontmatter at line 1 (before HR scanner)
+- [x] Properties card UI (`src/ui/propertiesCard.js`)
+  - [x] Key/value rows with inline edit
+  - [x] Tag chips (add/remove, autocomplete from existing tags)
+  - [x] "Add property" button → new row
+  - [x] Raw YAML revealed when caret enters frontmatter region
+  - [x] Same interaction model as math/table: click to edit, Enter to commit, Escape to cancel
+- [x] Sync card ↔ editor state (changes in card update frontmatter, vice versa)
+- [x] Obsidian-style Document Title Typing Area
+  - [x] Borderless, transparent, seamless title area at top of editor scroller
+  - [x] Faint placeholder text ("Untitled" / clean filename)
+  - [x] Fluid keyboard navigation (Enter/Down to editor, Up to title)
+  - [x] Real-time synchronization with active document name, tab title, window title, and session
+  - [x] File rename on disk via IPC upon title change commitment
+- [x] Headless unit tests covering parser, serialization, tag collection, extraction, and title model (35 tests)
 
 ---
 
-## Phase 5 — Plugin MVP
-**Status:** `pending`  
-**Effort:** Small (narrow scope)  
+## Phase 5 — Plugin MVP (Sandboxed Architecture)
+**Status:** `done` ✅
+**Effort:** Medium
 **Dependencies:** Phase 1 (command registry API), Phase 3 (session for plugin settings)  
-**Goal:** Local JS plugins with trusted-code model — commands, markdown transforms, stylesheets.
+**Goal:** Sandboxed plugin architecture running in isolated renderer contexts with strict permission gating and IPC bridge.
 
 ### Tasks
-- [ ] Plugin loader (`src/plugins/pluginManager.js`)
-  - [ ] Scan `userData/plugins/` on startup
-  - [ ] Each plugin: `module.exports = { name, version, activate(app) }`
-  - [ ] `app` API: `registerCommand`, `registerMarkdownTransform`, `registerStylesheet`, `registerSetting`
-- [ ] Settings: `userData/plugins.json` (enabled/disabled, per-plugin config)
-- [ ] Example plugins to validate API:
-  - [ ] `insert-date` — inserts current date at cursor
-  - [ ] `word-count` — status bar word count (alternative impl)
-  - [ ] `custom-transform` — regex replace on save
-- [ ] No custom views, no settings UI beyond JSON, no sandbox (local = trusted)
+- [x] Sandboxed plugin host (`src/plugins/sandbox/plugin-host.js`)
+  - [x] Scan & sync bundled plugins to `userData/plugins/` on startup
+  - [x] Hidden BrowserWindow instances with `contextIsolation: true` & `sandbox: true`
+  - [x] Dynamic script runner (`src/plugins/sandbox/plugin-runner.html`)
+  - [x] Strict JSON schema manifest validation with AJV (`manifest-validator.js`)
+  - [x] Permission-gated IPC request/response bus and settings store
+  - [x] Static announcement of manifest commands & menu items
+  - [x] Synchronous `file:beforeSave` content transform pipeline
+- [x] Sandboxed plugin preload API (`flowmarkPlugin`)
+  - [x] Permission-gated editor APIs (`getContent`, `setContent`, `getSelection`, `replaceSelection`)
+  - [x] Settings APIs with default registration and change events
+  - [x] UI integration (`registerCommand`, `addMenuItem`, `setStatusBar`)
+  - [x] `file:beforeSave` event hook
+- [x] Bundled Plugins
+  - [x] `insert-date` — inserts formatted date/time at cursor (Ctrl+Shift+D, Insert menu)
+  - [x] `word-count` — live word/character count in status bar
+  - [x] `custom-transform` — smart quotes/dashes/ellipsis on save and manual command (Ctrl+Shift+T, Edit menu)
+- [x] Headless automated test suite: 16 tests covering manifests, permissions, regex transforms, formatting, and calculations (`test-plugins.mjs`)
 
 ---
 
@@ -155,6 +169,8 @@ Based on the feature planning session — tracks implementation phases for the e
 | 2026-11-02 | Phase 1 complete | All 6 prompts implemented: registry, edit menu, insert menu, inline renderer, shortcuts |
 | 2026-11-02 | Phase 2 complete | closeBrackets + autocompletion with callout/fence/emoji sources, themed tooltip |
 | 2026-11-02 | Phase 3 complete | Document & TabManager model, Tab bar UI with drag reorder, Session persistence, multi-tab routing |
+| 2026-11-02 | Phase 4 complete | Lightweight YAML parser, properties card widget, tag chips with autocomplete, raw YAML toggle, and Obsidian-style inline document title typing area |
+| 2026-11-03 | Phase 5 complete | PluginManager with trusted-code model, 3 example plugins (insert-date, word-count, custom-transform), Plugins menu, settings persistence |
 
 ---
 
@@ -164,6 +180,6 @@ Based on the feature planning session — tracks implementation phases for the e
 Phase 1: ██████████  12/12 tasks ✅
 Phase 2: ██████████   6/6  tasks ✅
 Phase 3: ██████████  15/15 tasks ✅
-Phase 4: ░░░░░░░░░░   0/10 tasks
-Phase 5: ░░░░░░░░░░   0/8  tasks
+Phase 4: ██████████  15/15 tasks ✅
+Phase 5: ██████████   8/8  tasks ✅
 ```

@@ -31,7 +31,7 @@
       <!-- Edit menu -->
       <div class="menu-item-dropdown">
         <button class="topbar-menu-btn" id="edit-menu-btn">Edit</button>
-        <div id="edit-dropdown" class="dropdown-menu hidden">
+        <div id="edit-dropdown" class="dropdown-menu hidden" data-menu-section="edit">
           <button data-action="edit:undo">Undo <span class="shortcut">Ctrl+Z</span></button>
           <button data-action="edit:redo">Redo <span class="shortcut">Ctrl+Y</span></button>
           <div class="menu-divider"></div>
@@ -47,7 +47,7 @@
       <!-- Insert menu -->
       <div class="menu-item-dropdown">
         <button class="topbar-menu-btn" id="insert-menu-btn">Insert</button>
-        <div id="insert-dropdown" class="dropdown-menu hidden">
+        <div id="insert-dropdown" class="dropdown-menu hidden" data-menu-section="insert">
           <button data-action="insert:bold">Bold <span class="shortcut">Ctrl+B</span></button>
           <button data-action="insert:italic">Italic <span class="shortcut">Ctrl+I</span></button>
           <button data-action="insert:strikethrough">Strikethrough <span class="shortcut">Ctrl+Shift+X</span></button>
@@ -59,6 +59,7 @@
           <div class="menu-divider"></div>
           <button data-action="insert:table">Table</button>
           <button data-action="insert:callout">Callout</button>
+          <button data-action="insert:property">Property <span class="shortcut">Ctrl+;</span></button>
           <div class="menu-divider"></div>
           <button data-action="insert:mathInline">Math (Inline) <span class="shortcut">Ctrl+Shift+M</span></button>
           <button data-action="insert:mathBlock">Math (Block)</button>
@@ -71,6 +72,17 @@
           <button data-action="insert:heading1">Heading 1</button>
           <button data-action="insert:heading2">Heading 2</button>
           <button data-action="insert:heading3">Heading 3</button>
+        </div>
+      </div>
+
+      <!-- Plugins menu -->
+      <div class="menu-item-dropdown">
+        <button class="topbar-menu-btn" id="plugins-menu-btn">Plugins</button>
+        <div id="plugins-dropdown" class="dropdown-menu hidden">
+          <button data-action="plugins:manage">Manage Plugins <span class="shortcut">Ctrl+Shift+P</span></button>
+          <div class="menu-divider"></div>
+          <!-- ADD data-menu-section BELOW: -->
+          <div id="plugins-menu-items" data-menu-section="plugins"></div>
         </div>
       </div>
     </div>
@@ -184,9 +196,10 @@
     <div id="editor"></div>
   </div>
   <div id="statusbar">
+    <span id="status-bar-text"></span>
     <span id="word-count"></span>
   </div>
 
-  <script src="editor.bundle.js"></script>
+  <script src="editor.new.bundle.js"></script>
 </body>
 </html>

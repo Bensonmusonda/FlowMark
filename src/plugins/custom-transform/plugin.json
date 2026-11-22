@@ -1,0 +1,33 @@
+{
+  "name": "custom-transform",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "Custom regex transformations on save",
+  "author": "FlowMark",
+  "entry_point": "index.js",
+  "permissions": [
+    "editor.read",
+    "editor.write",
+    "editor.commands",
+    "file.save",
+    "ui.menus",
+    "settings.read",
+    "settings.write"
+  ],
+  "commands": [
+    {
+      "id": "custom-transform:apply",
+      "label": "Apply Custom Transforms",
+      "shortcut": "Ctrl+Shift+T",
+      "section": "edit"
+    }
+  ],
+  "menu_items": [
+    {
+      "id": "custom-transform:apply",
+      "label": "Apply Transforms",
+      "section": "edit",
+      "order": 10
+    }
+  ]
+}

@@ -1,8 +1,10 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { PluginSandboxHost } = require('./plugins/sandbox/plugin-host.js');
 
 let win;
+let pluginHost = null;
 let currentFilePath = null;
 const recentFiles = [];
 const MAX_RECENTS = 10;
@@ -36,10 +38,16 @@ function createWindow() {
   win.webContents.on('did-finish-load', () => {
     win.focus();
     win.webContents.focus();
-    win.webContents.openDevTools({ mode: 'detach' });
+
+    // Only open DevTools in dev mode (--dev flag)
+    if (process.argv.includes('--dev')) {
+      win.webContents.openDevTools({ mode: 'detach' });
+    }
+
+    // Initialize sandbox plugin host after window loads
+    initializePluginHost();
   });
 
-  // Toggle DevTools with F12 or Ctrl+Shift+I
   win.webContents.on('before-input-event', (event, input) => {
     if (input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i')) {
       win.webContents.toggleDevTools();
@@ -57,10 +65,94 @@ function createWindow() {
   Menu.setApplicationMenu(null);
 }
 
+async function initializePluginHost() {
+  try {
+    if (pluginHost) {
+      pluginHost.announceAll();
+      win.webContents.send('plugins:ready', pluginHost.getPluginsList());
+      return;
+    }
+    pluginHost = new PluginSandboxHost(win);
+
+    // Auto-install bundled plugins on first run
+    await autoInstallBundledPlugins();
+
+    // Send initial plugin list to renderer
+    win.webContents.send('plugins:ready', pluginHost.getPluginsList());
+
+    console.log('[main] Plugin Sandbox Host initialized');
+  } catch (err) {
+    console.error('[main] Failed to initialize Plugin Host:', err);
+  }
+}
+
+async function autoInstallBundledPlugins() {
+  const bundledPluginsDir = path.join(__dirname, 'plugins');
+  const userDataPluginsDir = path.join(app.getPath('userData'), 'plugins');
+
+  if (!fs.existsSync(userDataPluginsDir)) {
+    fs.mkdirSync(userDataPluginsDir, { recursive: true });
+  }
+
+  // Clean up sandbox infrastructure folder if it was accidentally copied to userData
+  const sandboxInUserData = path.join(userDataPluginsDir, 'sandbox');
+  if (fs.existsSync(sandboxInUserData)) {
+    fs.rmSync(sandboxInUserData, { recursive: true, force: true });
+  }
+
+  try {
+    if (!fs.existsSync(bundledPluginsDir)) return;
+
+    const entries = fs.readdirSync(bundledPluginsDir, { withFileTypes: true });
+    const bundledPlugins = entries
+      .filter(e => e.isDirectory() && e.name !== 'sandbox')
+      .map(e => e.name);
+
+    // Always copy/sync fresh source files from src/plugins to userData/plugins on startup
+    for (const name of bundledPlugins) {
+      const sourcePath = path.join(bundledPluginsDir, name);
+      const destPath = path.join(userDataPluginsDir, name);
+
+      // Overwrite with latest source changes
+      copyDir(sourcePath, destPath);
+    }
+
+    // Load each plugin into the sandbox host
+    for (const name of bundledPlugins) {
+      const destPath = path.join(userDataPluginsDir, name);
+      try {
+        // If already loaded in host, remove first to reload fresh
+        if (pluginHost.plugins.has(name)) {
+          await pluginHost.uninstallPlugin(name);
+        }
+        await pluginHost.installPlugin(destPath);
+        console.log(`[main] Synced & loaded plugin: ${name}`);
+      } catch (err) {
+        console.warn(`[main] Failed to load plugin ${name}:`, err.message);
+      }
+    }
+  } catch (err) {
+    console.warn('[main] Failed to sync bundled plugins:', err);
+  }
+}
+
+function copyDir(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
 // ── IPC Handlers ─────────────────────────────────────────────────────────────
 
 ipcMain.handle('dialog:save', async (_, arg) => {
-  const content = typeof arg === 'string' ? arg : (arg && arg.content !== undefined ? arg.content : '');
+  let content = typeof arg === 'string' ? arg : (arg && arg.content !== undefined ? arg.content : '');
   const defaultPath = (typeof arg === 'object' && arg && arg.defaultPath) || currentFilePath || 'untitled.md';
   const { filePath, canceled } = await dialog.showSaveDialog(win, {
     title: 'Save As',
@@ -68,6 +160,16 @@ ipcMain.handle('dialog:save', async (_, arg) => {
     filters: [{ name: 'Markdown', extensions: ['md'] }],
   });
   if (canceled || !filePath) return { canceled: true };
+
+  // Apply plugin markdown transforms before saving
+  if (pluginHost) {
+    try {
+      content = await pluginHost.applyBeforeSaveTransforms(content);
+    } catch (err) {
+      console.warn('[main] Plugin transform error on save:', err);
+    }
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   currentFilePath = filePath;
   addRecent(filePath);
@@ -86,6 +188,16 @@ ipcMain.handle('file:save', async (_, arg) => {
   }
 
   if (!targetPath) return { noPath: true };
+
+  // Apply plugin markdown transforms before saving
+  if (pluginHost) {
+    try {
+      content = await pluginHost.applyBeforeSaveTransforms(content);
+    } catch (err) {
+      console.warn('[main] Plugin transform error on save:', err);
+    }
+  }
+
   fs.writeFileSync(targetPath, content, 'utf8');
   currentFilePath = targetPath;
   addRecent(targetPath);
@@ -135,6 +247,40 @@ ipcMain.handle('file:createAndOpen', async (_, filePath) => {
 });
 
 ipcMain.handle('file:clearPath', () => { currentFilePath = null; });
+ipcMain.handle('file:rename', async (_, { oldPath, newName }) => {
+  try {
+    if (!oldPath || !fs.existsSync(oldPath)) {
+      return { error: 'Original file not found' };
+    }
+    const dir = path.dirname(oldPath);
+    const ext = path.extname(oldPath) || '.md';
+    let cleanName = (newName || '').trim();
+    if (!path.extname(cleanName)) {
+      cleanName += ext;
+    }
+    cleanName = cleanName.replace(/[<>:"/\\|?*]/g, '');
+    if (!cleanName) return { error: 'Invalid file name' };
+
+    const newPath = path.join(dir, cleanName);
+    if (oldPath.toLowerCase() !== newPath.toLowerCase() && fs.existsSync(newPath)) {
+      return { error: 'A file with that name already exists' };
+    }
+    if (oldPath !== newPath) {
+      fs.renameSync(oldPath, newPath);
+      if (currentFilePath === oldPath) {
+        currentFilePath = newPath;
+      }
+      const idx = recentFiles.indexOf(oldPath);
+      if (idx !== -1) {
+        recentFiles.splice(idx, 1);
+      }
+      addRecent(newPath);
+    }
+    return { success: true, newPath, newName: cleanName };
+  } catch (err) {
+    return { error: err.message };
+  }
+});
 ipcMain.handle('recents:get', () => recentFiles.filter(f => fs.existsSync(f)));
 
 // ── Session persistence ──────────────────────────────────────────────────────
@@ -165,22 +311,149 @@ ipcMain.on('window:refocus', () => { win.focus(); win.webContents.focus(); });
 ipcMain.on('window:minimize', () => win.minimize());
 ipcMain.on('window:maximize', () => win.isMaximized() ? win.unmaximize() : win.maximize());
 ipcMain.on('window:close',    () => win.close());
-// Newly exposed window area during a live resize is painted with this colour
-// before the renderer repaints; keep it in sync with the active theme so the
-// right/bottom edge never flashes black.
 ipcMain.on('window:setBackground', (_, color) => {
   if (win && typeof color === 'string' && /^#[0-9a-fA-F]{6}$/.test(color)) {
     win.setBackgroundColor(color);
   }
 });
 
-app.whenReady().then(createWindow);
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+ipcMain.handle('shell:openExternal', async (_, url) => {
+  if (typeof url === 'string') {
+    const trimmed = url.trim();
+    if (/^(https?|mailto):/i.test(trimmed)) {
+      await shell.openExternal(trimmed);
+      return true;
+    }
+  }
+  return false;
+});
+
+// ── Plugin Sandbox IPC ──────────────────────────────────────────────────────
+
+ipcMain.handle('plugins:get', () => {
+  if (!pluginHost) return [];
+  return pluginHost.getPluginsList();
+});
+
+ipcMain.handle('plugins:enable', async (_, name) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    await pluginHost.setPluginEnabled(name, true);
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('plugins:disable', async (_, name) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    await pluginHost.setPluginEnabled(name, false);
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('plugins:install', async (_, sourcePath) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    await pluginHost.installPlugin(sourcePath);
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('plugins:uninstall', async (_, name) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    await pluginHost.uninstallPlugin(name);
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+ipcMain.handle('plugins:settings:get', () => {
+  // Would return plugin settings
+  return {};
+});
+
+ipcMain.handle('plugins:settings:set', async (_, { key, value }) => {
+  // Would write to settings store
+  return { success: true };
+});
+
+ipcMain.handle('plugins:getStylesheets', () => {
+  if (!pluginHost) return '';
+  try {
+    return pluginHost.getPluginsList().reduce((css, plugin) => {
+      if (plugin.active && plugin.stylesheet) {
+        return css + plugin.stylesheet + '\n';
+      }
+      return css;
+    }, '');
+  } catch (err) {
+    console.warn('[main] Failed to get stylesheets:', err);
+    return '';
+  }
+});
+
+ipcMain.handle('plugins:invokeCommand', (_, { pluginId, commandId }) =>
+  pluginHost ? pluginHost.invokeCommand(pluginId, commandId) : false);
+
+// Renderer -> plugin windows (these channels were previously going nowhere)
+ipcMain.on('editor:contentChanged', (_, data) =>
+  pluginHost?.broadcast('editor:contentChanged', data, 'editor.read'));
+ipcMain.on('editor:selectionChanged', (_, data) =>
+  pluginHost?.broadcast('editor:selectionChanged', data, 'editor.selection'));
+
+// Plugin event handlers (forwarded from sandbox host via plugin:event)
+ipcMain.on('plugin:ui:addMenuItem', (_, { pluginId, section, item }) => {
+  console.log(`[main] Plugin ${pluginId} adding menu item to ${section}:`, item);
+  win.webContents.send('ui:addMenuItem', { section, item });
+});
+
+ipcMain.on('plugin:ui:registerCommand', (_, { pluginId, command }) => {
+  console.log(`[main] Plugin ${pluginId} registering command:`, command);
+  // Commands registered by plugins need to be available in renderer
+  win.webContents.send('plugin:registerCommand', { pluginId, command });
+});
+
+ipcMain.on('plugin:ui:setStatusBar', (_, { pluginId, text, ...options }) => {
+  win.webContents.send('ui:setStatusBar', { text, ...options, pluginId });
+});
+
+ipcMain.on('plugin:ui:showNotification', (_, { pluginId, title, body, ...options }) => {
+  win.webContents.send('ui:showNotification', { title, body, ...options, pluginId });
+});
+
+ipcMain.on('plugin:editor:contentChanged', (_, { pluginId, ...data }) => {
+  win.webContents.send('editor:contentChanged', data);
+});
+
+ipcMain.on('plugin:editor:selectionChanged', (_, { pluginId, ...data }) => {
+  win.webContents.send('editor:selectionChanged', data);
+});
+
+ipcMain.on('plugin:settings:changed', (_, { pluginId, key, value }) => {
+  win.webContents.send('settings:changed', { key, value, pluginId });
+});
+
+// Plugin log events
+ipcMain.on('plugin:log', (_, { pluginId, level, args }) => {
+  const prefix = `[plugin:${pluginId}]`;
+  if (level === 'warn') console.warn(prefix, ...args);
+  else if (level === 'error') console.error(prefix, ...args);
+  else console.log(prefix, ...args);
+});
 
 // ── Export (PDF / HTML) ───────────────────────────────────────────────────────
-// The document builder lives in export-html.js (no Electron imports, so it can
-// be tested from Node). PDF is produced by printing that document in a hidden
-// window; HTML writes the same bytes to disk.
 const { buildExportDocument } = require('./export-html');
 
 ipcMain.handle('export:html', async (_, markdown, theme) => {
@@ -213,7 +486,6 @@ ipcMain.handle('export:pdf', async (_, markdown, theme) => {
       webPreferences: { nodeIntegration: false, contextIsolation: true },
     });
     await exportWin.loadFile(tempPath);
-    // Let fonts and layout settle before printing.
     await new Promise(resolve => setTimeout(resolve, 700));
 
     const pdf = await exportWin.webContents.printToPDF({
@@ -237,5 +509,15 @@ ipcMain.handle('export:pdf', async (_, markdown, theme) => {
   } finally {
     if (exportWin) exportWin.destroy();
     try { fs.unlinkSync(tempPath); } catch (_) { /* already gone */ }
+  }
+});
+
+app.whenReady().then(createWindow);
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+
+// Cleanup on quit
+app.on('before-quit', () => {
+  if (pluginHost) {
+    pluginHost.destroy();
   }
 });

@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FlowMark Plugin Manifest",
+  "type": "object",
+  "required": ["name", "version", "manifest_version", "entry_point", "permissions"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "manifest_version": { "type": "integer", "const": 1 },
+    "description": { "type": "string", "maxLength": 200 },
+    "author": { "type": "string" },
+    "entry_point": { "type": "string", "description": "Relative path to plugin entry point (ES module)" },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "editor.read",
+          "editor.write",
+          "editor.selection",
+          "editor.commands",
+          "file.read",
+          "file.write",
+          "file.save",
+          "file.export",
+          "settings.read",
+          "settings.write",
+          "ui.menus",
+          "ui.statusbar",
+          "ui.notifications",
+          "clipboard.read",
+          "clipboard.write",
+          "network.request",
+          "network.request:write"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-:]+$" },
+          "label": { "type": "string", "maxLength": 200 },
+          "shortcut": { "type": "string" },
+          "section": { "type": "string", "enum": ["file", "edit", "insert", "view", "plugins"] }
+        }
+      }
+    },
+    "menu_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "section"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-:]+$" },
+          "label": { "type": "string", "maxLength": 200 },
+          "section": { "type": "string", "enum": ["file", "edit", "insert", "view", "plugins"] },
+          "order": { "type": "integer", "default": 100 }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

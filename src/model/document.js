@@ -43,6 +43,18 @@ export class Document {
   }
 
   /**
+   * Set or update document display name.
+   * @param {string} newName
+   */
+  setName(newName) {
+    if (!newName || !newName.trim()) {
+      this.name = this.path ? this._basename(this.path) : 'Untitled';
+    } else {
+      this.name = newName.trim();
+    }
+  }
+
+  /**
    * Mark document dirty or clean.
    * @param {boolean} [dirty=true]
    */

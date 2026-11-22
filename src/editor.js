@@ -27,6 +27,8 @@ import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './c
 import { Document, TabManager } from './model/document.js';
 import TabBarUI from './ui/tabs.js';
 import SessionManager from './session/sessionManager.js';
+import { extractFrontmatter, stringifyFrontmatter } from './parser/frontmatter.js';
+import { PropertiesCardWidget } from './ui/propertiesCard.js';
 
 // ── Live-preview stability primitives ────────────────────────────────────────
 //
@@ -61,19 +63,38 @@ function activeRanges(view) {
 }
 
 function rangeTouches(ranges, from, to) {
-  for (const r of ranges) if (r.from <= to && r.to >= from) return true;
+  if (interaction.dragging) return false;
+  for (const r of ranges) {
+    if (!r.empty) continue; // Passive selection drag never un-conceals block embeds
+    if (r.from <= to && r.to >= from) return true;
+  }
   return false;
 }
 
-/** Inline construct is active when the selection intersects the whole construct. */
+/**
+ * Inline construct is active when the cursor is contained within it.
+ * When text is actively selected, freeze inline constructs (never expand/collapse mid-drag).
+ */
 function inlineIsActive(view, from, to) {
-  return rangeTouches(activeRanges(view), from, to);
+  if (!view.hasFocus) return false;
+  if (!view.state.selection.main.empty) return false;
+  for (const r of view.state.selection.ranges) {
+    if (r.empty && r.from >= from && r.to <= to) return true;
+  }
+  return false;
 }
 
-/** Block construct is active when the selection touches any part of its line. */
+/**
+ * Block construct (heading, quote) is active when editing is confined to this single line.
+ * When selection spans across multiple lines, keep all lines rendered.
+ */
 function lineIsActive(view, pos) {
+  if (!view.hasFocus) return false;
   const line = view.state.doc.lineAt(pos);
-  return rangeTouches(activeRanges(view), line.from, line.to);
+  for (const r of view.state.selection.ranges) {
+    if (r.from >= line.from && r.to <= line.to) return true;
+  }
+  return false;
 }
 
 /**
@@ -136,12 +157,23 @@ function lineIsVisible(view, from, to) {
 }
 
 /**
- * Shared update policy for every decoration plugin: freeze during composition
- * and pointer drags, otherwise rebuild on the cheap triggers only.
+ * Shared update policy for every decoration plugin: freeze during composition,
+ * active pointer drags, and text selections, otherwise rebuild on the cheap triggers only.
  */
 function updateDecorations(plugin, update) {
-  if (update.view.composing || interaction.dragging) {
+  if (update.view.composing) {
     if (update.docChanged) plugin.decorations = plugin.decorations.map(update.changes);
+    return;
+  }
+  // Always rebuild when viewport scrolled, doc changed, or refresh effect was dispatched
+  if (update.viewportChanged || update.docChanged ||
+      update.transactions.some(tr => tr.effects.some(e => e.is(refreshEffect)))) {
+    plugin.decorations = plugin.compute(update.view);
+    return;
+  }
+  // During pointer drag selection within the current viewport, freeze decorations
+  // so characters never collapse/expand horizontally under the dragging cursor
+  if (interaction.dragging || !update.view.state.selection.main.empty) {
     return;
   }
   if (wantsRebuild(update)) plugin.decorations = plugin.compute(update.view);
@@ -1615,6 +1647,7 @@ class MathBlockWidget extends WidgetType {
  */
 function scanEmbeds(state) {
   const doc = state.doc;
+  let frontmatter = null;
   const callouts = [];
   const images = [];
   const tables = [];
@@ -1624,6 +1657,43 @@ function scanEmbeds(state) {
   for (let n = 1; n <= doc.lines; n++) {
     const line = doc.line(n);
     const text = line.text;
+
+    // Frontmatter: must start at line 1 with `---`
+    if (n === 1 && text.trim() === '---') {
+      let closeLine = null;
+      for (let k = 2; k <= doc.lines; k++) {
+        const nextLine = doc.line(k);
+        if (nextLine.text.trim() === '---' || nextLine.text.trim() === '...') {
+          closeLine = nextLine;
+          break;
+        }
+      }
+      if (closeLine) {
+        const fullDoc = doc.toString();
+        const extracted = extractFrontmatter(fullDoc);
+        if (extracted.hasFrontmatter) {
+          frontmatter = {
+            ...extracted,
+            from: 0,
+            to: closeLine.to,
+          };
+          n = closeLine.number;
+          continue;
+        }
+      } else {
+        // Line 1 is `---` without closing fence yet — treat as initial frontmatter block
+        frontmatter = {
+          hasFrontmatter: true,
+          from: 0,
+          to: line.to,
+          yaml: '',
+          data: {},
+          entries: [],
+          lineCount: 1,
+        };
+        continue;
+      }
+    }
 
     // Fenced code is verbatim: no callouts, no images.
     if (FENCE_RE.test(text)) { inFence = !inFence; continue; }
@@ -1821,13 +1891,55 @@ function scanEmbeds(state) {
     !images.some((image) => item.from < image.to && item.to > image.from));
   const keptImages = images.filter((image) =>
     !keptMath.some((item) => image.from < item.to && image.to > item.from));
-  return { callouts, images: keptImages, tables, math: keptMath };
+  return { frontmatter, callouts, images: keptImages, tables, math: keptMath };
 }
+
+// Frontmatter raw YAML toggle effect & field
+export const setRawFrontmatterEffect = StateEffect.define();
+
+export const rawFrontmatterField = StateField.define({
+  create: () => false,
+  update(isRaw, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setRawFrontmatterEffect)) return e.value;
+    }
+    // Automatically return to rendered properties when caret leaves frontmatter
+    if (isRaw && tr.selection) {
+      const { frontmatter } = scanEmbeds(tr.state);
+      if (frontmatter && !rangeTouches(tr.state.selection.ranges, frontmatter.from, frontmatter.to)) {
+        return false;
+      }
+    }
+    return isRaw;
+  },
+});
 
 function buildEmbedDecos(state) {
   const ranges = [];
-  const { callouts, images, tables, math } = scanEmbeds(state);
+  const { frontmatter, callouts, images, tables, math } = scanEmbeds(state);
   const selection = state.selection.ranges;
+
+  if (frontmatter) {
+    const isRaw = state.field(rawFrontmatterField, false);
+    if (!isRaw) {
+      ranges.push(Decoration.replace({
+        widget: new PropertiesCardWidget({
+          ...frontmatter,
+          onViewSource: () => {
+            if (typeof view !== 'undefined' && view) {
+              view.dispatch({
+                effects: setRawFrontmatterEffect.of(true),
+                selection: { anchor: Math.min(view.state.doc.length, frontmatter.from + 4) },
+                scrollIntoView: true,
+              });
+              view.focus();
+            }
+          },
+        }),
+        block: true,
+      }).range(frontmatter.from, frontmatter.to));
+    }
+  }
 
   for (const block of callouts) {
     // "Don't emit" un-concealment: selection inside the block reveals source.
@@ -1892,7 +2004,7 @@ const embedField = StateField.define({
   create: (state) => buildEmbedDecos(state),
   update(deco, tr) {
     if (!tr.docChanged && !tr.selection &&
-        !tr.effects.some((effect) => effect.is(tableCellUiEffect))) {
+        !tr.effects.some((effect) => effect.is(tableCellUiEffect) || effect.is(setRawFrontmatterEffect))) {
       return deco;
     }
     return buildEmbedDecos(tr.state);
@@ -2036,7 +2148,8 @@ const bulletPlugin = ViewPlugin.fromClass(class {
 
       const marker = doc.sliceString(info.markFrom, info.markTo);
       const isBullet = marker === '-' || marker === '*' || marker === '+';
-      const active = lineIsActive(view, info.markFrom);
+      const sel = view.state.selection.main;
+      const active = view.hasFocus && sel.empty && (sel.from >= info.markFrom && sel.to <= info.markTo + 1);
       const key = (isBullet ? 'bullet' : 'number') + (active ? 'Active' : '');
       decos.push(LIST_MARK_DECO[key].range(info.markFrom, info.markTo));
     }
@@ -2105,18 +2218,21 @@ const checkboxPlugin = ViewPlugin.fromClass(class {
     });
 
     const decos = [];
+    const sel = view.state.selection.main;
     for (const t of tasks) {
-      // Active task line: emit nothing, so the raw `- [ ]` / `- [x]` source is
-      // rendered and fully editable instead of hosting a checkbox widget.
-      if (lineIsActive(view, t.from)) continue;
-      // The dash is concealed with an empty replace (no DOM node), not a
-      // display:none widget: a widget would still be a layout participant.
+      // Keep checkbox clickable while editing the task line; only reveal raw [ ]
+      // if the caret is literally placed between/around the brackets.
+      const bracketsActive = view.hasFocus && sel.empty && (sel.from >= t.from && sel.to <= t.to);
       const listMark = listMarks.get(t.line);
-      // Conceal the dash *and* the gap after it: `- [ ]` must not leave a
-      // space between the line start and the checkbox.
-      if (listMark) {
+      const dashActive = listMark && view.hasFocus && sel.empty && (sel.from >= listMark.from && sel.to <= listMark.to);
+
+      // Conceal the dash *and* the gap after it unless the caret is directly on the dash
+      if (listMark && !dashActive) {
         decos.push(HIDE.range(listMark.from, skipSpaces(doc, listMark.to)));
       }
+
+      if (bracketsActive) continue;
+
       decos.push(Decoration.replace({ widget: new CheckboxWidget(t.checked, t.from) })
         .range(t.from, t.to));
     }
@@ -2144,9 +2260,8 @@ const noteLinkPlugin = ViewPlugin.fromClass(class {
         const start = from + m.index;
         const end = start + m[0].length;
         if (embedCovers(view.state, start)) continue;
-        // Active line: leave the raw source visible, exactly like Obsidian's
-        // per-line reveal for block-ish constructs.
-        if (lineIsActive(view, start)) continue;
+        // Only reveal raw [[...]] syntax when the caret is directly inside the link
+        if (inlineIsActive(view, start, end)) continue;
         decos.push(HIDE.range(start, start + 2));
         decos.push(noteLinkMark.range(start + 2, end - 2));
         decos.push(HIDE.range(end - 2, end));
@@ -2157,31 +2272,94 @@ const noteLinkPlugin = ViewPlugin.fromClass(class {
 }, { decorations: v => v.decorations });
 
 async function handleNoteLinkClick(e, view) {
-  if (!e.ctrlKey) return;
+  if (!e.ctrlKey) return false;
   const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
-  if (pos == null) return;
+  if (pos == null) return false;
   const text = view.state.doc.toString();
   const before = text.lastIndexOf('[[', pos);
-  const after  = text.indexOf(']]', pos);
-  if (before === -1 || after === -1 || after < before) return;
+  if (before === -1) return false;
+  const after = text.indexOf(']]', before);
+  if (after === -1 || pos > after + 2) return false;
+  if (text.slice(before, after).includes('\n')) return false;
   const name = text.slice(before + 2, after).trim();
-  if (!name) return;
+  if (!name) return false;
   e.preventDefault();
   const target = name.endsWith('.md') ? name : name + '.md';
   const result = await window.fileAPI.openPath(target);
   if (!result.canceled) {
     openFilePath(result.filePath, result.content);
     view.focus();
-    return;
+    return true;
   }
   // File not found — offer to create
   const shouldCreate = await showConfirm(`"${target}" doesn't exist. Create it?`, 'Create');
-  if (!shouldCreate) return;
+  if (!shouldCreate) return true;
   const created = await window.fileAPI.createAndOpen(target);
   if (!created.canceled) {
     openFilePath(created.filePath, '');
     view.focus();
   }
+  return true;
+}
+
+function handleMarkdownLinkClick(e, view) {
+  if (!e.ctrlKey) return false;
+  const pos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+  if (pos == null) return false;
+
+  const doc = view.state.doc;
+  const tree = syntaxTree(view.state);
+  let url = null;
+
+  if (tree) {
+    let node = tree.resolveInner(pos, 1);
+    while (node) {
+      if (node.name === 'Link' || node.name === 'Autolink') {
+        if (node.name === 'Autolink') {
+          url = doc.sliceString(node.from, node.to).replace(/^<|>$/g, '').trim();
+        } else {
+          const urlNode = node.getChild('URL');
+          if (urlNode) {
+            url = doc.sliceString(urlNode.from, urlNode.to).trim();
+          } else {
+            const raw = doc.sliceString(node.from, node.to);
+            const m = raw.match(/\((https?:\/\/[^\s)]+)\)/);
+            if (m) url = m[1].trim();
+          }
+        }
+        break;
+      }
+      node = node.parent;
+    }
+  }
+
+  // Fallback: search line text around pos
+  if (!url) {
+    const line = doc.lineAt(pos);
+    const lineOffset = pos - line.from;
+    const linkRe = /\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)|<(https?:\/\/[^\s>]+)>/g;
+    let match;
+    while ((match = linkRe.exec(line.text)) !== null) {
+      const matchStart = match.index;
+      const matchEnd = match.index + match[0].length;
+      if (lineOffset >= matchStart && lineOffset <= matchEnd) {
+        url = match[2] || match[3];
+        break;
+      }
+    }
+  }
+
+  if (url) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.shellAPI?.openExternal) {
+      window.shellAPI.openExternal(url);
+    } else if (typeof window !== 'undefined' && window.open) {
+      window.open(url, '_blank');
+    }
+    return true;
+  }
+  return false;
 }
 
 // ── Syntax concealment ────────────────────────────────────────────────────────
@@ -2342,6 +2520,32 @@ function addCodeBlockDecorations(view, node, decos) {
   }
 }
 
+function isFrontmatterDelimiter(state, pos) {
+  const doc = state.doc;
+  if (doc.lines < 2) return false;
+  const line = doc.lineAt(pos);
+  const trimmed = line.text.trim();
+  if (trimmed !== '---' && trimmed !== '...') return false;
+
+  if (line.number === 1) {
+    for (let k = 2; k <= doc.lines; k++) {
+      const next = doc.line(k).text.trim();
+      if (next === '---' || next === '...') return true;
+    }
+    return false;
+  }
+
+  if (doc.line(1).text.trim() === '---') {
+    for (let k = 2; k <= doc.lines; k++) {
+      const next = doc.line(k).text.trim();
+      if (next === '---' || next === '...') {
+        return k === line.number;
+      }
+    }
+  }
+  return false;
+}
+
 const activeSyntaxPlugin = ViewPlugin.fromClass(class {
   constructor(view) { this.decorations = this.compute(view); }
   update(update) { updateDecorations(this, update); }
@@ -2411,6 +2615,7 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
       }
       if (name === 'HorizontalRule') {
         if (embedCovers(view.state, node.from)) return;
+        if (isFrontmatterDelimiter(view.state, node.from)) return;
         if (!lineIsActive(view, node.from)) {
           const line = doc.lineAt(node.from);
           // Line decoration + concealed marks: the line keeps its metrics and
@@ -2423,9 +2628,16 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
 
       if (name === 'InlineCode') {
         if (embedCovers(view.state, node.from)) return;
-        if (node.to - node.from > 2 && !inlineIsActive(view, node.from, node.to)) {
+        let openLen = 0;
+        while (node.from + openLen < node.to && doc.sliceString(node.from + openLen, node.from + openLen + 1) === '`') {
+          openLen++;
+        }
+        const closeLen = openLen;
+        const contentFrom = node.from + openLen;
+        const contentTo = node.to - closeLen;
+        if (contentTo > contentFrom && !inlineIsActive(view, node.from, node.to)) {
           decos.push(Decoration.mark({ class: 'cm-inline-code' })
-            .range(node.from + 1, node.to - 1));
+            .range(contentFrom, contentTo));
         }
         return;
       }
@@ -2453,12 +2665,13 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
         const marker = doc.sliceString(node.from, node.to).trim();
         // Never conceal the only content on the line. An empty heading must
         // keep the same height whether its `#` is shown or hidden.
-        if (line.text.trim() === marker) return;
+        if (line.text.trim() === marker || lineIsActive(view, node.from)) {
+          decos.push(Decoration.mark({ class: 'cm-header-mark' }).range(node.from, node.to));
+          return;
+        }
         // Hide `#` *and* the space after it, otherwise a stray leading space
         // survives concealment ("  Title" instead of "Title").
-        if (!lineIsActive(view, node.from)) {
-          decos.push(HIDE.range(node.from, skipSpaces(doc, node.to)));
-        }
+        decos.push(HIDE.range(node.from, skipSpaces(doc, node.to)));
         return;
       }
 
@@ -2486,6 +2699,8 @@ const activeSyntaxPlugin = ViewPlugin.fromClass(class {
       const scopeTo = parent ? parent.to : node.to;
       if (!inlineIsActive(view, scopeFrom, scopeTo)) {
         decos.push(HIDE.range(node.from, node.to));
+      } else if (name === 'StrikethroughMark') {
+        decos.push(Decoration.mark({ class: 'cm-strikethrough-mark' }).range(node.from, node.to));
       }
     });
 
@@ -2517,7 +2732,7 @@ function makeTheme(accentColor) {
       // Horizontal padding centres the 720px reading column deterministically,
       // without relying on auto margins surviving the theme cascade. The CSS
       // `max-width` on `.cm-content` stays as a second line of defence.
-      padding: '64px max(40px, calc((100% - 720px) / 2)) 120px',
+      padding: '48px max(40px, calc((100% - 720px) / 2)) 120px',
     },
     '.cm-content': {
       padding: '0',
@@ -2527,8 +2742,8 @@ function makeTheme(accentColor) {
     // Line metrics belong to the line, never to a concealing element.
     '.cm-line': { padding: '0', lineHeight: 'var(--fm-line-height, 1.9)' },
     '.cm-gutters': { display: 'none' },
-    '.cm-selectionBackground': { background: `${accentColor}30 !important` },
-    '&.cm-focused .cm-selectionBackground': { background: `${accentColor}40 !important` },
+    '.cm-selectionBackground': { background: `${accentColor}38 !important` },
+    '&.cm-focused .cm-selectionBackground': { background: `${accentColor}55 !important` },
     '.cm-cursor': { borderLeftColor: accentColor, borderLeftWidth: '2px' },
     '.cm-syntax-show': { color: accentColor, opacity: '0.6' },
   }, { dark: true });
@@ -2569,6 +2784,8 @@ function applyAccent(name) {
   const isLight = currentTheme !== 'theme-dark';
   const color = ACCENTS[name]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
   document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--selection', `${color}38`);
+  document.documentElement.style.setProperty('--selection-active', `${color}55`);
   currentAccent = name;
   localStorage.setItem('fm-accent', name);
   if (typeof view !== 'undefined' && view) {
@@ -2654,9 +2871,11 @@ function switchDocument(fromDoc, toDoc) {
     updateAppName();
     updatePlaceholder();
     updateWordCount();
+    updateDocumentTitleInput();
   } else {
     document.getElementById('editor').classList.add('hidden');
     updateAppName();
+    updateDocumentTitleInput();
     showWelcome();
   }
 }
@@ -2707,6 +2926,7 @@ function openFilePath(filePath, content = '') {
     updateAppName();
     updatePlaceholder();
     updateWordCount();
+    updateDocumentTitleInput();
     tabBarUI.render();
     sessionManager.scheduleSave();
     return;
@@ -2719,6 +2939,7 @@ function openFilePath(filePath, content = '') {
     dirty: false,
   });
   tabManager.add(doc, true);
+  updateDocumentTitleInput();
   sessionManager.scheduleSave();
 }
 
@@ -2728,6 +2949,7 @@ async function saveFile() {
   const res = await doc.save(window.fileAPI);
   if (res.noPath) return saveAsFile();
   updateAppName();
+  updateDocumentTitleInput();
   tabBarUI.render();
   sessionManager.scheduleSave();
 }
@@ -2741,6 +2963,7 @@ async function saveAsFile() {
   doc.setPath(res.filePath);
   doc.markDirty(false);
   updateAppName();
+  updateDocumentTitleInput();
   tabBarUI.render();
   sessionManager.scheduleSave();
 }
@@ -2750,6 +2973,169 @@ function toggleSearchPanel() {
   if (searchPanelOpen(view.state)) closeSearchPanel(view);
   else openSearchPanel(view);
 }
+
+// ── Obsidian-style Document Title — CM6 block widget at pos 0 ──────────────
+// Rendered as a block widget decoration at document position 0 so it scrolls
+// naturally with the document inside the CM6 viewport, with no hacks to the
+// scroller's flex layout.
+
+const setTitleDataEffect = StateEffect.define();
+
+const titleDataField = StateField.define({
+  create: () => ({ value: '', placeholder: 'Untitled', hidden: true }),
+  update(data, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setTitleDataEffect)) return e.value;
+    }
+    return data;
+  },
+});
+
+class TitleInputWidget extends WidgetType {
+  constructor(data) {
+    super();
+    this._data = data;
+  }
+  eq(other) {
+    return (
+      this._data.value === other._data.value &&
+      this._data.placeholder === other._data.placeholder &&
+      this._data.hidden === other._data.hidden
+    );
+  }
+  toDOM() {
+    const container = document.createElement('div');
+    container.className = 'fm-title-container';
+    if (this._data.hidden) container.classList.add('hidden');
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'fm-title-input';
+    input.className = 'fm-title-input';
+    input.value = this._data.value;
+    input.placeholder = this._data.placeholder || 'Untitled';
+    input.spellcheck = false;
+    input.autocomplete = 'off';
+
+    input.addEventListener('input', () => {
+      const activeDoc = tabManager.activeDocument;
+      if (!activeDoc) return;
+      const val = input.value.trim();
+      const hadMd = activeDoc.name.toLowerCase().endsWith('.md');
+      if (val) {
+        activeDoc.name = hadMd && !val.toLowerCase().endsWith('.md') ? val + '.md' : val;
+      } else {
+        activeDoc.name = hadMd ? 'Untitled.md' : 'Untitled';
+      }
+      activeDoc.markDirty(true);
+      tabBarUI.render();
+      updateAppName();
+      sessionManager.scheduleSave();
+    });
+
+    input.addEventListener('blur', async () => {
+      const activeDoc = tabManager.activeDocument;
+      if (!activeDoc) return;
+      if (activeDoc.path && window.fileAPI?.rename) {
+        const res = await window.fileAPI.rename(activeDoc.path, activeDoc.name);
+        if (res && res.success && res.newPath) {
+          activeDoc.setPath(res.newPath);
+          tabBarUI.render();
+          updateAppName();
+          sessionManager.scheduleSave();
+        }
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.blur();
+        view.focus();
+        view.dispatch({ selection: { anchor: 0 }, scrollIntoView: false });
+      } else if (e.key === 'ArrowDown') {
+        if (input.selectionStart === input.value.length) {
+          e.preventDefault();
+          view.focus();
+          view.dispatch({ selection: { anchor: 0 }, scrollIntoView: false });
+        }
+      }
+    });
+
+    container.addEventListener('click', (e) => {
+      if (e.target !== input) {
+        input.focus();
+      }
+    });
+
+    container.appendChild(input);
+    return container;
+  }
+  // Tell CM6 to ignore all events inside this widget so native click, focus,
+  // selection, and typing on the input work without editor interference.
+  ignoreEvent() { return true; }
+  get estimatedHeight() { return -1; }
+}
+
+const titleDecoField = StateField.define({
+  create(state) {
+    return buildTitleDeco(state.field(titleDataField));
+  },
+  update(decos, tr) {
+    // Rebuild only when the title data effect fires; ignore doc edits so the
+    // widget stays stable (and focused) while the user types in the editor.
+    for (const e of tr.effects) {
+      if (e.is(setTitleDataEffect)) return buildTitleDeco(e.value);
+    }
+    return decos;
+  },
+  provide: (f) => EditorView.decorations.from(f),
+});
+
+function buildTitleDeco(data) {
+  if (data.hidden) return Decoration.none;
+  return Decoration.set([
+    Decoration.widget({ widget: new TitleInputWidget(data), side: -1, block: true }).range(0),
+  ]);
+}
+
+// Automatically convert leading `---` into frontmatter block `---\n---\n`
+const frontmatterAutoTrigger = EditorState.transactionFilter.of((tr) => {
+  if (!tr.docChanged) return tr;
+  const startLine = tr.startState.doc.line(1);
+  const oldLineText = startLine.text.trim();
+  const newDoc = tr.newDoc;
+  const newLineText = newDoc.line(1).text.trim();
+
+  // Only trigger when line 1 transitions from non-`---` to `---`
+  if (oldLineText !== '---' && newLineText === '---') {
+    let hasClose = false;
+    for (let i = 2; i <= newDoc.lines; i++) {
+      const t = newDoc.line(i).text.trim();
+      if (t === '---' || t === '...') {
+        hasClose = true;
+        break;
+      }
+    }
+    if (!hasClose) {
+      let touchedLine1 = false;
+      tr.changes.iterChanges((fromA) => {
+        if (fromA <= startLine.to) touchedLine1 = true;
+      });
+      if (touchedLine1) {
+        const rest = tr.startState.doc.sliceString(startLine.to);
+        const newline = rest.startsWith('\n') ? '' : '\n';
+        // Single replacement transaction spec evaluated safely against startState
+        return {
+          changes: { from: 0, to: startLine.to, insert: '---\n---' + newline },
+          selection: { anchor: 8 },
+          userEvent: 'input.frontmatter',
+        };
+      }
+    }
+  }
+  return tr;
+});
 
 // ── Editor Factory & Extensions ───────────────────────────────────────────────
 function getEditorExtensions() {
@@ -2796,6 +3182,7 @@ function getEditorExtensions() {
       { key: 'Ctrl-k', run: () => CommandRegistry.execute('insert:link', view, view.state), preventDefault: true },
       { key: 'Ctrl-Shift-i', run: () => CommandRegistry.execute('insert:image', view, view.state), preventDefault: true },
       { key: 'Ctrl-Shift-m', run: () => CommandRegistry.execute('insert:mathInline', view, view.state), preventDefault: true },
+      { key: 'Ctrl-;', run: () => CommandRegistry.execute('insert:property', view, view.state), preventDefault: true },
       ...searchKeymap,
     ]),
     markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
@@ -2804,6 +3191,10 @@ function getEditorExtensions() {
     lineHeightProbe,
     tableMenuDismiss,
     embedField,
+    rawFrontmatterField,
+    frontmatterAutoTrigger,
+    titleDataField,
+    titleDecoField,
     checkboxPlugin,
     bulletPlugin,
     noteLinkPlugin,
@@ -2855,9 +3246,85 @@ Links work too: [FlowMark](https://github.com)
 Just start writing.
 `;
 
+let selectionNotifyTimer = null;
+function debouncedNotifySelectionChange(payload) {
+  if (selectionNotifyTimer) clearTimeout(selectionNotifyTimer);
+  selectionNotifyTimer = setTimeout(() => {
+    selectionNotifyTimer = null;
+    if (window.editorAPI?.notifySelectionChange) {
+      window.editorAPI.notifySelectionChange(payload);
+    }
+  }, 50);
+}
+
 const view = new EditorView({
   state: createEditorState(''),
   parent: document.getElementById('editor'),
+  dispatchTransactions: (trs) => {
+    // Apply transactions using the standard CM6 pattern
+    view.update(trs);
+    // Emit content/selection change events for plugins
+    const docChanged = trs.some(tr => tr.docChanged);
+    const selChanged = trs.some(tr => tr.selection);
+    if (docChanged && window.editorAPI?.notifyContentChange) {
+      window.editorAPI.notifyContentChange({
+        doc: view.state.doc.toString(),
+        changes: []
+      });
+    }
+    if (selChanged && window.editorAPI?.notifySelectionChange) {
+      debouncedNotifySelectionChange({
+        anchor: view.state.selection.main.anchor,
+        head: view.state.selection.main.head,
+        empty: view.state.selection.main.empty
+      });
+    }
+  }
+});
+
+// Hooks used by PluginSandboxHost via executeJavaScript
+window.CommandRegistry = CommandRegistry;
+window.getEditorContent = () => view.state.doc.toString();
+window.setEditorContent = (text) => view.dispatch({
+  changes: { from: 0, to: view.state.doc.length, insert: text },
+});
+window.getEditorSelection = () => {
+  const { from, to, empty } = view.state.selection.main;
+  return { from, to, empty, text: view.state.sliceDoc(from, to) };
+};
+window.setEditorSelection = (sel) => view.dispatch({
+  selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to },
+});
+window.replaceEditorSelection = (text) => {
+  const { from, to } = view.state.selection.main;
+  view.dispatch({ changes: { from, to, insert: text }, selection: { anchor: from + text.length } });
+  view.focus();
+};
+
+function updateDocumentTitleInput() {
+  const activeDoc = tabManager.activeDocument;
+  if (!activeDoc) {
+    view.dispatch({ effects: setTitleDataEffect.of({ value: '', placeholder: 'Untitled', hidden: true }) });
+    return;
+  }
+  const isUntitled = !activeDoc.path && /^Untitled(\s+\d+)?(\.md)?$/i.test(activeDoc.name);
+  const cleanName = activeDoc.name.replace(/\.md$/i, '');
+  view.dispatch({
+    effects: setTitleDataEffect.of({
+      value: isUntitled ? '' : cleanName,
+      placeholder: isUntitled ? cleanName : 'Untitled',
+      hidden: false,
+    }),
+  });
+}
+
+// ArrowUp from line 0 → move focus to title input
+view.dom.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowUp' && view.state.selection.main.head === 0) {
+    e.preventDefault();
+    const input = document.getElementById('fm-title-input');
+    if (input) { input.focus(); input.select(); }
+  }
 });
 
 const tabBarUI = new TabBarUI({
@@ -2885,14 +3352,35 @@ tabManager.onChange(() => {
   tabBarUI.render();
 });
 
-// Freeze decoration rebuilds while the pointer is down (drag-select), then
-// rebuild exactly once after the drag settles. Rebuilding on every
-// `selectionSet` during a drag is the main source of scroll snapping.
+// Freeze decoration rebuilds during pointer drag-select, then
+// rebuild exactly once after the drag settles. Only flag as dragging
+// when the pointer actually moves, so single clicks position the cursor
+// immediately without delayed decoration shifts.
+let pointerDown = false;
+let startX = 0;
+let startY = 0;
+
 view.scrollDOM.addEventListener('mousedown', e => {
-  if (e.button === 0) interaction.dragging = true;
+  if (e.button === 0) {
+    pointerDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+  }
+}, true);
+
+window.addEventListener('mousemove', e => {
+  if (!pointerDown) return;
+  if (!interaction.dragging) {
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    if (dx * dx + dy * dy > 9) {
+      interaction.dragging = true;
+    }
+  }
 }, true);
 
 window.addEventListener('mouseup', () => {
+  pointerDown = false;
   if (!interaction.dragging) return;
   interaction.dragging = false;
   requestAnimationFrame(() => {
@@ -3156,6 +3644,42 @@ CommandRegistry.registerCommand('insert:callout', {
   enabled: () => true,
 });
 
+function insertFrontmatterProperty(v) {
+  const fullText = v.state.doc.toString();
+  const extracted = extractFrontmatter(fullText);
+
+  if (extracted.hasFrontmatter) {
+    const entries = extracted.entries.slice();
+    let keyName = 'property';
+    let k = 1;
+    while (entries.some(e => e.key === keyName)) {
+      keyName = `property_${k++}`;
+    }
+    entries.push({ key: keyName, value: '', type: 'text' });
+    const newYaml = stringifyFrontmatter(entries, true);
+    const trailingNewline = (extracted.to < fullText.length && !fullText.slice(extracted.to).startsWith('\n')) ? '\n' : '';
+    v.dispatch({
+      changes: { from: extracted.from, to: extracted.to, insert: newYaml + trailingNewline },
+      userEvent: 'input.frontmatter',
+    });
+  } else {
+    const template = '---\ntags: []\n---\n\n';
+    v.dispatch({
+      changes: { from: 0, to: 0, insert: template },
+      selection: { anchor: 4 },
+      userEvent: 'input.frontmatter',
+    });
+    v.focus();
+  }
+}
+
+CommandRegistry.registerCommand('insert:property', {
+  label: 'Property',
+  shortcut: 'Ctrl+;',
+  run: () => insertFrontmatterProperty(view),
+  enabled: () => true,
+});
+
 CommandRegistry.registerCommand('insert:mathInline', {
   label: 'Math (Inline)',
   shortcut: 'Ctrl+Shift+M',
@@ -3264,14 +3788,17 @@ const dropdownActionToCommand = {
   find: 'edit:find',
   exportPDF: 'export:pdf',
   exportHTML: 'export:html',
+  'insert:property': 'insert:property',
   settings: 'view:settings',
   zen: 'view:zen',
+  'plugins:manage': 'plugins:manage',
 };
 
 const dropdownMenus = [
   { btn: document.getElementById('file-menu-btn'), menu: document.getElementById('file-dropdown') },
   { btn: document.getElementById('edit-menu-btn'), menu: document.getElementById('edit-dropdown') },
   { btn: document.getElementById('insert-menu-btn'), menu: document.getElementById('insert-dropdown') },
+  { btn: document.getElementById('plugins-menu-btn'), menu: document.getElementById('plugins-dropdown') },
 ];
 
 function closeAllDropdowns() {
@@ -3484,9 +4011,14 @@ window.addEventListener('keydown', (e) => {
   }
 }, true);
 
-// ── Click-to-focus / note link ────────────────────────────────────────────────
-document.getElementById('editor-wrap').addEventListener('click', e => {
-  if (e.ctrlKey) { handleNoteLinkClick(e, view); return; }
+// ── Click-to-focus / links ──────────────────────────────────────────────────
+document.getElementById('editor-wrap').addEventListener('click', async e => {
+  if (e.ctrlKey) {
+    const handledNote = await handleNoteLinkClick(e, view);
+    if (handledNote) return;
+    const handledMarkdown = handleMarkdownLinkClick(e, view);
+    if (handledMarkdown) return;
+  }
   const t = e.target;
   const cls = t && t.classList;
   // Clicking the scroller's padding (below the last line) should focus the
@@ -3515,10 +4047,250 @@ function updateWordCount() {
 updateAppName();
 updatePlaceholder();
 updateWordCount();
+updateDocumentTitleInput();
 // Re-apply theme now that view exists (fixes highlight on non-dark startup)
 applyTheme(currentTheme);
 
+// ── Plugin System Integration ──────────────────────────────────────────────────
+async function initPlugins() {
+  if (!window.pluginManager) {
+    console.warn('[editor] Plugin API not available');
+    return;
+  }
+
+  // Apply plugin stylesheets
+  async function applyPluginStyles() {
+    if (!window.pluginManager) return;
+    const css = await window.pluginManager.getStylesheets();
+    if (css) {
+      let styleEl = document.getElementById('fm-plugin-styles');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'fm-plugin-styles';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = css;
+    }
+  }
+
+  // Build plugins menu
+  function buildPluginsMenu(plugins) {
+    const container = document.getElementById('plugins-menu-items');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!plugins) return;
+
+    for (const plugin of plugins) {
+      const btn = document.createElement('button');
+      btn.textContent = `${plugin.name} v${plugin.version} ${plugin.active ? '✓' : '✗'}`;
+      btn.style.opacity = plugin.active ? '1' : '0.5';
+      btn.addEventListener('click', async () => {
+        if (plugin.active) {
+          await window.pluginManager.disable(plugin.name);
+        } else {
+          await window.pluginManager.enable(plugin.name);
+        }
+      });
+      container.appendChild(btn);
+    }
+
+    if (plugins.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding: 8px 12px; color: var(--muted); font-size: 12px;';
+      empty.textContent = 'No plugins installed';
+      container.appendChild(empty);
+    }
+  }
+
+  // Listen for plugin events
+  window.pluginManager.onPluginsReady((plugins) => {
+    console.log('[editor] Plugins ready:', plugins);
+    // Extend pluginManager with getPlugins instead of replacing the whole object
+    window.pluginManager.getPlugins = () => plugins;
+    applyPluginStyles();
+    buildPluginsMenu(plugins);
+  });
+
+  window.pluginManager.onPluginsChanged((plugins) => {
+    console.log('[editor] Plugins changed:', plugins);
+    applyPluginStyles();
+    buildPluginsMenu(plugins);
+  });
+
+  // Apply markdown transforms before save
+  const originalSave = window.fileAPI.save;
+  window.fileAPI.save = async function(contentOrOpts, maybeContent) {
+    let content, opts;
+    if (typeof contentOrOpts === 'string') {
+      content = contentOrOpts;
+    } else if (contentOrOpts && typeof contentOrOpts === 'object') {
+      content = contentOrOpts.content || '';
+      opts = { ...contentOrOpts };
+      delete opts.content;
+    }
+    if (window.pluginManager && typeof window.pluginManager.applyMarkdownTransforms === 'function' && content) {
+      content = window.pluginManager.applyMarkdownTransforms(content, {
+        filePath: tabManager.activeDocument?.path
+      });
+    }
+    if (opts) {
+      return originalSave({ ...opts, content });
+    }
+    return originalSave(content);
+  };
+
+  // Emit editor update events for plugins
+  let currentViewRef = view;
+  Object.defineProperty(window, 'view', {
+    get: () => currentViewRef,
+    set: (v) => { currentViewRef = v; }
+  });
+
+  // Emit tab change events
+  const originalSetActive = tabManager.setActive.bind(tabManager);
+  tabManager.setActive = function(id) {
+    originalSetActive(id);
+    const doc = tabManager.activeDocument;
+    if (doc) {
+      window.dispatchEvent(new CustomEvent('tab:changed', { detail: doc }));
+      window.pluginManager.emit?.('tab:changed', doc);
+    }
+  };
+
+  // Emit editor update events
+  setInterval(() => {
+    if (view && window.pluginManager) {
+      window.pluginManager.emit?.('editor:update', view);
+    }
+  }, 2000);
+
+  // Apply plugin stylesheets on theme change
+  const originalApplyTheme = applyTheme;
+  applyTheme = function(theme) {
+    originalApplyTheme(theme);
+    applyPluginStyles();
+  };
+
+  // Handle plugin UI events (from sandboxed plugins via main)
+  window.uiAPI?.onAddMenuItem((section, item, pluginId) => {
+    const menu = document.querySelector(`[data-menu-section="${section}"]`)
+      || document.getElementById(`${section}-dropdown`);
+    if (!menu || !item) return;
+    if (menu.querySelector(`[data-action="${item.id}"]`)) return;   // already added
+    const btn = document.createElement('button');
+    btn.textContent = item.label;
+    btn.dataset.action = item.id;   // the dropdown's own click handler runs it
+    btn.dataset.pluginId = pluginId;
+    menu.appendChild(btn);
+  });
+
+  window.uiAPI?.onRemoveMenuItem(({ itemId, pluginId }) => {
+    document.querySelectorAll('button[data-plugin-id]').forEach((button) => {
+      if (button.dataset.pluginId === pluginId && button.dataset.action === itemId) {
+        button.remove();
+      }
+    });
+  });
+
+  window.uiAPI?.onRegisterCommand((pluginId, command) => {
+    console.log('[editor] Plugin registering command:', pluginId, command);
+    if (command && command.id) {
+      CommandRegistry.registerCommand(command.id, {
+        label: command.label || command.id,
+        shortcut: command.shortcut,
+        section: command.section,
+        run: () => window.pluginManager.invokeCommand(pluginId, command.id),
+        enabled: () => true,
+      });
+    }
+  });
+
+  window.uiAPI?.onSetStatusBar((text, options = {}) => {
+    const statusEl = document.getElementById('status-bar-text');
+    if (statusEl) {
+      // If pluginId provided, prefix with plugin name
+      const prefix = options.pluginId ? `[${options.pluginId}] ` : '';
+      statusEl.textContent = prefix + text;
+    }
+  });
+
+  window.uiAPI?.onShowNotification((title, body, options = {}) => {
+    console.log('[editor] Plugin notification:', title, body, options);
+    // Could use native notification API or custom toast
+    if (Notification.permission === 'granted') {
+      new Notification(title, { body });
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(perm => {
+        if (perm === 'granted') new Notification(title, { body });
+      });
+    }
+  });
+
+  window.uiAPI?.onPluginDisabled?.(({ pluginId, commands, menuItems }) => {
+    // Clear status bar if this plugin set it
+    const statusEl = document.getElementById('status-bar-text');
+    if (statusEl && statusEl.textContent.startsWith(`[${pluginId}]`)) {
+      statusEl.textContent = '';
+    }
+    // Remove menu items
+    document.querySelectorAll('button[data-plugin-id]').forEach((button) => {
+      if (button.dataset.pluginId === pluginId) button.remove();
+    });
+    // Unregister commands
+    if (Array.isArray(commands)) {
+      for (const id of commands) {
+        CommandRegistry.unregisterCommand(id);
+      }
+    }
+  });
+
+  window.settingsAPI?.onChange((key, value, options = {}) => {
+    console.log('[editor] Plugin setting changed:', key, value, options);
+    // Emit to pluginManager for any listeners
+    window.pluginManager?.emit?.('setting:changed', { key, value, pluginId: options.pluginId });
+  });
+
+  // Add Manage Plugins command
+  CommandRegistry.registerCommand('plugins:manage', {
+    label: 'Manage Plugins',
+    shortcut: 'Ctrl+Shift+P',
+    section: 'plugins',
+    run: () => {
+      // Focus the plugins dropdown
+      const btn = document.getElementById('plugins-menu-btn');
+      if (btn) btn.click();
+    },
+    enabled: () => true,
+  });
+
+  // Provide app API to plugin manager (for renderer-side plugins)
+  if (window.pluginManager) {
+    window.pluginManager._appAPI = {
+      registerCommand: (id, def) => CommandRegistry.registerCommand(id, def),
+      unregisterCommand: (id) => CommandRegistry.unregisterCommand(id),
+      getCommand: (id) => CommandRegistry.getCommand(id),
+      getAllCommands: () => CommandRegistry.getAllCommands(),
+      executeCommand: (id, view, state) => CommandRegistry.execute(id, view, state),
+      hasCommand: (id) => CommandRegistry.hasCommand(id),
+      registerMarkdownTransform: (fn) => window.pluginManager.registerMarkdownTransform(fn),
+      registerStylesheet: (css) => window.pluginManager.registerStylesheet(css),
+      registerSetting: (key, defaultValue, metadata) => window.pluginManager.settings.register(key, defaultValue, metadata),
+      getSetting: (key) => window.pluginManager.settings.get(key),
+      setSetting: (key, value) => window.pluginManager.settings.set(key, value),
+      getAllSettings: () => window.pluginManager.settings.getAll(),
+      getSettingMetadata: (key) => window.pluginManager.settings.getMetadata(key),
+      on: (event, handler) => window.pluginManager.on(event, handler),
+      off: (event, handler) => window.pluginManager.off(event, handler),
+      emit: (event, ...args) => window.pluginManager.emit(event, ...args),
+      getPlugins: () => window.pluginManager.getPlugins(),
+      getPath: () => window.pluginManager.settings.getPath?.() || '',
+    };
+  }
+}
+
 async function initSession() {
+  await initPlugins();
   const restored = await sessionManager.restore();
   if (!restored) {
     const initialDoc = new Document({
@@ -3528,6 +4300,7 @@ async function initSession() {
     });
     tabManager.add(initialDoc, true);
   }
+  updateDocumentTitleInput();
   view.focus();
 }
 

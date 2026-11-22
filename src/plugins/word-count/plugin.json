@@ -1,0 +1,16 @@
+{
+  "name": "word-count",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "description": "Word and character count in status bar",
+  "author": "FlowMark",
+  "entry_point": "index.js",
+  "permissions": [
+    "editor.read",
+    "ui.statusbar",
+    "settings.read",
+    "settings.write"
+  ],
+  "commands": [],
+  "menu_items": []
+}
