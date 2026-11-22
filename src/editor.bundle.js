@@ -9,7 +9,7 @@
       __defProp(target, name2, { get: all[name2], enumerable: true });
   };
 
-  // node_modules/@marijn/find-cluster-break/src/index.js
+  // FlowMark Markdown Editor/node_modules/@marijn/find-cluster-break/src/index.js
   function isExtendingChar(code2) {
     if (code2 < 768) return false;
     for (let from3 = 0, to = rangeFrom.length; ; ) {
@@ -76,7 +76,7 @@
   }
   var rangeFrom, rangeTo, ZWJ;
   var init_src = __esm({
-    "node_modules/@marijn/find-cluster-break/src/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@marijn/find-cluster-break/src/index.js"() {
       rangeFrom = [];
       rangeTo = [];
       (() => {
@@ -88,7 +88,7 @@
     }
   });
 
-  // node_modules/@codemirror/state/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/state/dist/index.js
   function textLength(text6) {
     let length = -1;
     for (let line of text6)
@@ -709,7 +709,7 @@
   }
   var Text, TextLeaf, TextNode, RawTextCursor, PartialTextCursor, LineCursor, Line, DefaultSplit, MapMode, ChangeDesc, ChangeSet, SectionIter, SelectionRange, EditorSelection, nextID, Facet, FacetProvider, initField, StateField, Prec_, Prec, PrecExtension, Compartment, CompartmentInstance, Configuration, languageData, allowMultipleSelections, lineSeparator, changeFilter, transactionFilter, transactionExtender, readOnly, Annotation, AnnotationType, StateEffectType, StateEffect, Transaction, none, CharCategory, nonASCIISingleCaseWordChar, wordChar, EditorState, RangeValue, Range, Chunk, RangeSet, RangeSetBuilder, LayerCursor, HeapCursor, SpanCursor;
   var init_dist = __esm({
-    "node_modules/@codemirror/state/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/state/dist/index.js"() {
       init_src();
       Text = class _Text {
         /**
@@ -3446,10 +3446,10 @@
     }
   });
 
-  // node_modules/style-mod/src/style-mod.js
+  // FlowMark Markdown Editor/node_modules/style-mod/src/style-mod.js
   var C, COUNT, SET, top, StyleModule, adoptedSet, StyleSet;
   var init_style_mod = __esm({
-    "node_modules/style-mod/src/style-mod.js"() {
+    "FlowMark Markdown Editor/node_modules/style-mod/src/style-mod.js"() {
       C = "\u037C";
       COUNT = typeof Symbol == "undefined" ? "__" + C : Symbol.for(C);
       SET = typeof Symbol == "undefined" ? "__styleSet" + Math.floor(Math.random() * 1e8) : /* @__PURE__ */ Symbol("styleSet");
@@ -3582,7 +3582,7 @@
     }
   });
 
-  // node_modules/w3c-keyname/index.js
+  // FlowMark Markdown Editor/node_modules/w3c-keyname/index.js
   function keyName(event) {
     var ignoreKey = mac && event.metaKey && event.shiftKey && !event.ctrlKey && !event.altKey || ie && event.shiftKey && event.key && event.key.length == 1 || event.key == "Unidentified";
     var name2 = !ignoreKey && event.key || (event.shiftKey ? shift : base)[event.keyCode] || event.key || "Unidentified";
@@ -3596,7 +3596,7 @@
   }
   var base, shift, mac, ie, i, i, i, code2;
   var init_w3c_keyname = __esm({
-    "node_modules/w3c-keyname/index.js"() {
+    "FlowMark Markdown Editor/node_modules/w3c-keyname/index.js"() {
       base = {
         8: "Backspace",
         9: "Tab",
@@ -3689,7 +3689,7 @@
     }
   });
 
-  // node_modules/crelt/index.js
+  // FlowMark Markdown Editor/node_modules/crelt/index.js
   function crelt() {
     var elt2 = arguments[0];
     if (typeof elt2 == "string") elt2 = document.createElement(elt2);
@@ -3718,11 +3718,11 @@
     }
   }
   var init_crelt = __esm({
-    "node_modules/crelt/index.js"() {
+    "FlowMark Markdown Editor/node_modules/crelt/index.js"() {
     }
   });
 
-  // node_modules/@codemirror/view/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/view/dist/index.js
   function combineAttrs(source, target) {
     for (let name2 in source) {
       if (name2 == "class" && target.class)
@@ -4745,29 +4745,29 @@
     let startPos = start2.head, dir = forward ? 1 : -1;
     if (startPos == (forward ? view2.state.doc.length : 0))
       return EditorSelection.cursor(startPos, start2.assoc);
-    let goal = start2.goalColumn, startY;
+    let goal = start2.goalColumn, startY2;
     let rect = view2.contentDOM.getBoundingClientRect();
     let startCoords = view2.coordsAtPos(startPos, start2.assoc || ((start2.empty ? forward : start2.head == start2.from) ? 1 : -1));
     let docTop = view2.documentTop;
     if (startCoords) {
       if (goal == null)
         goal = startCoords.left - rect.left;
-      startY = dir < 0 ? startCoords.top : startCoords.bottom;
+      startY2 = dir < 0 ? startCoords.top : startCoords.bottom;
     } else {
       let line = view2.viewState.lineBlockAt(startPos);
       if (goal == null)
         goal = Math.min(rect.right - rect.left, view2.defaultCharacterWidth * (startPos - line.from));
-      startY = (dir < 0 ? line.top : line.bottom) + docTop;
+      startY2 = (dir < 0 ? line.top : line.bottom) + docTop;
     }
     let resolvedGoal = rect.left + goal;
     let halfText = view2.viewState.heightOracle.textHeight >> 1, dist2 = distance !== null && distance !== void 0 ? distance : halfText;
     for (let scan = 0; ; scan += halfText) {
-      let y = startY + (dist2 + scan) * dir;
+      let y = startY2 + (dist2 + scan) * dir;
       let pos = posAtCoords(view2, { x: resolvedGoal, y }, false, dir);
       if (forward ? y > rect.bottom : y < rect.top)
         return EditorSelection.cursor(pos.pos, pos.assoc);
       let posCoords = view2.coordsAtPos(pos.pos, pos.assoc), mid = posCoords ? (posCoords.top + posCoords.bottom) / 2 : 0;
-      if (!posCoords || (forward ? mid > startY : mid < startY))
+      if (!posCoords || (forward ? mid > startY2 : mid < startY2))
         return EditorSelection.cursor(pos.pos, pos.assoc, void 0, goal);
     }
   }
@@ -5974,7 +5974,7 @@
   }
   var nav, doc, ie_edge, ie_upto10, ie_11up, ie2, gecko, chrome, webkit, safari, ios, browser, noAttrs, WidgetType, BlockType, Decoration, MarkDecoration, LineDecoration, PointDecoration, BlockWrapper, DOMSelectionState, preventScrollSupported, scratchRange, DOMPos, Direction, LTR, RTL, LowTypes, ArabicTypes, Brackets, BracketStack, BidiRE, BidiSpan, types, movedOver, clickAddsSelectionRange, dragMovesSelection$1, mouseSelectionStyle, exceptionSink, updateListener, inputHandler, focusChangeEffect, clipboardInputFilter, clipboardOutputFilter, perLineTextDirection, nativeSelectionHidden, scrollHandler, ScrollTarget, scrollIntoView, setEditContextFormatting, editable, nextPluginID, viewPlugin, ViewPlugin, PluginInstance, editorAttributes, contentAttributes, decorations, blockWrappers, outerDecorations, atomicRanges, bidiIsolatedRanges, scrollMargins, styleModule, ChangedRange, ViewUpdate, noChildren, Tile, CompositeTile, DocTile, BlockWrapperTile, LineTile, MarkTile, TextTile, WidgetTile, WidgetBufferTile, TilePointer, OpenWrapper, TileBuilder, TextStream, buckets, TileCache, TileUpdate, lineBaseAttrs, NullWidget, BreakWidget, DocView, DecorationComparator$1, WrapperComparator, BlockGapWidget, PosAssoc, InlineCoordsScan, LineBreakPlaceholder, DOMReader, DOMPoint, DOMChange, InputState, PendingKeys, EmacsyPendingKeys, modifierCodes, dragScrollMargin, MouseSelection, handlers, observers, brokenClipboardAPI, BadMouseDetail, lastMouseDown, lastMouseDownCount, lastMouseDownTime, lastLinewiseCopy, isFocusChange, appliedFirefoxHack, wrappingWhiteSpace, heightChangeFlag, HeightOracle, MeasuredHeights, BlockInfo, QueryType, Epsilon, HeightMap, SpaceDeco, HeightMapBlock, HeightMapText, HeightMapGap, HeightMapBranch, relevantWidgetHeight, NodeBuilder, DecorationComparator2, LineGap, LineGapWidget, ViewState, Viewport, IdScaler, BigScaler, theme, darkTheme, baseThemeID, baseLightID, baseDarkID, lightDarkIDs, baseTheme$1, observeOptions, useCharData, DOMObserver, EditContextManager, EditorView, MaxBidiLine, BadMeasure, CachedOrder, currentPlatform, handleKeyEvents, keymap, Keymaps, storedPrefix, PrefixTimeout, currentKeyEvent, RectangleMarker, LayerView, layerOrder, selectionConfig, cursorLayer, selectionLayer, hideNativeSelection, setDropCursorPos, dropCursorPos, drawDropCursor, UnicodeRegexpSupport, Outside, TooltipViewManager, tooltipConfig, knownHeight, tooltipPlugin, baseTheme, noOffset, showTooltip, panelConfig, panelPlugin, PanelGroup, showPanel, dialogField, openDialogEffect, closeDialogEffect, GutterMarker;
   var init_dist2 = __esm({
-    "node_modules/@codemirror/view/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/view/dist/index.js"() {
       init_dist();
       init_style_mod();
       init_w3c_keyname();
@@ -13114,7 +13114,7 @@
     }
   });
 
-  // node_modules/@lezer/common/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/common/dist/index.js
   function checkSide(side, pos, from3, to) {
     switch (side) {
       case -2:
@@ -13608,7 +13608,7 @@
   }
   var DefaultBufferLength, nextPropID, Range2, NodeProp, MountedTree, noProps, NodeType, NodeSet, CachedNode, CachedInnerNode, IterMode, Tree, FlatBufferCursor, TreeBuffer, BaseNode, TreeNode, BufferContext, BufferNode, StackIterator, TreeCursor, nodeSizeCache, NodeWeakMap, TreeFragment, Parser, StringInput, InnerParse, ActiveOverlay, stoppedInner, MixedParse, StructureCursor, FragmentCursor;
   var init_dist3 = __esm({
-    "node_modules/@lezer/common/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/common/dist/index.js"() {
       DefaultBufferLength = 1024;
       nextPropID = 0;
       Range2 = class {
@@ -15165,7 +15165,7 @@
     }
   });
 
-  // node_modules/@lezer/highlight/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/highlight/dist/index.js
   function sameArray2(a2, b) {
     return a2.length == b.length && a2.every((x, i) => x == b[i]);
   }
@@ -15266,7 +15266,7 @@
   }
   var nextTagID, Tag, nextModifierID, Modifier, ruleNodeProp, Rule, HighlightBuilder, t, comment, name, typeName, propertyName, literal, string, number, content, heading, keyword, operator, punctuation, bracket, meta, tags, classHighlighter;
   var init_dist4 = __esm({
-    "node_modules/@lezer/highlight/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/highlight/dist/index.js"() {
       init_dist3();
       nextTagID = 0;
       Tag = class _Tag {
@@ -15895,7 +15895,7 @@
     }
   });
 
-  // node_modules/@codemirror/language/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/language/dist/index.js
   function defineLanguageFacet(baseData) {
     return Facet.define({
       combine: baseData ? (values2) => values2.concat(baseData) : void 0
@@ -16284,7 +16284,7 @@
   }
   var _a, languageDataProp, sublanguageProp, Language, LRLanguage, DocInput, currentContext, ParseContext, LanguageState, requestIdle, isInputPending, parseWorker, language, LanguageSupport, LanguageDescription, indentService, indentUnit, IndentContext, indentNodeProp, TreeIndentContext, flatIndent, foldService, foldNodeProp, HighlightStyle, highlighterFacet, fallbackHighlighter, TreeHighlighter, treeHighlighter, defaultHighlightStyle, DefaultScanDist, DefaultBrackets, bracketMatchingHandle, StringStream, IndentedFrom, StreamLanguage, Parse, noTokens, typeArray, nodeSet, warned, byTag, defaultTable, TokenTable, defaultTokenTable, marks;
   var init_dist5 = __esm({
-    "node_modules/@codemirror/language/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/language/dist/index.js"() {
       init_dist3();
       init_dist();
       init_dist2();
@@ -17605,7 +17605,7 @@
     }
   });
 
-  // node_modules/@codemirror/autocomplete/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/autocomplete/dist/index.js
   function toSet(chars2) {
     let flat = Object.keys(chars2).join("");
     let words22 = /\w/.test(flat);
@@ -18137,7 +18137,7 @@
   }
   var CompletionContext, Option, pickedCompletion, SourceCache, startCompletionEffect, closeCompletionEffect, FuzzyMatcher, StrictMatcher, completionConfig, setSelectedEffect, CompletionTooltip, CompletionDialog, CompletionState, baseAttrs, noAttrs2, none3, ActiveSource, ActiveResult, setActiveEffect, completionState, createTooltip, acceptCompletion, startCompletion, closeCompletion, RunningQuery, MaxUpdateCount, MinAbortTime, completionPlugin, windows, commitCharacters, baseTheme3, FieldPos, FieldRange, Snippet, fieldMarker, fieldRange, ActiveSnippet, setActive, moveToField, snippetState, clearSnippet, nextSnippetField, prevSnippetField, defaultSnippetKeymap, snippetKeymap, addSnippetKeymap, snippetPointerHandler, defaults, closeBracketEffect, closedBracket, bracketState, definedClosing, android, inputHandler2, deleteBracketPair, closeBracketsKeymap, completionKeymap, completionKeymapExt;
   var init_dist6 = __esm({
-    "node_modules/@codemirror/autocomplete/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/autocomplete/dist/index.js"() {
       init_dist();
       init_dist2();
       init_dist5();
@@ -19427,7 +19427,7 @@
     }
   });
 
-  // node_modules/@lezer/markdown/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/markdown/dist/index.js
   function skipForList(bl, cx2, line) {
     if (line.pos == line.text.length || bl != cx2.block && line.indent >= cx2.stack[line.depth + 1].value + line.baseIndent)
       return true;
@@ -19874,7 +19874,7 @@
   }
   var CompositeBlock, Type, LeafBlock, Line2, DefaultSkipMarkup, EmptyLine, CommentEnd, ProcessingEnd, HTMLBlockStyle, DefaultBlockParsers, LinkReferenceParser, SetextHeadingParser, DefaultLeafBlocks, DefaultEndLeaf, scanLineResult, BlockContext, MarkdownParser, nodeTypes, none4, Buffer2, Element, TreeElement, EmphasisUnderscore, EmphasisAsterisk, LinkStart, ImageStart, InlineDelimiter, Escapable, Punctuation, DefaultInline, InlineContext, NotLast, FragmentCursor2, markdownHighlighting, parser, StrikethroughDelim, Strikethrough, delimiterLine, TableParser, Table, TaskParser, TaskList, autolinkRE, urlRE, lastTwoDomainWords, emailRE, xmppResourceRE, Autolink, GFM, Superscript, Subscript, Emoji;
   var init_dist7 = __esm({
-    "node_modules/@lezer/markdown/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/markdown/dist/index.js"() {
       init_dist3();
       init_dist4();
       CompositeBlock = class _CompositeBlock {
@@ -21494,7 +21494,7 @@
     }
   });
 
-  // node_modules/@lezer/lr/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/lr/dist/index.js
   function decodeArray(input, Type3 = Uint16Array) {
     if (typeof input != "string")
       return input;
@@ -21633,7 +21633,7 @@
   }
   var Stack, StackContext, SimulatedStack, StackBufferCursor, CachedToken, nullToken, InputStream, TokenGroup, LocalTokenGroup, ExternalTokenizer, verbose, stackIDs, FragmentCursor3, TokenCache, Parse2, Dialect, id, ContextTracker, LRParser;
   var init_dist8 = __esm({
-    "node_modules/@lezer/lr/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/lr/dist/index.js"() {
       init_dist3();
       Stack = class _Stack {
         /**
@@ -23259,7 +23259,7 @@
     }
   });
 
-  // node_modules/@lezer/html/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/html/dist/index.js
   function nameChar(ch2) {
     return ch2 == 45 || ch2 == 46 || ch2 == 58 || ch2 >= 65 && ch2 <= 90 || ch2 == 95 || ch2 >= 97 && ch2 <= 122 || ch2 >= 161;
   }
@@ -23378,7 +23378,7 @@
   }
   var scriptText, StartCloseScriptTag, styleText, StartCloseStyleTag, textareaText, StartCloseTextareaTag, EndTag, SelfClosingEndTag, StartTag, StartScriptTag, StartStyleTag, StartTextareaTag, StartSelfClosingTag, StartCloseTag, NoMatchStartCloseTag, MismatchedStartCloseTag, missingCloseTag, IncompleteTag, IncompleteCloseTag, commentContent$1, Element2, TagName, Attribute, AttributeName, AttributeValue, UnquotedAttributeValue, ScriptText, StyleText, TextareaText, OpenTag, CloseTag, Dialect_noMatch, Dialect_selfClosing, selfClosers, implicitlyClosed, closeOnOpen, cachedName, cachedInput, cachedPos, lessThan, greaterThan, slash, question, bang, dash, startTagTerms, elementContext, tagStart, commentContent, endTag, scriptTokens, styleTokens, textareaTokens, htmlHighlighting, parser2;
   var init_dist9 = __esm({
-    "node_modules/@lezer/html/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/html/dist/index.js"() {
       init_dist8();
       init_dist4();
       init_dist3();
@@ -23611,7 +23611,7 @@
     }
   });
 
-  // node_modules/@lezer/css/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/css/dist/index.js
   function isAlpha(ch2) {
     return ch2 >= 65 && ch2 <= 90 || ch2 >= 97 && ch2 <= 122 || ch2 >= 161;
   }
@@ -23623,7 +23623,7 @@
   }
   var descendantOp, Unit, identifier, callee, VariableName, queryIdentifier, queryVariableName, QueryCallee, space2, colon, parenL, underscore, bracketL, dash2, period, hash, percent, ampersand, backslash, newline, asterisk, identifierTokens, identifiers, queryIdentifiers, descendant, unitToken, cssHighlighting, spec_callee, spec_queryIdentifier, spec_QueryCallee, spec_AtKeyword, spec_identifier, parser3;
   var init_dist10 = __esm({
-    "node_modules/@lezer/css/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/css/dist/index.js"() {
       init_dist8();
       init_dist4();
       descendantOp = 135;
@@ -23793,7 +23793,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-css/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-css/dist/index.js
   var dist_exports = {};
   __export(dist_exports, {
     css: () => css,
@@ -23874,7 +23874,7 @@
   }
   var _properties, pseudoClasses, values, tags2, atRules, identifier2, variable, VariablesByNode, declSelector, defineCSSCompletionSource, cssCompletionSource, cssLanguage;
   var init_dist11 = __esm({
-    "node_modules/@codemirror/lang-css/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-css/dist/index.js"() {
       init_dist10();
       init_dist5();
       init_dist3();
@@ -24669,13 +24669,13 @@
     }
   });
 
-  // node_modules/@lezer/javascript/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/javascript/dist/index.js
   function identifierChar(ch2, start2) {
     return ch2 >= 65 && ch2 <= 90 || ch2 >= 97 && ch2 <= 122 || ch2 == 95 || ch2 >= 192 || !start2 && ch2 >= 48 && ch2 <= 57;
   }
   var noSemi, noSemiType, incdec, incdecPrefix, questionDot, JSXStartTag, insertSemi, spaces, newline2, LineComment, BlockComment, Dialect_jsx, space3, braceR, semicolon, slash2, star, plus, minus, lt, comma, question2, dot, bracketL2, trackNewline, insertSemicolon, noSemicolon, noSemicolonType, operatorToken, jsx, jsHighlight, spec_identifier2, spec_word, spec_LessThan, parser4;
   var init_dist12 = __esm({
-    "node_modules/@lezer/javascript/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/javascript/dist/index.js"() {
       init_dist8();
       init_dist4();
       noSemi = 316;
@@ -24888,7 +24888,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-javascript/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-javascript/dist/index.js
   var dist_exports2 = {};
   __export(dist_exports2, {
     autoCloseTags: () => autoCloseTags,
@@ -25113,7 +25113,7 @@
   }
   var snippets, typescriptSnippets, cache, ScopeNodes, functionContext, gatherCompletions, Identifier, dontComplete, javascriptLanguage, jsxSublanguage, typescriptLanguage, jsxLanguage, tsxLanguage, kwCompletion, keywords, typescriptKeywords, android2, autoCloseTags;
   var init_dist13 = __esm({
-    "node_modules/@codemirror/lang-javascript/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-javascript/dist/index.js"() {
       init_dist12();
       init_dist5();
       init_dist();
@@ -25353,7 +25353,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-html/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-html/dist/index.js
   var dist_exports3 = {};
   __export(dist_exports3, {
     autoCloseTags: () => autoCloseTags2,
@@ -25516,7 +25516,7 @@
   }
   var Targets, Charsets, Methods, Encs, Bool, S, Tags, GlobalAttrs, eventAttributes, Schema, identifier3, jsonParser, defaultNesting, defaultAttrs, htmlPlain, htmlLanguage, selfClosers2, autoCloseTags2;
   var init_dist14 = __esm({
-    "node_modules/@codemirror/lang-html/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-html/dist/index.js"() {
       init_dist9();
       init_dist11();
       init_dist13();
@@ -26101,7 +26101,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-markdown/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-markdown/dist/index.js
   var dist_exports4 = {};
   __export(dist_exports4, {
     commonmarkLanguage: () => commonmarkLanguage,
@@ -26308,7 +26308,7 @@
   }
   var data, headingProp, commonmark, headerIndent, commonmarkLanguage, extended, markdownLanguage, Context, insertNewlineContinueMarkupCommand, insertNewlineContinueMarkup, deleteMarkupBackward, markdownKeymap, htmlNoMatch, _tagCompletions, nonPlainText, pasteURLAsLink;
   var init_dist15 = __esm({
-    "node_modules/@codemirror/lang-markdown/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-markdown/dist/index.js"() {
       init_dist();
       init_dist2();
       init_dist5();
@@ -26543,7 +26543,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-sql/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-sql/dist/index.js
   var dist_exports5 = {};
   __export(dist_exports5, {
     Cassandra: () => Cassandra,
@@ -27005,7 +27005,7 @@
   }
   var whitespace, LineComment2, BlockComment2, String$1, Number2, Bool2, Null, ParenL, ParenR, BraceL, BraceR, BracketL, BracketR, Semi, Dot, Operator, Punctuation2, SpecialVar, Identifier2, QuotedIdentifier, Keyword, Type2, Bits, Bytes, Builtin, Space, SQLTypes, SQLKeywords, defaults2, tokens, parser$1, EndFrom, Span, QuotedSpan, CompletionLevel, parser5, SQLDialect, StandardSQL, PostgreSQL, MySQLKeywords, MySQLTypes, MySQLBuiltin, MySQL, MariaSQL, MSSQLBuiltin, MSSQL, SQLite, Cassandra, PLSQL;
   var init_dist16 = __esm({
-    "node_modules/@codemirror/lang-sql/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-sql/dist/index.js"() {
       init_dist5();
       init_dist4();
       init_dist8();
@@ -27280,10 +27280,10 @@
     }
   });
 
-  // node_modules/@lezer/cpp/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/cpp/dist/index.js
   var RawString, templateArgsEndFallback, MacroName, R, L, u, U, a, z, A, Z, Underscore, Zero, Quote, ParenL2, ParenR2, Space2, GreaterThan, rawString, fallback, cppHighlighting, spec_identifier3, spec_, spec_templateArgsEnd, spec_scopedIdentifier, parser6;
   var init_dist17 = __esm({
-    "node_modules/@lezer/cpp/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/cpp/dist/index.js"() {
       init_dist8();
       init_dist4();
       RawString = 1;
@@ -27426,7 +27426,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-cpp/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-cpp/dist/index.js
   var dist_exports6 = {};
   __export(dist_exports6, {
     cpp: () => cpp,
@@ -27437,7 +27437,7 @@
   }
   var cppLanguage;
   var init_dist18 = __esm({
-    "node_modules/@codemirror/lang-cpp/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-cpp/dist/index.js"() {
       init_dist17();
       init_dist5();
       cppLanguage = /* @__PURE__ */ LRLanguage.define({
@@ -27470,10 +27470,10 @@
     }
   });
 
-  // node_modules/@lezer/go/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/go/dist/index.js
   var insertedSemi, space$1, identifier4, String2, closeParen$1, Number3, Rune, closeBrace$1, closeBracket, IncDecOp, _return, _break, _continue, fallthrough, newline3, carriageReturn, space4, tab, slash3, closeParen, closeBrace, semicolon2, trackedTokens, trackTokens, goHighlighting, spec_identifier4, parser7;
   var init_dist19 = __esm({
-    "node_modules/@lezer/go/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/go/dist/index.js"() {
       init_dist8();
       init_dist4();
       insertedSemi = 177;
@@ -27586,7 +27586,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-go/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-go/dist/index.js
   var dist_exports7 = {};
   __export(dist_exports7, {
     go: () => go,
@@ -27655,7 +27655,7 @@
   }
   var snippets2, cache2, ScopeNodes2, gatherCompletions2, Identifier3, dontComplete2, localCompletionSource2, goLanguage, kwCompletion2, keywords3;
   var init_dist20 = __esm({
-    "node_modules/@codemirror/lang-go/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-go/dist/index.js"() {
       init_dist19();
       init_dist5();
       init_dist6();
@@ -27820,10 +27820,10 @@
     }
   });
 
-  // node_modules/@lezer/java/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/java/dist/index.js
   var javaHighlighting, spec_identifier5, parser8;
   var init_dist21 = __esm({
-    "node_modules/@lezer/java/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/java/dist/index.js"() {
       init_dist8();
       init_dist4();
       javaHighlighting = styleTags({
@@ -27888,7 +27888,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-java/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-java/dist/index.js
   var dist_exports8 = {};
   __export(dist_exports8, {
     java: () => java,
@@ -27899,7 +27899,7 @@
   }
   var javaLanguage;
   var init_dist22 = __esm({
-    "node_modules/@codemirror/lang-java/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-java/dist/index.js"() {
       init_dist21();
       init_dist5();
       javaLanguage = /* @__PURE__ */ LRLanguage.define({
@@ -27934,7 +27934,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-jinja/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-jinja/dist/index.js
   var dist_exports9 = {};
   __export(dist_exports9, {
     closePercentBrace: () => closePercentBrace,
@@ -28082,7 +28082,7 @@
   }
   var interpolationStart, commentTagStart, tagStart2, text, endrawTagStart, rawText, base2, raw, spec_identifier6, spec_TagName, parser9, Filters, Functions, Globals, Expressions, Tags2, closePercentBrace, tagLanguage, baseHTML, jinjaLanguage;
   var init_dist23 = __esm({
-    "node_modules/@codemirror/lang-jinja/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-jinja/dist/index.js"() {
       init_dist5();
       init_dist14();
       init_dist4();
@@ -28240,10 +28240,10 @@
     }
   });
 
-  // node_modules/@lezer/json/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/json/dist/index.js
   var jsonHighlighting, parser10;
   var init_dist24 = __esm({
-    "node_modules/@lezer/json/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/json/dist/index.js"() {
       init_dist8();
       init_dist4();
       jsonHighlighting = styleTags({
@@ -28279,7 +28279,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-json/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-json/dist/index.js
   var dist_exports10 = {};
   __export(dist_exports10, {
     json: () => json,
@@ -28299,7 +28299,7 @@
   }
   var jsonParseLinter, jsonLanguage;
   var init_dist25 = __esm({
-    "node_modules/@codemirror/lang-json/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-json/dist/index.js"() {
       init_dist24();
       init_dist5();
       jsonParseLinter = () => (view2) => {
@@ -28339,7 +28339,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-less/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-less/dist/index.js
   var dist_exports11 = {};
   __export(dist_exports11, {
     less: () => less,
@@ -28357,7 +28357,7 @@
   }
   var descendantOp2, Unit2, openArgList, space5, argList, descendant2, unitToken2, lessHighlighting, spec_identifier7, spec_AtKeyword2, parser11, lessLanguage, lessCompletionSource;
   var init_dist26 = __esm({
-    "node_modules/@codemirror/lang-less/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-less/dist/index.js"() {
       init_dist5();
       init_dist11();
       init_dist8();
@@ -28501,7 +28501,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-liquid/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-liquid/dist/index.js
   var dist_exports12 = {};
   __export(dist_exports12, {
     closePercentBrace: () => closePercentBrace2,
@@ -28657,7 +28657,7 @@
   }
   var interpolationStart2, tagStart3, endTagStart, text2, endrawTagStart2, rawText2, endcommentTagStart, commentText, InlineComment, base3, comment2, raw2, inlineComment, spec_identifier8, spec_TagName2, parser12, Filters2, Tags3, Expressions2, forloop, tablerowloop, closePercentBrace2, tagLanguage2, baseHTML2, liquidLanguage;
   var init_dist27 = __esm({
-    "node_modules/@codemirror/lang-liquid/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-liquid/dist/index.js"() {
       init_dist5();
       init_dist14();
       init_dist4();
@@ -28830,7 +28830,7 @@
     }
   });
 
-  // node_modules/@lezer/php/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/php/dist/index.js
   function keywords4(name2) {
     let found = keywordMap[name2.toLowerCase()];
     return found == null ? -1 : found;
@@ -28870,7 +28870,7 @@
   }
   var castOpen, HeredocString, interpolatedStringContent, EscapeSequence, afterInterpolation, automaticSemicolon, eof, abstract, and, array, as, Boolean2, _break2, _case, _catch, clone, _const, _continue2, _default, declare, _do, echo, _else, elseif, enddeclare, endfor, endforeach, endif, endswitch, endwhile, _enum, _extends, final, _finally, fn, _for, foreach, from, _function, global, goto, _if, _implements, include, include_once, _instanceof, insteadof, _interface, list, match, namespace, _new, _null, or, print, readonly, _require, require_once, _return2, _switch, _throw, trait, _try, unset, use, _var, Visibility, _while, xor, _yield, keywordMap, castTypes, expression, eofToken, semicolon3, interpolated, phpHighlighting, spec_name, parser13;
   var init_dist28 = __esm({
-    "node_modules/@lezer/php/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/php/dist/index.js"() {
       init_dist8();
       init_dist4();
       castOpen = 1;
@@ -29174,7 +29174,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-php/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-php/dist/index.js
   var dist_exports13 = {};
   __export(dist_exports13, {
     php: () => php,
@@ -29204,7 +29204,7 @@
   }
   var phpLanguage;
   var init_dist29 = __esm({
-    "node_modules/@codemirror/lang-php/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-php/dist/index.js"() {
       init_dist28();
       init_dist3();
       init_dist14();
@@ -29247,7 +29247,7 @@
     }
   });
 
-  // node_modules/@lezer/python/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/python/dist/index.js
   function isLineBreak(ch2) {
     return ch2 == newline4 || ch2 == carriageReturn2;
   }
@@ -29285,7 +29285,7 @@
   }
   var printKeyword, indent, dedent, newline$1, blankLineStart, newlineBracketed, eof2, stringContent, Escape, replacementStart, stringEnd, ParenL3, ParenthesizedExpression, TupleExpression, ComprehensionExpression, BracketL2, ArrayExpression, ArrayComprehensionExpression, BraceL2, DictionaryExpression, DictionaryComprehensionExpression, SetExpression, SetComprehensionExpression, ArgList, subscript, String$12, stringStart, stringStartD, stringStartL, stringStartLD, stringStartR, stringStartRD, stringStartRL, stringStartRLD, FormatString, stringStartF, stringStartFD, stringStartFL, stringStartFLD, stringStartFR, stringStartFRD, stringStartFRL, stringStartFRLD, FormatReplacement, nestedFormatReplacement, importList, TypeParamList, ParamList, SequencePattern, MappingPattern, PatternArgList, newline4, carriageReturn2, space6, tab2, hash2, parenOpen, dot2, braceOpen, braceClose, singleQuote, doubleQuote, backslash2, letter_o, letter_x, letter_N, letter_u, letter_U, bracketed, newlines, indentation, cx_Bracketed, cx_String, cx_DoubleQuote, cx_Long, cx_Raw, cx_Format, topIndent2, stringFlags, trackIndent, legacyPrint, strings, pythonHighlighting, spec_identifier9, parser14;
   var init_dist30 = __esm({
-    "node_modules/@lezer/python/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/python/dist/index.js"() {
       init_dist8();
       init_dist4();
       printKeyword = 1;
@@ -29590,7 +29590,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-python/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-python/dist/index.js
   var dist_exports14 = {};
   __export(dist_exports14, {
     globalCompletion: () => globalCompletion,
@@ -29691,7 +29691,7 @@
   }
   var cache3, ScopeNodes3, gatherCompletions3, Identifier4, dontComplete3, globals, snippets3, globalCompletion, pythonLanguage;
   var init_dist31 = __esm({
-    "node_modules/@codemirror/lang-python/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-python/dist/index.js"() {
       init_dist30();
       init_dist5();
       init_dist3();
@@ -30026,7 +30026,7 @@
     }
   });
 
-  // node_modules/@lezer/rust/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/rust/dist/index.js
   function isNum(ch2) {
     return ch2 >= 48 && ch2 <= 57;
   }
@@ -30035,7 +30035,7 @@
   }
   var closureParamDelim, tpOpen, tpClose, RawString2, Float, _b, _e, _f, _r, _E, Zero2, Dot2, Plus, Minus, Hash, Quote2, Pipe, LessThan, GreaterThan2, literalTokens, closureParam, tpDelim, rustHighlighting, spec_identifier10, parser15;
   var init_dist32 = __esm({
-    "node_modules/@lezer/rust/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/rust/dist/index.js"() {
       init_dist8();
       init_dist4();
       closureParamDelim = 1;
@@ -30196,7 +30196,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-rust/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-rust/dist/index.js
   var dist_exports15 = {};
   __export(dist_exports15, {
     rust: () => rust,
@@ -30207,7 +30207,7 @@
   }
   var rustLanguage;
   var init_dist33 = __esm({
-    "node_modules/@codemirror/lang-rust/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-rust/dist/index.js"() {
       init_dist32();
       init_dist5();
       rustLanguage = /* @__PURE__ */ LRLanguage.define({
@@ -30238,7 +30238,7 @@
     }
   });
 
-  // node_modules/@lezer/sass/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/sass/dist/index.js
   function isAlpha4(ch2) {
     return ch2 >= 65 && ch2 <= 90 || ch2 >= 97 && ch2 <= 122 || ch2 >= 161;
   }
@@ -30256,7 +30256,7 @@
   }
   var indent2, dedent2, descendantOp3, InterpolationEnd, InterpolationContinue, Unit3, callee2, identifier5, VariableName2, queryIdentifier2, InterpolationStart, newline5, blankLineStart2, eof3, whitespace2, LineComment3, Comment, IndentedMixin, IndentedInclude, Dialect_indented, space7, colon2, parenL2, underscore2, bracketL3, dash3, period2, hash3, percent2, braceL, braceR2, slash4, asterisk2, newlineChar, equals, plus2, and2, spaces2, comments, indentedMixins, indentation2, identifiers2, interpolationEnd, descendant3, unitToken3, topIndent3, trackIndent2, cssHighlighting2, spec_identifier11, spec_callee2, spec_AtKeyword3, spec_queryIdentifier2, parser16;
   var init_dist34 = __esm({
-    "node_modules/@lezer/sass/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/sass/dist/index.js"() {
       init_dist8();
       init_dist4();
       indent2 = 168;
@@ -30564,7 +30564,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-sass/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-sass/dist/index.js
   var dist_exports16 = {};
   __export(dist_exports16, {
     sass: () => sass,
@@ -30576,7 +30576,7 @@
   }
   var sassLanguage, indentedSassLanguage, sassCompletionSource;
   var init_dist35 = __esm({
-    "node_modules/@codemirror/lang-sass/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-sass/dist/index.js"() {
       init_dist34();
       init_dist5();
       init_dist11();
@@ -30616,7 +30616,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-wast/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-wast/dist/index.js
   var dist_exports17 = {};
   __export(dist_exports17, {
     wast: () => wast,
@@ -30627,7 +30627,7 @@
   }
   var spec_Keyword, parser17, wastLanguage;
   var init_dist36 = __esm({
-    "node_modules/@codemirror/lang-wast/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-wast/dist/index.js"() {
       init_dist5();
       init_dist4();
       init_dist8();
@@ -30686,7 +30686,7 @@
     }
   });
 
-  // node_modules/@lezer/xml/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/xml/dist/index.js
   function nameChar2(ch2) {
     return ch2 == 45 || ch2 == 46 || ch2 == 58 || ch2 >= 65 && ch2 <= 90 || ch2 == 95 || ch2 >= 97 && ch2 <= 122 || ch2 >= 161;
   }
@@ -30728,7 +30728,7 @@
   }
   var StartTag2, StartCloseTag2, MissingCloseTag, mismatchedStartCloseTag, incompleteStartCloseTag, commentContent$12, piContent$1, cdataContent$1, Element3, OpenTag2, cachedName2, cachedInput2, cachedPos2, elementContext2, startTag, commentContent2, piContent, cdataContent, xmlHighlighting, parser18;
   var init_dist37 = __esm({
-    "node_modules/@lezer/xml/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/xml/dist/index.js"() {
       init_dist8();
       init_dist4();
       StartTag2 = 1;
@@ -30813,7 +30813,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-xml/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-xml/dist/index.js
   var dist_exports18 = {};
   __export(dist_exports18, {
     autoCloseTags: () => autoCloseTags3,
@@ -31008,7 +31008,7 @@
   }
   var Element4, Identifier5, xmlLanguage, autoCloseTags3;
   var init_dist38 = __esm({
-    "node_modules/@codemirror/lang-xml/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-xml/dist/index.js"() {
       init_dist37();
       init_dist5();
       init_dist();
@@ -31101,7 +31101,7 @@
     }
   });
 
-  // node_modules/@lezer/yaml/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@lezer/yaml/dist/index.js
   function findColumn2(input, pos) {
     for (let col = 0, p = pos - input.pos - 1; ; p--, col++) {
       let ch2 = input.peek(p);
@@ -31242,7 +31242,7 @@
   }
   var blockEnd, eof4, DirectiveEnd, DocEnd, sequenceStartMark, sequenceContinueMark, explicitMapStartMark, explicitMapContinueMark, flowMapMark, mapStartMark, mapContinueMark, Literal, QuotedLiteral, Anchor, Alias, Tag2, BlockLiteralContent, BracketL3, FlowSequence, Colon, BraceL3, FlowMapping, BlockLiteralHeader, type_Top, type_Seq, type_Map, type_Flow, type_Lit, Context3, indentation3, newlines2, blockMark, charTable, literals, blockLiteral, yamlHighlighting, parser19;
   var init_dist39 = __esm({
-    "node_modules/@lezer/yaml/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@lezer/yaml/dist/index.js"() {
       init_dist8();
       init_dist4();
       blockEnd = 63;
@@ -31465,7 +31465,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-yaml/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-yaml/dist/index.js
   var dist_exports19 = {};
   __export(dist_exports19, {
     yaml: () => yaml,
@@ -31485,7 +31485,7 @@
   }
   var parser20, yamlLanguage, frontmatterLanguage;
   var init_dist40 = __esm({
-    "node_modules/@codemirror/lang-yaml/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-yaml/dist/index.js"() {
       init_dist39();
       init_dist5();
       init_dist3();
@@ -31553,14 +31553,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/apl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/apl.js
   var apl_exports = {};
   __export(apl_exports, {
     apl: () => apl
   });
   var builtInFuncs, isOperator, isNiladic, isFunction, isArrow, isComment, stringEater, apl;
   var init_apl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/apl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/apl.js"() {
       builtInFuncs = {
         "+": ["conjugate", "add"],
         "\u2212": ["negate", "subtract"],
@@ -31701,7 +31701,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/asciiarmor.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/asciiarmor.js
   var asciiarmor_exports = {};
   __export(asciiarmor_exports, {
     asciiArmor: () => asciiArmor
@@ -31713,7 +31713,7 @@
   }
   var asciiArmor;
   var init_asciiarmor = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/asciiarmor.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/asciiarmor.js"() {
       asciiArmor = {
         name: "asciiarmor",
         token: function(stream, state) {
@@ -31765,7 +31765,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/asn1.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/asn1.js
   var asn1_exports = {};
   __export(asn1_exports, {
     asn1: () => asn1
@@ -31900,7 +31900,7 @@
   }
   var defaults3;
   var init_asn1 = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/asn1.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/asn1.js"() {
       defaults3 = {
         keywords: words("DEFINITIONS OBJECTS IF DERIVED INFORMATION ACTION REPLY ANY NAMED CHARACTERIZED BEHAVIOUR REGISTERED WITH AS IDENTIFIED CONSTRAINED BY PRESENT BEGIN IMPORTS FROM UNITS SYNTAX MIN-ACCESS MAX-ACCESS MINACCESS MAXACCESS REVISION STATUS DESCRIPTION SEQUENCE SET COMPONENTS OF CHOICE DistinguishedName ENUMERATED SIZE MODULE END INDEX AUGMENTS EXTENSIBILITY IMPLIED EXPORTS"),
         cmipVerbs: words("ACTIONS ADD GET NOTIFICATIONS REPLACE REMOVE"),
@@ -31915,7 +31915,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/asterisk.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/asterisk.js
   var asterisk_exports = {};
   __export(asterisk_exports, {
     asterisk: () => asterisk3
@@ -31996,7 +31996,7 @@
   }
   var atoms, dpcmd, apps, asterisk3;
   var init_asterisk = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/asterisk.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/asterisk.js"() {
       atoms = ["exten", "same", "include", "ignorepat", "switch"];
       dpcmd = ["#include", "#exec"];
       apps = [
@@ -32272,14 +32272,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/brainfuck.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/brainfuck.js
   var brainfuck_exports = {};
   __export(brainfuck_exports, {
     brainfuck: () => brainfuck
   });
   var reserve, brainfuck;
   var init_brainfuck = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/brainfuck.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/brainfuck.js"() {
       reserve = "><+-.,[]".split("");
       brainfuck = {
         name: "brainfuck",
@@ -32333,7 +32333,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/cobol.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/cobol.js
   var cobol_exports = {};
   __export(cobol_exports, {
     cobol: () => cobol
@@ -32369,7 +32369,7 @@
   }
   var BUILTIN, COMMENT, STRING, ATOM, NUMBER, KEYWORD, MODTAG, COBOLLINENUM, PERIOD, atoms2, keywords5, builtins, tests, cobol;
   var init_cobol = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/cobol.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/cobol.js"() {
       BUILTIN = "builtin";
       COMMENT = "comment";
       STRING = "string";
@@ -32470,7 +32470,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/clike.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/clike.js
   var clike_exports = {};
   __export(clike_exports, {
     c: () => c,
@@ -32906,7 +32906,7 @@
   }
   var cKeywords, cppKeywords, objCKeywords, objCBuiltins, basicCTypes, basicObjCTypes, cBlockKeywords, cDefKeywords, c, cpp2, java2, csharp, scala, kotlin, shader, nesC, objectiveC, objectiveCpp, squirrel, stringTokenizer, ceylon, dart;
   var init_clike = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/clike.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/clike.js"() {
       cKeywords = "auto if break case register continue return default do sizeof static else struct switch extern typedef union for goto while enum const volatile inline restrict asm fortran";
       cppKeywords = "alignas alignof and and_eq audit axiom bitand bitor catch class compl concept constexpr const_cast decltype delete dynamic_cast explicit export final friend import module mutable namespace new noexcept not not_eq operator or or_eq override private protected public reinterpret_cast requires static_assert static_cast template this thread_local throw try typeid typename using virtual xor xor_eq";
       objCKeywords = "bycopy byref in inout oneway out self super atomic nonatomic retain copy readwrite readonly strong weak assign typeof nullable nonnull null_resettable _cmd @interface @implementation @end @protocol @encode @property @synthesize @dynamic @class @public @package @private @protected @required @optional @try @catch @finally @import @selector @encode @defs @synchronized @autoreleasepool @compatibility_alias @available";
@@ -33284,7 +33284,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/clojure.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/clojure.js
   var clojure_exports = {};
   __export(clojure_exports, {
     clojure: () => clojure
@@ -33353,7 +33353,7 @@
   }
   var atoms3, specialForms, coreSymbols, haveBodyParameter, atom, specialForm, coreSymbol, hasBodyParameter, delimiter, numberLiteral, characterLiteral, qualifiedSymbol, clojure;
   var init_clojure = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/clojure.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/clojure.js"() {
       atoms3 = ["false", "nil", "true"];
       specialForms = [
         ".",
@@ -34141,7 +34141,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/css.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/css.js
   var css_exports = {};
   __export(css_exports, {
     css: () => css2,
@@ -34525,7 +34525,7 @@
   }
   var documentTypes_, documentTypes, mediaTypes_, mediaTypes, mediaFeatures_, mediaFeatures, mediaValueKeywords_, mediaValueKeywords, propertyKeywords_, propertyKeywords, nonStandardPropertyKeywords_, nonStandardPropertyKeywords, fontProperties_, fontProperties, counterDescriptors_, counterDescriptors, colorKeywords_, colorKeywords, valueKeywords_, valueKeywords, allWords, keywords6, defaults4, css2, sCSS, less2, gss;
   var init_css = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/css.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/css.js"() {
       documentTypes_ = [
         "domain",
         "regexp",
@@ -35942,7 +35942,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/cmake.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/cmake.js
   var cmake_exports = {};
   __export(cmake_exports, {
     cmake: () => cmake
@@ -36001,7 +36001,7 @@
   }
   var variable_regex, cmake;
   var init_cmake = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/cmake.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/cmake.js"() {
       variable_regex = /({)?[a-zA-Z0-9_]+(})?/;
       cmake = {
         name: "cmake",
@@ -36021,7 +36021,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/coffeescript.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/coffeescript.js
   var coffeescript_exports = {};
   __export(coffeescript_exports, {
     coffeeScript: () => coffeeScript
@@ -36245,7 +36245,7 @@
   }
   var ERRORCLASS, operators, delimiters, identifiers3, atProp, wordOperators, indentKeywords, commonKeywords, keywords7, stringPrefixes, regexPrefixes, commonConstants, constants, coffeeScript;
   var init_coffeescript = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/coffeescript.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/coffeescript.js"() {
       ERRORCLASS = "error";
       operators = /^(?:->|=>|\+[+=]?|-[\-=]?|\*[\*=]?|\/[\/=]?|[=!]=|<[><]?=?|>>?=?|%=?|&=?|\|=?|\^=?|\~|!|\?|(or|and|\|\||&&|\?)=)/;
       delimiters = /^(?:[()\[\]{},:`=;]|\.\.?\.?)/;
@@ -36337,7 +36337,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/commonlisp.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/commonlisp.js
   var commonlisp_exports = {};
   __export(commonlisp_exports, {
     commonLisp: () => commonLisp
@@ -36432,7 +36432,7 @@
   }
   var specialForm2, assumeBody, numLiteral, symbol, type, commonLisp;
   var init_commonlisp = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/commonlisp.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/commonlisp.js"() {
       specialForm2 = /^(block|let*|return-from|catch|load-time-value|setq|eval-when|locally|symbol-macrolet|flet|macrolet|tagbody|function|multiple-value-call|the|go|multiple-value-prog1|throw|if|progn|unwind-protect|labels|progv|let|quote)$/;
       assumeBody = /^with|^def|^do|^prog|case$|^cond$|bind$|when$|unless$/;
       numLiteral = /^(?:[+\-]?(?:\d+|\d*\.\d+)(?:[efd][+\-]?\d+)?|[+\-]?\d+(?:\/[+\-]?\d+)?|#b[+\-]?[01]+|#o[+\-]?[0-7]+|#x[+\-]?[\da-f]+)/;
@@ -36474,14 +36474,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/cypher.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/cypher.js
   var cypher_exports = {};
   __export(cypher_exports, {
     cypher: () => cypher
   });
   var wordRegexp2, tokenBase2, pushContext2, popContext2, curPunc, funcs, preds, keywords8, systemKeywords, operatorChars, cypher;
   var init_cypher = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/cypher.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/cypher.js"() {
       wordRegexp2 = function(words22) {
         return new RegExp("^(?:" + words22.join("|") + ")$", "i");
       };
@@ -36602,7 +36602,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/python.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/python.js
   var python_exports = {};
   __export(python_exports, {
     cython: () => cython,
@@ -36927,7 +36927,7 @@
   }
   var wordOperators2, commonKeywords2, commonBuiltins, words3, python2, cython;
   var init_python = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/python.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/python.js"() {
       wordOperators2 = wordRegexp3(["and", "or", "not", "is"]);
       commonKeywords2 = [
         "as",
@@ -37037,7 +37037,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/crystal.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/crystal.js
   var crystal_exports = {};
   __export(crystal_exports, {
     crystal: () => crystal
@@ -37314,7 +37314,7 @@
   }
   var operators2, conditionalOperators, indexingOperators, anotherOperators, idents, types2, keywords9, atomWords, indentKeywordsArray, indentKeywords2, indentExpressionKeywordsArray, indentExpressionKeywords, dedentKeywordsArray, dedentKeywords, dedentPunctualsArray, dedentPunctuals, nextTokenizer, matching, crystal;
   var init_crystal = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/crystal.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/crystal.js"() {
       operators2 = /^(?:[-+/%|&^]|\*\*?|[<>]{2})/;
       conditionalOperators = /^(?:[=!]~|===|<=>|[<>=!]=?|[|&]{2}|~)/;
       indexingOperators = /^(?:\[\][?=]?)/;
@@ -37443,7 +37443,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/d.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/d.js
   var d_exports = {};
   __export(d_exports, {
     d: () => d
@@ -37560,7 +37560,7 @@
   }
   var blockKeywordsStr, parserConfig, statementIndentUnit, keywords10, builtin, blockKeywords, atoms4, hooks, multiLineStrings, isOperatorChar, curPunc2, d;
   var init_d = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/d.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/d.js"() {
       blockKeywordsStr = "body catch class do else enum for foreach foreach_reverse if in interface mixin out scope struct switch try union unittest version while with";
       parserConfig = {
         keywords: words4("abstract alias align asm assert auto break case cast cdouble cent cfloat const continue debug default delegate delete deprecated export extern final finally function goto immutable import inout invariant is lazy macro module new nothrow override package pragma private protected public pure ref return shared short static super synchronized template this throw typedef typeid typeof volatile __FILE__ __LINE__ __gshared __traits __vector __parameters " + blockKeywordsStr),
@@ -37635,14 +37635,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/diff.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/diff.js
   var diff_exports = {};
   __export(diff_exports, {
     diff: () => diff
   });
   var TOKEN_NAMES, diff;
   var init_diff = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/diff.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/diff.js"() {
       TOKEN_NAMES = {
         "+": "inserted",
         "-": "deleted",
@@ -37668,7 +37668,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/simple-mode.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/simple-mode.js
   function simpleMode(states2) {
     ensureState(states2, "start");
     var states_ = {}, meta2 = states2.languageData || {}, hasIndentation = false;
@@ -37797,18 +37797,18 @@
     };
   }
   var init_simple_mode = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/simple-mode.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/simple-mode.js"() {
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/dockerfile.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/dockerfile.js
   var dockerfile_exports = {};
   __export(dockerfile_exports, {
     dockerFile: () => dockerFile
   });
   var from2, fromRegex, shells, shellsAsArrayRegex, expose, exposeRegex, others, instructions, instructionRegex, instructionOnlyLine, instructionWithArguments, dockerFile;
   var init_dockerfile = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/dockerfile.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/dockerfile.js"() {
       init_simple_mode();
       from2 = "from";
       fromRegex = new RegExp("^(\\s*)\\b(" + from2 + ")\\b", "i");
@@ -38013,7 +38013,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/dtd.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/dtd.js
   var dtd_exports = {};
   __export(dtd_exports, {
     dtd: () => dtd
@@ -38087,7 +38087,7 @@
   }
   var type2, dtd;
   var init_dtd = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/dtd.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/dtd.js"() {
       dtd = {
         name: "dtd",
         startState: function() {
@@ -38134,7 +38134,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/dylan.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/dylan.js
   var dylan_exports = {};
   __export(dylan_exports, {
     dylan: () => dylan
@@ -38293,7 +38293,7 @@
   }
   var words5, symbolPattern, symbol2, patterns, patternStyles, patternName, styles, wordLookup, styleLookup, dylan;
   var init_dylan = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/dylan.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/dylan.js"() {
       words5 = {
         // Words that introduce unnamed definitions like "define interface"
         unnamedDefinition: ["interface"],
@@ -38456,14 +38456,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/ebnf.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ebnf.js
   var ebnf_exports = {};
   __export(ebnf_exports, {
     ebnf: () => ebnf
   });
   var commentType, stateType, ebnf;
   var init_ebnf = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/ebnf.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ebnf.js"() {
       commentType = { slash: 0, parenthesis: 1 };
       stateType = { comment: 0, _string: 1, characterClass: 2 };
       ebnf = {
@@ -38604,7 +38604,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/ecl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ecl.js
   var ecl_exports = {};
   __export(ecl_exports, {
     ecl: () => ecl
@@ -38727,7 +38727,7 @@
   }
   var keyword2, variable2, variable_2, variable_3, builtin2, blockKeywords2, atoms5, hooks2, isOperatorChar2, curPunc3, ecl;
   var init_ecl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/ecl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ecl.js"() {
       keyword2 = words6("abs acos allnodes ascii asin asstring atan atan2 ave case choose choosen choosesets clustersize combine correlation cos cosh count covariance cron dataset dedup define denormalize distribute distributed distribution ebcdic enth error evaluate event eventextra eventname exists exp failcode failmessage fetch fromunicode getisvalid global graph group hash hash32 hash64 hashcrc hashmd5 having if index intformat isvalid iterate join keyunicode length library limit ln local log loop map matched matchlength matchposition matchtext matchunicode max merge mergejoin min nolocal nonempty normalize parse pipe power preload process project pull random range rank ranked realformat recordof regexfind regexreplace regroup rejected rollup round roundup row rowdiff sample set sin sinh sizeof soapcall sort sorted sqrt stepped stored sum table tan tanh thisnode topn tounicode transfer trim truncate typeof ungroup unicodeorder variance which workunit xmldecode xmlencode xmltext xmlunicode");
       variable2 = words6("apply assert build buildindex evaluate fail keydiff keypatch loadxml nothor notify output parallel sequential soapcall wait");
       variable_2 = words6("__compressed__ all and any as atmost before beginc++ best between case const counter csv descend encrypt end endc++ endmacro except exclusive expire export extend false few first flat from full function group header heading hole ifblock import in interface joined keep keyed last left limit load local locale lookup macro many maxcount maxlength min skew module named nocase noroot noscan nosort not of only opt or outer overwrite packed partition penalty physicallength pipe quote record relationship repeat return right scan self separator service shared skew skip sql store terminator thor threshold token transform trim true type unicodeorder unsorted validate virtual whole wild within xml xpath");
@@ -38789,7 +38789,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/eiffel.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/eiffel.js
   var eiffel_exports = {};
   __export(eiffel_exports, {
     eiffel: () => eiffel
@@ -38843,7 +38843,7 @@
   }
   var keywords11, operators3, eiffel;
   var init_eiffel = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/eiffel.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/eiffel.js"() {
       keywords11 = wordObj([
         "note",
         "across",
@@ -38931,7 +38931,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/elm.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/elm.js
   var elm_exports = {};
   __export(elm_exports, {
     elm: () => elm
@@ -39067,7 +39067,7 @@
   }
   var lowerRE, upperRE, innerRE, digitRE, hexRE, symbolRE, specialRE, spacesRE, wellKnownWords, elm;
   var init_elm = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/elm.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/elm.js"() {
       lowerRE = /[a-z]/;
       upperRE = /[A-Z]/;
       innerRE = /[a-zA-Z0-9_]/;
@@ -39115,7 +39115,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/erlang.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/erlang.js
   var erlang_exports = {};
   __export(erlang_exports, {
     erlang: () => erlang
@@ -39561,7 +39561,7 @@
   }
   var typeWords, keywordWords, separatorRE, separatorWords, operatorAtomWords, operatorSymbolRE, operatorSymbolWords, openParenRE, openParenWords, closeParenRE, closeParenWords, guardWords, bifWords, anumRE, escapesRE, erlang;
   var init_erlang = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/erlang.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/erlang.js"() {
       typeWords = [
         "-type",
         "-spec",
@@ -39797,7 +39797,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/sql.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sql.js
   var sql_exports = {};
   __export(sql_exports, {
     cassandra: () => cassandra,
@@ -40005,7 +40005,7 @@
   }
   var sqlKeywords, defaultBuiltin, standardSQL, msSQL, mySQL, mariaDB, sqlite, cassandra, plSQL, hive, pgSQL, gql, gpSQL, sparkSQL, esper;
   var init_sql = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/sql.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sql.js"() {
       sqlKeywords = "alter and as asc between by count create delete desc distinct drop from group having in insert into is join like not on or order select set table union update values where limit ";
       defaultBuiltin = "bool boolean bit blob enum long longblob longtext medium mediumblob mediumint mediumtext time timestamp tinyblob tinyint tinytext text bigint int int1 int2 int3 int4 int8 integer float float4 float8 double char varbinary varchar varcharacter precision real date datetime year unsigned signed decimal numeric";
       standardSQL = sql2({
@@ -40161,14 +40161,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/factor.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/factor.js
   var factor_exports = {};
   __export(factor_exports, {
     factor: () => factor
   });
   var factor;
   var init_factor = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/factor.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/factor.js"() {
       init_simple_mode();
       factor = simpleMode({
         start: [
@@ -40234,7 +40234,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/fcl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/fcl.js
   var fcl_exports = {};
   __export(fcl_exports, {
     fcl: () => fcl
@@ -40303,7 +40303,7 @@
   }
   var keywords12, start_blocks, end_blocks, atoms6, isOperatorChar3, fcl;
   var init_fcl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/fcl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/fcl.js"() {
       keywords12 = {
         "term": true,
         "method": true,
@@ -40383,7 +40383,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/forth.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/forth.js
   var forth_exports = {};
   __export(forth_exports, {
     forth: () => forth
@@ -40406,7 +40406,7 @@
   }
   var coreWordList, immediateWordList, forth;
   var init_forth = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/forth.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/forth.js"() {
       coreWordList = toWordList(
         "INVERT AND OR XOR 2* 2/ LSHIFT RSHIFT 0= = 0< < > U< MIN MAX 2DROP 2DUP 2OVER 2SWAP ?DUP DEPTH DROP DUP OVER ROT SWAP >R R> R@ + - 1+ 1- ABS NEGATE S>D * M* UM* FM/MOD SM/REM UM/MOD */ */MOD / /MOD MOD HERE , @ ! CELL+ CELLS C, C@ C! CHARS 2@ 2! ALIGN ALIGNED +! ALLOT CHAR [CHAR] [ ] BL FIND EXECUTE IMMEDIATE COUNT LITERAL STATE ; DOES> >BODY EVALUATE SOURCE >IN <# # #S #> HOLD SIGN BASE >NUMBER HEX DECIMAL FILL MOVE . CR EMIT SPACE SPACES TYPE U. .R U.R ACCEPT TRUE FALSE <> U> 0<> 0> NIP TUCK ROLL PICK 2>R 2R@ 2R> WITHIN UNUSED MARKER I J TO COMPILE, [COMPILE] SAVE-INPUT RESTORE-INPUT PAD ERASE 2LITERAL DNEGATE D- D+ D0< D0= D2* D2/ D< D= DMAX DMIN D>S DABS M+ M*/ D. D.R 2ROT DU< CATCH THROW FREE RESIZE ALLOCATE CS-PICK CS-ROLL GET-CURRENT SET-CURRENT FORTH-WORDLIST GET-ORDER SET-ORDER PREVIOUS SEARCH-WORDLIST WORDLIST FIND ALSO ONLY FORTH DEFINITIONS ORDER -TRAILING /STRING SEARCH COMPARE CMOVE CMOVE> BLANK SLITERAL"
       );
@@ -40507,7 +40507,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/fortran.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/fortran.js
   var fortran_exports = {};
   __export(fortran_exports, {
     fortran: () => fortran
@@ -40569,7 +40569,7 @@
   }
   var keywords13, builtins2, dataTypes, isOperatorChar4, litOperator, fortran;
   var init_fortran = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/fortran.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/fortran.js"() {
       keywords13 = words7([
         "abstract",
         "accept",
@@ -40982,7 +40982,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/mllike.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mllike.js
   var mllike_exports = {};
   __export(mllike_exports, {
     fSharp: () => fSharp,
@@ -41141,7 +41141,7 @@
   }
   var oCaml, fSharp, sml;
   var init_mllike = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/mllike.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mllike.js"() {
       oCaml = mlLike({
         name: "ocaml",
         extraWords: {
@@ -41328,7 +41328,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/gas.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/gas.js
   var gas_exports = {};
   __export(gas_exports, {
     gas: () => gas,
@@ -41624,20 +41624,20 @@
   }
   var gas, gasArm;
   var init_gas = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/gas.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/gas.js"() {
       gas = mkGas("x86");
       gasArm = mkGas("arm");
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/gherkin.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/gherkin.js
   var gherkin_exports = {};
   __export(gherkin_exports, {
     gherkin: () => gherkin
   });
   var gherkin;
   var init_gherkin = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/gherkin.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/gherkin.js"() {
       gherkin = {
         name: "gherkin",
         startState: function() {
@@ -41753,7 +41753,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/groovy.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/groovy.js
   var groovy_exports = {};
   __export(groovy_exports, {
     groovy: () => groovy
@@ -41912,7 +41912,7 @@
   }
   var keywords14, blockKeywords3, standaloneKeywords, atoms7, curPunc4, groovy;
   var init_groovy = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/groovy.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/groovy.js"() {
       keywords14 = words8(
         "abstract as assert boolean break byte case catch char class const continue def default do double else enum extends final finally float for goto if implements import in instanceof int interface long native new package private protected public return short static strictfp super switch synchronized threadsafe throw throws trait transient try void volatile while"
       );
@@ -41983,7 +41983,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/haskell.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/haskell.js
   var haskell_exports = {};
   __export(haskell_exports, {
     haskell: () => haskell
@@ -42123,7 +42123,7 @@
   }
   var smallRE, largeRE, digitRE2, hexitRE, octitRE, idRE, symbolRE2, specialRE2, whiteCharRE, wellKnownWords2, haskell;
   var init_haskell = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/haskell.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/haskell.js"() {
       smallRE = /[a-z_]/;
       largeRE = /[A-Z]/;
       digitRE2 = /\d/;
@@ -42450,7 +42450,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/haxe.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/haxe.js
   var haxe_exports = {};
   __export(haxe_exports, {
     haxe: () => haxe,
@@ -42815,7 +42815,7 @@
   }
   var A2, B, C2, operator2, atom2, attribute, type3, keywords15, isOperatorChar5, type3, content2, atomicTypes, cx, defaultVars, haxe, hxml;
   var init_haxe = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/haxe.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/haxe.js"() {
       A2 = kw("keyword a");
       B = kw("keyword b");
       C2 = kw("keyword c");
@@ -42975,7 +42975,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/http.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/http.js
   var http_exports = {};
   __export(http_exports, {
     http: () => http
@@ -43044,7 +43044,7 @@
   }
   var http;
   var init_http = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/http.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/http.js"() {
       http = {
         name: "http",
         token: function(stream, state) {
@@ -43062,7 +43062,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/idl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/idl.js
   var idl_exports = {};
   __export(idl_exports, {
     idl: () => idl
@@ -43107,7 +43107,7 @@
   }
   var builtinArray, builtins3, keywordArray, keywords16, identifiers4, singleOperators, boolOperators, idl;
   var init_idl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/idl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/idl.js"() {
       builtinArray = [
         "a_correlate",
         "abs",
@@ -44055,7 +44055,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/javascript.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/javascript.js
   var javascript_exports = {};
   __export(javascript_exports, {
     javascript: () => javascript2,
@@ -45050,7 +45050,7 @@
   }
   var javascript2, json2, jsonld, typescript;
   var init_javascript = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/javascript.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/javascript.js"() {
       javascript2 = mkJavaScript({ name: "javascript" });
       json2 = mkJavaScript({ name: "json", json: true });
       jsonld = mkJavaScript({ name: "json", jsonld: true });
@@ -45058,7 +45058,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/julia.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/julia.js
   var julia_exports = {};
   __export(julia_exports, {
     julia: () => julia
@@ -45306,7 +45306,7 @@
   }
   var octChar, hexChar2, sChar, uChar, asciiOperatorsList, operators4, delimiters2, identifiers5, chars, openersList, closersList, keywordsList, builtinsList, openers, closers, keywords17, builtins4, macro, symbol3, stringPrefixes2, macroOperators, symbolOperators, julia;
   var init_julia = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/julia.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/julia.js"() {
       octChar = "\\\\[0-7]{1,3}";
       hexChar2 = "\\\\x[A-Fa-f0-9]{1,2}";
       sChar = `\\\\[abefnrtv0%?'"\\\\]`;
@@ -45473,14 +45473,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/livescript.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/livescript.js
   var livescript_exports = {};
   __export(livescript_exports, {
     liveScript: () => liveScript
   });
   var tokenBase14, identifier6, indenter2, keywordend, stringfill, Rules, r2, rr, i, len, idx, liveScript;
   var init_livescript = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/livescript.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/livescript.js"() {
       tokenBase14 = function(stream, state) {
         var next_rule = state.next || "start";
         if (next_rule) {
@@ -45777,7 +45777,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/lua.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/lua.js
   var lua_exports = {};
   __export(lua_exports, {
     lua: () => lua
@@ -45844,7 +45844,7 @@
   }
   var builtins5, keywords18, indentTokens, dedentTokens, dedentPartial, lua;
   var init_lua = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/lua.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/lua.js"() {
       builtins5 = wordRE([
         "_G",
         "_VERSION",
@@ -46041,7 +46041,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/mirc.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mirc.js
   var mirc_exports = {};
   __export(mirc_exports, {
     mirc: () => mirc
@@ -46134,7 +46134,7 @@
   }
   var specials, keywords19, functions, isOperatorChar6, mirc;
   var init_mirc = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/mirc.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mirc.js"() {
       specials = parseWords("$! $$ $& $? $+ $abook $abs $active $activecid $activewid $address $addtok $agent $agentname $agentstat $agentver $alias $and $anick $ansi2mirc $aop $appactive $appstate $asc $asctime $asin $atan $avoice $away $awaymsg $awaytime $banmask $base $bfind $binoff $biton $bnick $bvar $bytes $calc $cb $cd $ceil $chan $chanmodes $chantypes $chat $chr $cid $clevel $click $cmdbox $cmdline $cnick $color $com $comcall $comchan $comerr $compact $compress $comval $cos $count $cr $crc $creq $crlf $ctime $ctimer $ctrlenter $date $day $daylight $dbuh $dbuw $dccignore $dccport $dde $ddename $debug $decode $decompress $deltok $devent $dialog $did $didreg $didtok $didwm $disk $dlevel $dll $dllcall $dname $dns $duration $ebeeps $editbox $emailaddr $encode $error $eval $event $exist $feof $ferr $fgetc $file $filename $filtered $finddir $finddirn $findfile $findfilen $findtok $fline $floor $fopen $fread $fserve $fulladdress $fulldate $fullname $fullscreen $get $getdir $getdot $gettok $gmt $group $halted $hash $height $hfind $hget $highlight $hnick $hotline $hotlinepos $ial $ialchan $ibl $idle $iel $ifmatch $ignore $iif $iil $inelipse $ini $inmidi $inpaste $inpoly $input $inrect $inroundrect $insong $instok $int $inwave $ip $isalias $isbit $isdde $isdir $isfile $isid $islower $istok $isupper $keychar $keyrpt $keyval $knick $lactive $lactivecid $lactivewid $left $len $level $lf $line $lines $link $lock $lock $locked $log $logstamp $logstampfmt $longfn $longip $lower $ltimer $maddress $mask $matchkey $matchtok $md5 $me $menu $menubar $menucontext $menutype $mid $middir $mircdir $mircexe $mircini $mklogfn $mnick $mode $modefirst $modelast $modespl $mouse $msfile $network $newnick $nick $nofile $nopath $noqt $not $notags $notify $null $numeric $numok $oline $onpoly $opnick $or $ord $os $passivedcc $pic $play $pnick $port $portable $portfree $pos $prefix $prop $protect $puttok $qt $query $rand $r $rawmsg $read $readomo $readn $regex $regml $regsub $regsubex $remove $remtok $replace $replacex $reptok $result $rgb $right $round $scid $scon $script $scriptdir $scriptline $sdir $send $server $serverip $sfile $sha1 $shortfn $show $signal $sin $site $sline $snick $snicks $snotify $sock $sockbr $sockerr $sockname $sorttok $sound $sqrt $ssl $sreq $sslready $status $strip $str $stripped $syle $submenu $switchbar $tan $target $ticks $time $timer $timestamp $timestampfmt $timezone $tip $titlebar $toolbar $treebar $trust $ulevel $ulist $upper $uptime $url $usermode $v1 $v2 $var $vcmd $vcmdstat $vcmdver $version $vnick $vol $wid $width $wildsite $wildtok $window $wrap $xor");
       keywords19 = parseWords("abook ajinvite alias aline ame amsg anick aop auser autojoin avoice away background ban bcopy beep bread break breplace bset btrunc bunset bwrite channel clear clearall cline clipboard close cnick color comclose comopen comreg continue copy creq ctcpreply ctcps dcc dccserver dde ddeserver debug dec describe dialog did didtok disable disconnect dlevel dline dll dns dqwindow drawcopy drawdot drawfill drawline drawpic drawrect drawreplace drawrot drawsave drawscroll drawtext ebeeps echo editbox emailaddr enable events exit fclose filter findtext finger firewall flash flist flood flush flushini font fopen fseek fsend fserve fullname fwrite ghide gload gmove gopts goto gplay gpoint gqreq groups gshow gsize gstop gtalk gunload hadd halt haltdef hdec hdel help hfree hinc hload hmake hop hsave ial ialclear ialmark identd if ignore iline inc invite iuser join kick linesep links list load loadbuf localinfo log mdi me menubar mkdir mnick mode msg nick noop notice notify omsg onotice part partall pdcc perform play playctrl pop protect pvoice qme qmsg query queryn quit raw reload remini remote remove rename renwin reseterror resetidle return rlevel rline rmdir run ruser save savebuf saveini say scid scon server set showmirc signam sline sockaccept sockclose socklist socklisten sockmark sockopen sockpause sockread sockrename sockudp sockwrite sound speak splay sreq strip switchbar timer timestamp titlebar tnick tokenize toolbar topic tray treebar ulist unload unset unsetall updatenl url uwho var vcadd vcmd vcrem vol while whois window winhelp write writeint if isalnum isalpha isaop isavoice isban ischan ishop isignore isin isincs isletter islower isnotify isnum ison isop isprotect isreg isupper isvoice iswm iswmcs elseif else goto menu nicklist status title icon size option text edit button check radio box scroll list combo link tab item");
       functions = parseWords("if elseif else and not or eq ne in ni for foreach while switch");
@@ -46156,7 +46156,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/mathematica.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mathematica.js
   var mathematica_exports = {};
   __export(mathematica_exports, {
     mathematica: () => mathematica
@@ -46249,7 +46249,7 @@
   }
   var Identifier6, pBase, pFloat, pFloatBase, pPrecision, reBaseForm, reFloatForm, reIdInContext, mathematica;
   var init_mathematica = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/mathematica.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mathematica.js"() {
       Identifier6 = "[a-zA-Z\\$][a-zA-Z0-9\\$]*";
       pBase = "(?:\\d+)";
       pFloat = "(?:\\.\\d+|\\d+\\.\\d*|\\d+)";
@@ -46274,7 +46274,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/modelica.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/modelica.js
   var modelica_exports = {};
   __export(modelica_exports, {
     modelica: () => modelica
@@ -46353,7 +46353,7 @@
   }
   var keywords20, builtin3, atoms8, completions3, isSingleOperatorChar, isDoubleOperatorChar, isDigit4, isNonDigit, modelica;
   var init_modelica = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/modelica.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/modelica.js"() {
       keywords20 = words9("algorithm and annotation assert block break class connect connector constant constrainedby der discrete each else elseif elsewhen encapsulated end enumeration equation expandable extends external false final flow for function if import impure in initial inner input loop model not operator or outer output package parameter partial protected public pure record redeclare replaceable return stream then true type when while within");
       builtin3 = words9("abs acos actualStream asin atan atan2 cardinality ceil cos cosh delay div edge exp floor getInstanceName homotopy inStream integer log log10 mod pre reinit rem semiLinear sign sin sinh spatialDistribution sqrt tan tanh");
       atoms8 = words9("Real Boolean Integer String");
@@ -46429,7 +46429,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/mumps.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mumps.js
   var mumps_exports = {};
   __export(mumps_exports, {
     mumps: () => mumps
@@ -46503,7 +46503,7 @@
   }
   var singleOperators2, doubleOperators, singleDelimiters, brackets, identifiers6, commandKeywords, intrinsicFuncsWords, intrinsicFuncs, command2, mumps;
   var init_mumps = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/mumps.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mumps.js"() {
       singleOperators2 = new RegExp("^[\\+\\-\\*/&#!_?\\\\<>=\\'\\[\\]]");
       doubleOperators = new RegExp("^(('=)|(<=)|(>=)|('>)|('<)|([[)|(]])|(^$))");
       singleDelimiters = new RegExp("^[\\.,:]");
@@ -46530,7 +46530,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/mbox.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mbox.js
   var mbox_exports = {};
   __export(mbox_exports, {
     mbox: () => mbox
@@ -46592,7 +46592,7 @@
   }
   var rfc2822, rfc2822NoEmail, whitespace3, separator, rfc2822Header, rfc2822HeaderNoEmail, header2, email, untilEmail, bracketedEmail, untilBracketedEmail, mbox;
   var init_mbox = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/mbox.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mbox.js"() {
       rfc2822 = [
         "From",
         "Sender",
@@ -46655,7 +46655,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/nginx.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/nginx.js
   var nginx_exports = {};
   __export(nginx_exports, {
     nginx: () => nginx
@@ -46748,7 +46748,7 @@
   }
   var keywords21, keywords_block, keywords_important, type4, nginx;
   var init_nginx = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/nginx.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/nginx.js"() {
       keywords21 = words10(
         /* ngxDirectiveControl */
         "break return rewrite set accept_mutex accept_mutex_delay access_log add_after_body add_before_body add_header addition_types aio alias allow ancient_browser ancient_browser_value auth_basic auth_basic_user_file auth_http auth_http_header auth_http_timeout autoindex autoindex_exact_size autoindex_localtime charset charset_types client_body_buffer_size client_body_in_file_only client_body_in_single_buffer client_body_temp_path client_body_timeout client_header_buffer_size client_header_timeout client_max_body_size connection_pool_size create_full_put_path daemon dav_access dav_methods debug_connection debug_points default_type degradation degrade deny devpoll_changes devpoll_events directio directio_alignment empty_gif env epoll_events error_log eventport_events expires fastcgi_bind fastcgi_buffer_size fastcgi_buffers fastcgi_busy_buffers_size fastcgi_cache fastcgi_cache_key fastcgi_cache_methods fastcgi_cache_min_uses fastcgi_cache_path fastcgi_cache_use_stale fastcgi_cache_valid fastcgi_catch_stderr fastcgi_connect_timeout fastcgi_hide_header fastcgi_ignore_client_abort fastcgi_ignore_headers fastcgi_index fastcgi_intercept_errors fastcgi_max_temp_file_size fastcgi_next_upstream fastcgi_param fastcgi_pass_header fastcgi_pass_request_body fastcgi_pass_request_headers fastcgi_read_timeout fastcgi_send_lowat fastcgi_send_timeout fastcgi_split_path_info fastcgi_store fastcgi_store_access fastcgi_temp_file_write_size fastcgi_temp_path fastcgi_upstream_fail_timeout fastcgi_upstream_max_fails flv geoip_city geoip_country google_perftools_profiles gzip gzip_buffers gzip_comp_level gzip_disable gzip_hash gzip_http_version gzip_min_length gzip_no_buffer gzip_proxied gzip_static gzip_types gzip_vary gzip_window if_modified_since ignore_invalid_headers image_filter image_filter_buffer image_filter_jpeg_quality image_filter_transparency imap_auth imap_capabilities imap_client_buffer index ip_hash keepalive_requests keepalive_timeout kqueue_changes kqueue_events large_client_header_buffers limit_conn limit_conn_log_level limit_rate limit_rate_after limit_req limit_req_log_level limit_req_zone limit_zone lingering_time lingering_timeout lock_file log_format log_not_found log_subrequest map_hash_bucket_size map_hash_max_size master_process memcached_bind memcached_buffer_size memcached_connect_timeout memcached_next_upstream memcached_read_timeout memcached_send_timeout memcached_upstream_fail_timeout memcached_upstream_max_fails merge_slashes min_delete_depth modern_browser modern_browser_value msie_padding msie_refresh multi_accept open_file_cache open_file_cache_errors open_file_cache_events open_file_cache_min_uses open_file_cache_valid open_log_file_cache output_buffers override_charset perl perl_modules perl_require perl_set pid pop3_auth pop3_capabilities port_in_redirect postpone_gzipping postpone_output protocol proxy proxy_bind proxy_buffer proxy_buffer_size proxy_buffering proxy_buffers proxy_busy_buffers_size proxy_cache proxy_cache_key proxy_cache_methods proxy_cache_min_uses proxy_cache_path proxy_cache_use_stale proxy_cache_valid proxy_connect_timeout proxy_headers_hash_bucket_size proxy_headers_hash_max_size proxy_hide_header proxy_ignore_client_abort proxy_ignore_headers proxy_intercept_errors proxy_max_temp_file_size proxy_method proxy_next_upstream proxy_pass_error_message proxy_pass_header proxy_pass_request_body proxy_pass_request_headers proxy_read_timeout proxy_redirect proxy_send_lowat proxy_send_timeout proxy_set_body proxy_set_header proxy_ssl_session_reuse proxy_store proxy_store_access proxy_temp_file_write_size proxy_temp_path proxy_timeout proxy_upstream_fail_timeout proxy_upstream_max_fails random_index read_ahead real_ip_header recursive_error_pages request_pool_size reset_timedout_connection resolver resolver_timeout rewrite_log rtsig_overflow_events rtsig_overflow_test rtsig_overflow_threshold rtsig_signo satisfy secure_link_secret send_lowat send_timeout sendfile sendfile_max_chunk server_name_in_redirect server_names_hash_bucket_size server_names_hash_max_size server_tokens set_real_ip_from smtp_auth smtp_capabilities smtp_client_buffer smtp_greeting_delay so_keepalive source_charset ssi ssi_ignore_recycled_buffers ssi_min_file_chunk ssi_silent_errors ssi_types ssi_value_length ssl ssl_certificate ssl_certificate_key ssl_ciphers ssl_client_certificate ssl_crl ssl_dhparam ssl_engine ssl_prefer_server_ciphers ssl_protocols ssl_session_cache ssl_session_timeout ssl_verify_client ssl_verify_depth starttls stub_status sub_filter sub_filter_once sub_filter_types tcp_nodelay tcp_nopush thread_stack_size timeout timer_resolution types_hash_bucket_size types_hash_max_size underscores_in_headers uninitialized_variable_warn use user userid userid_domain userid_expires userid_mark userid_name userid_p3p userid_path userid_service valid_referers variables_hash_bucket_size variables_hash_max_size worker_connections worker_cpu_affinity worker_priority worker_processes worker_rlimit_core worker_rlimit_nofile worker_rlimit_sigpending worker_threads working_directory xclient xml_entities xslt_stylesheet xslt_typesdrew@li229-23"
@@ -46803,14 +46803,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/nsis.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/nsis.js
   var nsis_exports = {};
   __export(nsis_exports, {
     nsis: () => nsis
   });
   var nsis;
   var init_nsis = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/nsis.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/nsis.js"() {
       init_simple_mode();
       nsis = simpleMode({
         start: [
@@ -46873,7 +46873,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/ntriples.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ntriples.js
   var ntriples_exports = {};
   __export(ntriples_exports, {
     ntriples: () => ntriples
@@ -46904,7 +46904,7 @@
   }
   var Location, ntriples;
   var init_ntriples = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/ntriples.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ntriples.js"() {
       Location = {
         PRE_SUBJECT: 0,
         WRITING_SUB_URI: 1,
@@ -47034,7 +47034,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/octave.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/octave.js
   var octave_exports = {};
   __export(octave_exports, {
     octave: () => octave
@@ -47124,7 +47124,7 @@
   }
   var singleOperators3, singleDelimiters2, doubleOperators2, doubleDelimiters, tripleDelimiters, expressionEnd, identifiers7, builtins6, keywords22, octave;
   var init_octave = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/octave.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/octave.js"() {
       singleOperators3 = new RegExp("^[\\+\\-\\*/&|\\^~<>!@'\\\\]");
       singleDelimiters2 = new RegExp("^[\\(\\[\\{\\},:=;\\.]");
       doubleOperators2 = new RegExp("^((==)|(~=)|(<=)|(>=)|(<<)|(>>)|(\\.[\\+\\-\\*/\\^\\\\]))");
@@ -47253,7 +47253,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/oz.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/oz.js
   var oz_exports = {};
   __export(oz_exports, {
     oz: () => oz
@@ -47394,7 +47394,7 @@
   }
   var singleOperators4, doubleOperators3, tripleOperators, middle, end, atoms9, commonKeywords3, openingKeywords, middleKeywords, endKeywords, oz;
   var init_oz = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/oz.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/oz.js"() {
       singleOperators4 = /[\^@!\|<>#~\.\*\-\+\\/,=]/;
       doubleOperators3 = /(<-)|(:=)|(=<)|(>=)|(<=)|(<:)|(>:)|(=:)|(\\=)|(\\=:)|(!!)|(==)|(::)/;
       tripleOperators = /(:::)|(\.\.\.)|(=<:)|(>=:)/;
@@ -47492,7 +47492,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/pascal.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/pascal.js
   var pascal_exports = {};
   __export(pascal_exports, {
     pascal: () => pascal
@@ -47580,7 +47580,7 @@
   }
   var keywords23, atoms10, isOperatorChar7, pascal;
   var init_pascal = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/pascal.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/pascal.js"() {
       keywords23 = words11(
         "absolute and array asm begin case const constructor destructor div do downto else end file for function goto if implementation in inherited inline interface label mod nil not object of operator or packed procedure program record reintroduce repeat self set shl shr string then to type unit until uses var while with xor as class dispinterface except exports finalization finally initialization inline is library on out packed property raise resourcestring threadvar try absolute abstract alias assembler bitpacked break cdecl continue cppdecl cvar default deprecated dynamic enumerator experimental export external far far16 forward generic helper implements index interrupt iocheck local message name near nodefault noreturn nostackframe oldfpccall otherwise overload override pascal platform private protected public published read register reintroduce result safecall saveregisters softfloat specialize static stdcall stored strict unaligned unimplemented varargs virtual write"
       );
@@ -47605,7 +47605,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/perl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/perl.js
   var perl_exports = {};
   __export(perl_exports, {
     perl: () => perl
@@ -48009,7 +48009,7 @@
   }
   var PERL, RXstyle, RXmodifiers, perl;
   var init_perl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/perl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/perl.js"() {
       PERL = {
         //   null - magic touch
         //   1 - keyword
@@ -48718,7 +48718,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/pig.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/pig.js
   var pig_exports = {};
   __export(pig_exports, {
     pig: () => pig
@@ -48801,7 +48801,7 @@
   }
   var pBuiltins, pKeywords, pTypes, builtins7, keywords24, types3, isOperatorChar8, pig;
   var init_pig = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/pig.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/pig.js"() {
       pBuiltins = "ABS ACOS ARITY ASIN ATAN AVG BAGSIZE BINSTORAGE BLOOM BUILDBLOOM CBRT CEIL CONCAT COR COS COSH COUNT COUNT_STAR COV CONSTANTSIZE CUBEDIMENSIONS DIFF DISTINCT DOUBLEABS DOUBLEAVG DOUBLEBASE DOUBLEMAX DOUBLEMIN DOUBLEROUND DOUBLESUM EXP FLOOR FLOATABS FLOATAVG FLOATMAX FLOATMIN FLOATROUND FLOATSUM GENERICINVOKER INDEXOF INTABS INTAVG INTMAX INTMIN INTSUM INVOKEFORDOUBLE INVOKEFORFLOAT INVOKEFORINT INVOKEFORLONG INVOKEFORSTRING INVOKER ISEMPTY JSONLOADER JSONMETADATA JSONSTORAGE LAST_INDEX_OF LCFIRST LOG LOG10 LOWER LONGABS LONGAVG LONGMAX LONGMIN LONGSUM MAX MIN MAPSIZE MONITOREDUDF NONDETERMINISTIC OUTPUTSCHEMA  PIGSTORAGE PIGSTREAMING RANDOM REGEX_EXTRACT REGEX_EXTRACT_ALL REPLACE ROUND SIN SINH SIZE SQRT STRSPLIT SUBSTRING SUM STRINGCONCAT STRINGMAX STRINGMIN STRINGSIZE TAN TANH TOBAG TOKENIZE TOMAP TOP TOTUPLE TRIM TEXTLOADER TUPLESIZE UCFIRST UPPER UTF8STORAGECONVERTER ";
       pKeywords = "VOID IMPORT RETURNS DEFINE LOAD FILTER FOREACH ORDER CUBE DISTINCT COGROUP JOIN CROSS UNION SPLIT INTO IF OTHERWISE ALL AS BY USING INNER OUTER ONSCHEMA PARALLEL PARTITION GROUP AND OR NOT GENERATE FLATTEN ASC DESC IS STREAM THROUGH STORE MAPREDUCE SHIP CACHE INPUT OUTPUT STDERROR STDIN STDOUT LIMIT SAMPLE LEFT RIGHT FULL EQ GT LT GTE LTE NEQ MATCHES TRUE FALSE DUMP";
       pTypes = "BOOLEAN INT LONG FLOAT DOUBLE CHARARRAY BYTEARRAY BAG TUPLE MAP ";
@@ -48829,7 +48829,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/powershell.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/powershell.js
   var powershell_exports = {};
   __export(powershell_exports, {
     powerShell: () => powerShell
@@ -49028,7 +49028,7 @@
   }
   var notCharacterOrDash, varNames, keywords25, punctuation2, wordOperators3, symbolOperators2, operators5, numbers, identifiers8, symbolBuiltins, namedBuiltins, variableBuiltins, builtins8, grammar, powerShell;
   var init_powershell = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/powershell.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/powershell.js"() {
       notCharacterOrDash = "(?=[^A-Za-z\\d\\-_]|$)";
       varNames = /[\w\-:]/;
       keywords25 = buildRegexp([
@@ -49165,14 +49165,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/properties.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/properties.js
   var properties_exports = {};
   __export(properties_exports, {
     properties: () => properties2
   });
   var properties2;
   var init_properties = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/properties.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/properties.js"() {
       properties2 = {
         name: "properties",
         token: function(stream, state) {
@@ -49231,7 +49231,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/protobuf.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/protobuf.js
   var protobuf_exports = {};
   __export(protobuf_exports, {
     protobuf: () => protobuf
@@ -49271,7 +49271,7 @@
   }
   var keywordArray2, keywords26, identifiers9, protobuf;
   var init_protobuf = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/protobuf.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/protobuf.js"() {
       keywordArray2 = [
         "package",
         "message",
@@ -49317,7 +49317,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/pug.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/pug.js
   var pug_exports = {};
   __export(pug_exports, {
     pug: () => pug
@@ -49670,7 +49670,7 @@
   }
   var ATTRS_NEST, State, pug;
   var init_pug = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/pug.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/pug.js"() {
       init_javascript();
       ATTRS_NEST = {
         "{": "}",
@@ -49730,7 +49730,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/puppet.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/puppet.js
   var puppet_exports = {};
   __export(puppet_exports, {
     puppet: () => puppet
@@ -49850,7 +49850,7 @@
   }
   var words13, variable_regex2, puppet;
   var init_puppet = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/puppet.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/puppet.js"() {
       words13 = {};
       variable_regex2 = /({)?([a-z][a-z0-9_]*)?((::[a-z][a-z0-9_]*)*::)?[a-zA-Z0-9_]+(})?/;
       define("keyword", "class define site node include import inherits");
@@ -49875,7 +49875,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/q.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/q.js
   var q_exports = {};
   __export(q_exports, {
     q: () => q
@@ -49953,7 +49953,7 @@
   }
   var curPunc5, keywords27, E, q;
   var init_q = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/q.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/q.js"() {
       keywords27 = buildRE(["abs", "acos", "aj", "aj0", "all", "and", "any", "asc", "asin", "asof", "atan", "attr", "avg", "avgs", "bin", "by", "ceiling", "cols", "cor", "cos", "count", "cov", "cross", "csv", "cut", "delete", "deltas", "desc", "dev", "differ", "distinct", "div", "do", "each", "ej", "enlist", "eval", "except", "exec", "exit", "exp", "fby", "fills", "first", "fkeys", "flip", "floor", "from", "get", "getenv", "group", "gtime", "hclose", "hcount", "hdel", "hopen", "hsym", "iasc", "idesc", "if", "ij", "in", "insert", "inter", "inv", "key", "keys", "last", "like", "list", "lj", "load", "log", "lower", "lsq", "ltime", "ltrim", "mavg", "max", "maxs", "mcount", "md5", "mdev", "med", "meta", "min", "mins", "mmax", "mmin", "mmu", "mod", "msum", "neg", "next", "not", "null", "or", "over", "parse", "peach", "pj", "plist", "prd", "prds", "prev", "prior", "rand", "rank", "ratios", "raze", "read0", "read1", "reciprocal", "reverse", "rload", "rotate", "rsave", "rtrim", "save", "scan", "select", "set", "setenv", "show", "signum", "sin", "sqrt", "ss", "ssr", "string", "sublist", "sum", "sums", "sv", "system", "tables", "tan", "til", "trim", "txf", "type", "uj", "ungroup", "union", "update", "upper", "upsert", "value", "var", "view", "views", "vs", "wavg", "where", "where", "while", "within", "wj", "wj1", "wsum", "xasc", "xbar", "xcol", "xcols", "xdesc", "xexp", "xgroup", "xkey", "xlog", "xprev", "xrank"]);
       E = /[|/&^!+:\\\-*%$=~#;@><,?_\'\"\[\(\]\)\s{}]/;
       q = {
@@ -50015,7 +50015,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/r.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/r.js
   var r_exports = {};
   __export(r_exports, {
     r: () => r
@@ -50129,7 +50129,7 @@
   }
   var commonAtoms, commonBuiltins2, commonKeywords4, commonBlockKeywords, atoms11, builtins9, keywords28, blockkeywords, opChars, curPunc6, ALIGN_YES, ALIGN_NO, BRACELESS, r;
   var init_r = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/r.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/r.js"() {
       commonAtoms = ["NULL", "NA", "Inf", "NaN", "NA_integer_", "NA_real_", "NA_complex_", "NA_character_", "TRUE", "FALSE"];
       commonBuiltins2 = ["list", "quote", "bquote", "eval", "return", "call", "parse", "deparse"];
       commonKeywords4 = ["if", "else", "repeat", "while", "function", "for", "in", "next", "break"];
@@ -50194,7 +50194,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/rpm.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/rpm.js
   var rpm_exports = {};
   __export(rpm_exports, {
     rpmChanges: () => rpmChanges,
@@ -50202,7 +50202,7 @@
   });
   var headerSeparator, headerLine, simpleEmail, rpmChanges, arch, preamble, section, control_flow_complex, control_flow_simple, operators6, rpmSpec;
   var init_rpm = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/rpm.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/rpm.js"() {
       headerSeparator = /^-+$/;
       headerLine = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)  ?\d{1,2} \d{2}:\d{2}(:\d{2})? [A-Z]{3,4} \d{4} - /;
       simpleEmail = /^[\w+.-]+@[\w.-]+/;
@@ -50311,7 +50311,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/ruby.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ruby.js
   var ruby_exports = {};
   __export(ruby_exports, {
     ruby: () => ruby
@@ -50514,7 +50514,7 @@
   }
   var keywordList, keywords29, indentWords, dedentWords, opening, closing2, curPunc7, ruby;
   var init_ruby = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/ruby.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ruby.js"() {
       keywordList = [
         "alias",
         "and",
@@ -50649,7 +50649,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/sas.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sas.js
   var sas_exports = {};
   __export(sas_exports, {
     sas: () => sas
@@ -50809,7 +50809,7 @@
   }
   var words14, isDoubleOperatorSym, isDoubleOperatorChar2, isSingleOperatorChar2, sas;
   var init_sas = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/sas.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sas.js"() {
       words14 = {};
       isDoubleOperatorSym = {
         eq: "operator",
@@ -50864,7 +50864,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/scheme.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/scheme.js
   var scheme_exports = {};
   __export(scheme_exports, {
     scheme: () => scheme
@@ -50912,7 +50912,7 @@
   }
   var BUILTIN2, COMMENT2, STRING2, SYMBOL, ATOM2, NUMBER2, BRACKET, INDENT_WORD_SKIP, keywords30, indentKeys, binaryMatcher, octalMatcher, hexMatcher, decimalMatcher, scheme;
   var init_scheme = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/scheme.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/scheme.js"() {
       BUILTIN2 = "builtin";
       COMMENT2 = "comment";
       STRING2 = "string";
@@ -51100,7 +51100,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/shell.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/shell.js
   var shell_exports = {};
   __export(shell_exports, {
     shell: () => shell
@@ -51206,7 +51206,7 @@
   }
   var words15, commonAtoms2, commonKeywords5, commonCommands, tokenDollar, shell;
   var init_shell = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/shell.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/shell.js"() {
       words15 = {};
       commonAtoms2 = ["true", "false"];
       commonKeywords5 = [
@@ -51330,7 +51330,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/sieve.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sieve.js
   var sieve_exports = {};
   __export(sieve_exports, {
     sieve: () => sieve
@@ -51441,7 +51441,7 @@
   }
   var keywords31, atoms12, sieve;
   var init_sieve = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/sieve.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sieve.js"() {
       keywords31 = words16("if elsif else stop require");
       atoms12 = words16("true false not");
       sieve = {
@@ -51473,14 +51473,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/smalltalk.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/smalltalk.js
   var smalltalk_exports = {};
   __export(smalltalk_exports, {
     smalltalk: () => smalltalk
   });
   var specialChars, keywords32, Context9, Token, State2, next, nextComment, nextString, nextSymbol, nextTemporaries, smalltalk;
   var init_smalltalk = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/smalltalk.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/smalltalk.js"() {
       specialChars = /[+\-\/\\*~<>=@%|&?!.,:;^]/;
       keywords32 = /true|false|nil|self|super|thisContext/;
       Context9 = function(tokenizer2, parent) {
@@ -51602,7 +51602,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/solr.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/solr.js
   var solr_exports = {};
   __export(solr_exports, {
     solr: () => solr
@@ -51660,7 +51660,7 @@
   }
   var isStringChar, isOperatorChar9, isOperatorString, solr;
   var init_solr = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/solr.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/solr.js"() {
       isStringChar = /[^\s\|\!\+\-\*\?\~\^\&\:\(\)\[\]\{\}\"\\]/;
       isOperatorChar9 = /[\|\!\+\-\*\?\~\^\&]/;
       isOperatorString = /^(OR|AND|NOT|TO)$/;
@@ -51679,7 +51679,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/sparql.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sparql.js
   var sparql_exports = {};
   __export(sparql_exports, {
     sparql: () => sparql
@@ -51754,7 +51754,7 @@
   }
   var curPunc8, ops, keywords33, operatorChars2, PN_CHARS, PREFIX_START, PREFIX_REMAINDER, sparql;
   var init_sparql = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/sparql.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/sparql.js"() {
       ops = wordRegexp10([
         "str",
         "lang",
@@ -51935,14 +51935,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/spreadsheet.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/spreadsheet.js
   var spreadsheet_exports = {};
   __export(spreadsheet_exports, {
     spreadsheet: () => spreadsheet
   });
   var spreadsheet;
   var init_spreadsheet = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/spreadsheet.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/spreadsheet.js"() {
       spreadsheet = {
         name: "spreadsheet",
         startState: function() {
@@ -52030,7 +52030,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/stylus.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/stylus.js
   var stylus_exports = {};
   __export(stylus_exports, {
     stylus: () => stylus
@@ -52244,7 +52244,7 @@
   }
   var tagKeywords_, documentTypes_2, mediaTypes_2, mediaFeatures_2, propertyKeywords_2, nonStandardPropertyKeywords_2, fontProperties_2, colorKeywords_2, valueKeywords_2, wordOperatorKeywords_, blockKeywords_, commonAtoms_, commonDef_, hintWords, tagKeywords, tagVariablesRegexp, propertyKeywords2, nonStandardPropertyKeywords2, valueKeywords2, colorKeywords2, documentTypes2, documentTypesRegexp, mediaFeatures2, mediaTypes2, fontProperties2, operatorsRegexp, wordOperatorKeywordsRegexp, blockKeywords4, vendorPrefixesRegexp, commonAtoms3, firstWordMatch, states, ch, style, type5, override, stylus;
   var init_stylus = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/stylus.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/stylus.js"() {
       tagKeywords_ = ["a", "abbr", "address", "area", "article", "aside", "audio", "b", "base", "bdi", "bdo", "bgsound", "blockquote", "body", "br", "button", "canvas", "caption", "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del", "details", "dfn", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "img", "input", "ins", "kbd", "keygen", "label", "legend", "li", "link", "main", "map", "mark", "marquee", "menu", "menuitem", "meta", "meter", "nav", "nobr", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", "p", "param", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "script", "section", "select", "small", "source", "span", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "textarea", "tfoot", "th", "thead", "time", "tr", "track", "u", "ul", "var", "video"];
       documentTypes_2 = ["domain", "regexp", "url-prefix", "url"];
       mediaTypes_2 = ["all", "aural", "braille", "handheld", "print", "projection", "screen", "tty", "tv", "embossed"];
@@ -52623,7 +52623,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/swift.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/swift.js
   var swift_exports = {};
   __export(swift_exports, {
     swift: () => swift
@@ -52754,7 +52754,7 @@
   }
   var keywords34, definingKeywords, atoms13, types4, operators7, punc, binary, octal, hexadecimal, decimal, identifier7, property2, instruction, attribute2, swift;
   var init_swift = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/swift.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/swift.js"() {
       keywords34 = wordSet([
         "_",
         "var",
@@ -52922,7 +52922,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/stex.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/stex.js
   var stex_exports = {};
   __export(stex_exports, {
     stex: () => stex,
@@ -53155,13 +53155,13 @@
   }
   var stex, stexMath;
   var init_stex = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/stex.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/stex.js"() {
       stex = mkStex(false);
       stexMath = mkStex(true);
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/verilog.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/verilog.js
   var verilog_exports = {};
   __export(verilog_exports, {
     tlv: () => tlv,
@@ -53436,7 +53436,7 @@
   }
   var verilog, tlvIdentifierStyle, tlvScopePrefixChars, tlvIndentUnit, tlvTrackStatements, tlvIdentMatch, tlvLineIndentationMatch, tlvCommentMatch, tlv;
   var init_verilog = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/verilog.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/verilog.js"() {
       verilog = mkVerilog({});
       tlvIdentifierStyle = {
         "|": "link",
@@ -53623,7 +53623,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/tcl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/tcl.js
   var tcl_exports = {};
   __export(tcl_exports, {
     tcl: () => tcl
@@ -53721,7 +53721,7 @@
   }
   var keywords35, functions2, isOperatorChar10, tcl;
   var init_tcl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/tcl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/tcl.js"() {
       keywords35 = parseWords2("Tcl safe after append array auto_execok auto_import auto_load auto_mkindex auto_mkindex_old auto_qualify auto_reset bgerror binary break catch cd close concat continue dde eof encoding error eval exec exit expr fblocked fconfigure fcopy file fileevent filename filename flush for foreach format gets glob global history http if incr info interp join lappend lindex linsert list llength load lrange lreplace lsearch lset lsort memory msgcat namespace open package parray pid pkg::create pkg_mkIndex proc puts pwd re_syntax read regex regexp registry regsub rename resource return scan seek set socket source split string subst switch tcl_endOfWord tcl_findLibrary tcl_startOfNextWord tcl_wordBreakAfter tcl_startOfPreviousWord tcl_wordBreakBefore tcltest tclvars tell time trace unknown unset update uplevel upvar variable vwait");
       functions2 = parseWords2("if elseif else and not or eq ne in ni for foreach while switch");
       isOperatorChar10 = /[+\-*&%=<>!?^\/\|]/;
@@ -53745,7 +53745,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/textile.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/textile.js
   var textile_exports = {};
   __export(textile_exports, {
     textile: () => textile
@@ -53882,7 +53882,7 @@
   }
   var TOKEN_STYLES, REs, Modes, textile;
   var init_textile = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/textile.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/textile.js"() {
       TOKEN_STYLES = {
         addition: "inserted",
         attributes: "propertyName",
@@ -54167,7 +54167,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/tiddlywiki.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/tiddlywiki.js
   var tiddlywiki_exports = {};
   __export(tiddlywiki_exports, {
     tiddlyWiki: () => tiddlyWiki
@@ -54354,7 +54354,7 @@
   }
   var textwords, keywords36, isSpaceName, reHR, reWikiCommentStart, reWikiCommentStop, reBlockQuote, reJsCodeStart, reJsCodeStop, reXmlCodeStart, reXmlCodeStop, reCodeBlockStart, reCodeBlockStop, reUntilCodeStop, tiddlyWiki;
   var init_tiddlywiki = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/tiddlywiki.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/tiddlywiki.js"() {
       textwords = {};
       keywords36 = {
         "allTags": true,
@@ -54404,7 +54404,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/tiki.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/tiki.js
   var tiki_exports = {};
   __export(tiki_exports, {
     tiki: () => tiki
@@ -54644,7 +54644,7 @@
   }
   var pluginName, type6, curState, setStyle, tiki;
   var init_tiki = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/tiki.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/tiki.js"() {
       tiki = {
         name: "tiki",
         startState: function() {
@@ -54682,14 +54682,14 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/toml.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/toml.js
   var toml_exports = {};
   __export(toml_exports, {
     toml: () => toml
   });
   var toml;
   var init_toml = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/toml.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/toml.js"() {
       toml = {
         name: "toml",
         startState: function() {
@@ -54766,7 +54766,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/troff.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/troff.js
   var troff_exports = {};
   __export(troff_exports, {
     troff: () => troff
@@ -54821,7 +54821,7 @@
   }
   var words17, troff;
   var init_troff = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/troff.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/troff.js"() {
       words17 = {};
       troff = {
         name: "troff",
@@ -54835,7 +54835,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/ttcn.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ttcn.js
   var ttcn_exports = {};
   __export(ttcn_exports, {
     ttcn: () => ttcn
@@ -54964,7 +54964,7 @@
   }
   var parserConfig2, wordList, keywords37, builtin4, timerOps, portOps, configOps, verdictOps, sutOps, functionOps, verdictConsts, booleanConsts, otherConsts, types5, visibilityModifiers, templateMatch, multiLineStrings2, indentStatements, isOperatorChar11, curPunc9, ttcn;
   var init_ttcn = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/ttcn.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ttcn.js"() {
       parserConfig2 = {
         name: "ttcn",
         keywords: words18("activate address alive all alt altstep and and4b any break case component const continue control deactivate display do else encode enumerated except exception execute extends extension external for from function goto group if import in infinity inout interleave label language length log match message mixed mod modifies module modulepar mtc noblock not not4b nowait of on optional or or4b out override param pattern port procedure record recursive rem repeat return runs select self sender set signature system template testcase to type union value valueof var variant while with xor xor4b"),
@@ -55051,7 +55051,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/ttcn-cfg.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ttcn-cfg.js
   var ttcn_cfg_exports = {};
   __export(ttcn_cfg_exports, {
     ttcnCfg: () => ttcnCfg
@@ -55138,7 +55138,7 @@
   }
   var parserConfig3, keywords38, fileNCtrlMaskOptions, externalCommands, multiLineStrings3, indentStatements2, isOperatorChar12, curPunc10, ttcnCfg;
   var init_ttcn_cfg = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/ttcn-cfg.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/ttcn-cfg.js"() {
       parserConfig3 = {
         name: "ttcn-cfg",
         keywords: words19("Yes No LogFile FileMask ConsoleMask AppendFile TimeStampFormat LogEventTypes SourceInfoFormat LogEntityName LogSourceInfo DiskFullAction LogFileNumber LogFileSize MatchingHints Detailed Compact SubCategories Stack Single None Seconds DateTime Time Stop Error Retry Delete TCPPort KillTimer NumHCs UnixSocketsEnabled LocalAddress"),
@@ -55197,7 +55197,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/turtle.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/turtle.js
   var turtle_exports = {};
   __export(turtle_exports, {
     turtle: () => turtle
@@ -55271,7 +55271,7 @@
   }
   var curPunc11, ops2, keywords39, operatorChars3, turtle;
   var init_turtle = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/turtle.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/turtle.js"() {
       ops2 = wordRegexp12([]);
       keywords39 = wordRegexp12(["@prefix", "@base", "a"]);
       operatorChars3 = /[*+\-<>=&|]/;
@@ -55334,7 +55334,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/webidl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/webidl.js
   var webidl_exports = {};
   __export(webidl_exports, {
     webIDL: () => webIDL
@@ -55389,7 +55389,7 @@
   }
   var builtinArray2, builtins10, typeArray2, types6, keywordArray3, keywords40, atomArray, atoms14, startDefArray, startDefs, endDefArray, endDefs, singleOperators5, integers, floats, identifiers10, identifiersEnd, strings2, multilineComments, multilineCommentsStart, multilineCommentsEnd, webIDL;
   var init_webidl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/webidl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/webidl.js"() {
       builtinArray2 = [
         "Clamp",
         "Constructor",
@@ -55546,7 +55546,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/vb.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/vb.js
   var vb_exports = {};
   __export(vb_exports, {
     vb: () => vb
@@ -55696,7 +55696,7 @@
   }
   var ERRORCLASS2, singleOperators6, singleDelimiters3, doubleOperators4, doubleDelimiters2, tripleDelimiters2, identifiers11, openingKeywords2, middleKeywords2, endKeywords2, operatorKeywords, wordOperators4, commonKeywords6, commontypes, keywords41, types7, stringPrefixes3, opening2, middle2, closing3, doubleClosing, doOpening, indentInfo, vb;
   var init_vb = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/vb.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/vb.js"() {
       ERRORCLASS2 = "error";
       singleOperators6 = new RegExp("^[\\+\\-\\*/%&\\\\|\\^~<>!]");
       singleDelimiters3 = new RegExp("^[\\(\\)\\[\\]\\{\\}@,:`=;\\.]");
@@ -55756,7 +55756,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/vbscript.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/vbscript.js
   var vbscript_exports = {};
   __export(vbscript_exports, {
     vbScript: () => vbScript,
@@ -56238,13 +56238,13 @@
   }
   var vbScript, vbScriptASP;
   var init_vbscript = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/vbscript.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/vbscript.js"() {
       vbScript = mkVBScript({});
       vbScriptASP = mkVBScript({ isASP: true });
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/velocity.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/velocity.js
   var velocity_exports = {};
   __export(velocity_exports, {
     velocity: () => velocity
@@ -56374,7 +56374,7 @@
   }
   var keywords42, functions3, specials2, isOperatorChar13, velocity;
   var init_velocity = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/velocity.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/velocity.js"() {
       keywords42 = parseWords3("#end #else #break #stop #[[ #]] #{end} #{else} #{break} #{stop}");
       functions3 = parseWords3("#if #elseif #foreach #set #include #parse #macro #define #evaluate #{if} #{elseif} #{foreach} #{set} #{include} #{parse} #{macro} #{define} #{evaluate}");
       specials2 = parseWords3("$foreach.count $foreach.hasNext $foreach.first $foreach.last $foreach.topmost $foreach.parent.count $foreach.parent.hasNext $foreach.parent.first $foreach.parent.last $foreach.parent $velocityCount $!bodyContent $bodyContent");
@@ -56401,7 +56401,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/vhdl.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/vhdl.js
   var vhdl_exports = {};
   __export(vhdl_exports, {
     vhdl: () => vhdl
@@ -56510,7 +56510,7 @@
   }
   var atoms15, hooks3, multiLineStrings4, keywords43, blockKeywords5, isOperatorChar14, curPunc12, vhdl;
   var init_vhdl = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/vhdl.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/vhdl.js"() {
       atoms15 = words20("null");
       hooks3 = { "`": metaHook2, "$": metaHook2 };
       multiLineStrings4 = false;
@@ -56568,7 +56568,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/xquery.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/xquery.js
   var xquery_exports = {};
   __export(xquery_exports, {
     xQuery: () => xQuery
@@ -56814,7 +56814,7 @@
   }
   var keywords44, xQuery;
   var init_xquery = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/xquery.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/xquery.js"() {
       keywords44 = (function() {
         function kw2(type7) {
           return { type: type7, style: "keyword" };
@@ -57106,7 +57106,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/yacas.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/yacas.js
   var yacas_exports = {};
   __export(yacas_exports, {
     yacas: () => yacas
@@ -57208,7 +57208,7 @@
   }
   var bodiedOps, pFloatForm, pIdentifier, reFloatForm2, reIdentifier, rePattern, reFunctionLike, yacas;
   var init_yacas = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/yacas.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/yacas.js"() {
       bodiedOps = words21("Assert BackQuote D Defun Deriv For ForEach FromFile FromString Function Integrate InverseTaylor Limit LocalSymbols Macro MacroRule MacroRulePattern NIntegrate Rule RulePattern Subst TD TExplicitSum TSum Taylor Taylor1 Taylor2 Taylor3 ToFile ToStdout ToString TraceRule Until While");
       pFloatForm = "(?:(?:\\.\\d+|\\d+\\.\\d*|\\d+)(?:[eE][+-]?\\d+)?)";
       pIdentifier = "(?:[a-zA-Z\\$'][a-zA-Z0-9\\$']*)";
@@ -57244,7 +57244,7 @@
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/z80.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/z80.js
   var z80_exports = {};
   __export(z80_exports, {
     ez80: () => ez80,
@@ -57339,13 +57339,13 @@
   }
   var z80, ez80;
   var init_z80 = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/z80.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/z80.js"() {
       z80 = mkZ80(false);
       ez80 = mkZ80(true);
     }
   });
 
-  // node_modules/@codemirror/legacy-modes/mode/mscgen.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mscgen.js
   var mscgen_exports = {};
   __export(mscgen_exports, {
     mscgen: () => mscgen,
@@ -57449,7 +57449,7 @@
   }
   var mscgen, msgenny, xu;
   var init_mscgen = __esm({
-    "node_modules/@codemirror/legacy-modes/mode/mscgen.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/legacy-modes/mode/mscgen.js"() {
       mscgen = mkParser({
         "keywords": ["msc"],
         "options": ["hscale", "width", "arcgradient", "wordwraparcs"],
@@ -57488,7 +57488,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-vue/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-vue/dist/index.js
   var dist_exports20 = {};
   __export(dist_exports20, {
     vue: () => vue,
@@ -57523,7 +57523,7 @@
   }
   var parser21, exprParser, baseParser, exprMixed, textParser, attrParser, textMixed, attrMixed, baseHTML3, vueLanguage;
   var init_dist41 = __esm({
-    "node_modules/@codemirror/lang-vue/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-vue/dist/index.js"() {
       init_dist5();
       init_dist14();
       init_dist13();
@@ -57580,7 +57580,7 @@
     }
   });
 
-  // node_modules/@codemirror/lang-angular/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/lang-angular/dist/index.js
   var dist_exports21 = {};
   __export(dist_exports21, {
     angular: () => angular,
@@ -57621,7 +57621,7 @@
   }
   var Text2, attributeContentSingle, attributeContentDouble, scriptAttributeContentSingle, scriptAttributeContentDouble, text4, attrSingle, attrDouble, scriptAttrSingle, scriptAttrDouble, parser22, exprParser2, baseParser2, exprMixed2, statementMixed, textParser2, attrParser2, textMixed2, attrMixed2, baseHTML4, angularLanguage;
   var init_dist42 = __esm({
-    "node_modules/@codemirror/lang-angular/dist/index.js"() {
+    "FlowMark Markdown Editor/node_modules/@codemirror/lang-angular/dist/index.js"() {
       init_dist5();
       init_dist14();
       init_dist13();
@@ -57712,11 +57712,11 @@
     }
   });
 
-  // src/editor.js
+  // FlowMark Markdown Editor/src/editor.js
   init_dist();
   init_dist2();
 
-  // node_modules/@codemirror/commands/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/commands/dist/index.js
   init_dist();
   init_dist2();
   init_dist5();
@@ -58800,7 +58800,7 @@
     { key: "Ctrl-m", mac: "Shift-Alt-m", run: toggleTabFocusMode }
   ].concat(standardKeymap);
 
-  // node_modules/@codemirror/search/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/search/dist/index.js
   init_dist2();
   init_dist();
   init_crelt();
@@ -59810,11 +59810,11 @@
     baseTheme2
   ];
 
-  // src/editor.js
+  // FlowMark Markdown Editor/src/editor.js
   init_dist15();
   init_dist7();
 
-  // node_modules/@codemirror/language-data/dist/index.js
+  // FlowMark Markdown Editor/node_modules/@codemirror/language-data/dist/index.js
   init_dist5();
   function legacy(parser23) {
     return new LanguageSupport(StreamLanguage.define(parser23));
@@ -60842,11 +60842,11 @@
     })
   ];
 
-  // src/editor.js
+  // FlowMark Markdown Editor/src/editor.js
   init_dist5();
   init_dist4();
 
-  // node_modules/katex/dist/katex.mjs
+  // FlowMark Markdown Editor/node_modules/katex/dist/katex.mjs
   var ParseError = class _ParseError extends Error {
     // The underlying error message without any context added.
     constructor(message, token) {
@@ -75060,7 +75060,7 @@
     __domTree
   };
 
-  // src/commands/registry.js
+  // FlowMark Markdown Editor/src/commands/registry.js
   var commands = /* @__PURE__ */ new Map();
   function normalizeShortcut(shortcut) {
     if (!shortcut) return shortcut;
@@ -75178,7 +75178,7 @@
     matchesShortcut
   };
 
-  // src/commands/insert.js
+  // FlowMark Markdown Editor/src/commands/insert.js
   init_dist();
   function wrapSelection(view2, { open: open2, close: close2 = open2, placeholder = "", toggle = true }) {
     const { state } = view2;
@@ -75438,7 +75438,7 @@ $$
     }
   }
 
-  // src/commands/inlineRenderer.js
+  // FlowMark Markdown Editor/src/commands/inlineRenderer.js
   var INLINE_MARKDOWN_SOURCE = "(`[^`]+`|\\*\\*[^*]+\\*\\*|__[^_]+__|~~[^~]+~~|\\[[^\\]]+\\]\\([^)]+\\)|\\*[^*]+\\*|_[^_]+_)";
   function appendInlineMarkdown(parent, text6) {
     if (!text6) return;
@@ -75486,10 +75486,10 @@ $$
     }
   }
 
-  // src/editor.js
+  // FlowMark Markdown Editor/src/editor.js
   init_dist6();
 
-  // src/commands/completion.js
+  // FlowMark Markdown Editor/src/commands/completion.js
   var CALLOUT_TYPES = [
     { label: "NOTE", detail: "\u2139\uFE0F  Informational note", type: "keyword" },
     { label: "TIP", detail: "\u{1F4A1} Helpful tip", type: "keyword" },
@@ -75635,7 +75635,7 @@ $$
     };
   }
 
-  // src/model/document.js
+  // FlowMark Markdown Editor/src/model/document.js
   var nextDocId = 1;
   var Document = class {
     /**
@@ -75669,6 +75669,17 @@ $$
       this.path = newPath;
       if (newPath) {
         this.name = this._basename(newPath);
+      }
+    }
+    /**
+     * Set or update document display name.
+     * @param {string} newName
+     */
+    setName(newName) {
+      if (!newName || !newName.trim()) {
+        this.name = this.path ? this._basename(this.path) : "Untitled";
+      } else {
+        this.name = newName.trim();
       }
     }
     /**
@@ -75856,7 +75867,7 @@ $$
     }
   };
 
-  // src/ui/tabs.js
+  // FlowMark Markdown Editor/src/ui/tabs.js
   var TabBarUI = class {
     /**
      * @param {Object} options
@@ -75952,7 +75963,7 @@ $$
   };
   var tabs_default = TabBarUI;
 
-  // src/session/sessionManager.js
+  // FlowMark Markdown Editor/src/session/sessionManager.js
   var saveTimeout = null;
   var SessionManager = class {
     /**
@@ -76050,25 +76061,825 @@ $$
   };
   var sessionManager_default = SessionManager;
 
-  // src/editor.js
+  // FlowMark Markdown Editor/src/parser/frontmatter.js
+  function parseScalar(raw3) {
+    if (raw3 === void 0 || raw3 === null) return "";
+    const trimmed = raw3.trim();
+    if (trimmed === "" || trimmed === "~" || trimmed === "null") return "";
+    if (/^(true|True|TRUE|yes|Yes|YES)$/.test(trimmed)) return true;
+    if (/^(false|False|FALSE|no|No|NO)$/.test(trimmed)) return false;
+    if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+      const num = Number(trimmed);
+      if (!Number.isNaN(num)) return num;
+    }
+    if (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length >= 2) {
+      try {
+        return JSON.parse(trimmed);
+      } catch (_) {
+        return trimmed.slice(1, -1).replace(/\\"/g, '"');
+      }
+    }
+    if (trimmed.startsWith("'") && trimmed.endsWith("'") && trimmed.length >= 2) {
+      return trimmed.slice(1, -1).replace(/''/g, "'");
+    }
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      return parseInlineArray(trimmed);
+    }
+    return trimmed;
+  }
+  function parseInlineArray(text6) {
+    const content3 = text6.slice(1, -1).trim();
+    if (!content3) return [];
+    const items = [];
+    let current = "";
+    let inDouble = false;
+    let inSingle = false;
+    for (let i = 0; i < content3.length; i++) {
+      const ch2 = content3[i];
+      if (ch2 === '"' && !inSingle && content3[i - 1] !== "\\") {
+        inDouble = !inDouble;
+        current += ch2;
+      } else if (ch2 === "'" && !inDouble) {
+        inSingle = !inSingle;
+        current += ch2;
+      } else if (ch2 === "," && !inDouble && !inSingle) {
+        items.push(parseScalar(current));
+        current = "";
+      } else {
+        current += ch2;
+      }
+    }
+    if (current.trim() || items.length > 0) {
+      items.push(parseScalar(current));
+    }
+    return items;
+  }
+  function inferType(key, value) {
+    const lowerKey = String(key).toLowerCase();
+    if (Array.isArray(value)) {
+      if (lowerKey === "tags" || lowerKey === "tag") return "tags";
+      return "list";
+    }
+    if (typeof value === "boolean") return "boolean";
+    if (typeof value === "number") return "number";
+    if (value && typeof value === "object") return "object";
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) return "date";
+    if (lowerKey === "tags" || lowerKey === "tag") return "tags";
+    return "text";
+  }
+  function parseFrontmatter(yamlText) {
+    const data2 = {};
+    const entries = [];
+    if (!yamlText || typeof yamlText !== "string") {
+      return { data: data2, entries };
+    }
+    const lines = yamlText.split(/\r?\n/);
+    let currentKey = null;
+    let currentArray = null;
+    let currentObject = null;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) {
+        continue;
+      }
+      const listMatch = line.match(/^(\s*)-\s+(.*)$/);
+      if (listMatch && currentKey) {
+        const itemVal = parseScalar(listMatch[2]);
+        if (!currentArray) {
+          currentArray = [];
+          data2[currentKey] = currentArray;
+          const existingEntry = entries.find((e) => e.key === currentKey);
+          if (existingEntry) {
+            existingEntry.value = currentArray;
+            existingEntry.type = inferType(currentKey, currentArray);
+          }
+        }
+        currentArray.push(itemVal);
+        continue;
+      }
+      const nestedMatch = line.match(/^\s{2,}([a-zA-Z0-9_-]+)\s*:\s*(.*)$/);
+      if (nestedMatch && currentKey && !currentArray) {
+        const subKey = nestedMatch[1];
+        const subVal = parseScalar(nestedMatch[2]);
+        if (!currentObject) {
+          currentObject = {};
+          data2[currentKey] = currentObject;
+          const existingEntry = entries.find((e) => e.key === currentKey);
+          if (existingEntry) {
+            existingEntry.value = currentObject;
+            existingEntry.type = "object";
+          }
+        }
+        currentObject[subKey] = subVal;
+        continue;
+      }
+      const kvMatch = line.match(/^([a-zA-Z0-9_-]+)\s*:\s*(.*)$/);
+      if (kvMatch) {
+        currentKey = kvMatch[1];
+        const rawVal = kvMatch[2].trim();
+        currentArray = null;
+        currentObject = null;
+        if (rawVal === "") {
+          data2[currentKey] = "";
+          entries.push({
+            key: currentKey,
+            value: "",
+            type: inferType(currentKey, "")
+          });
+        } else {
+          const parsedVal = parseScalar(rawVal);
+          data2[currentKey] = parsedVal;
+          entries.push({
+            key: currentKey,
+            value: parsedVal,
+            type: inferType(currentKey, parsedVal)
+          });
+        }
+      }
+    }
+    return { data: data2, entries };
+  }
+  function formatScalar(val) {
+    if (val === void 0 || val === null || val === "") return "";
+    if (typeof val === "boolean" || typeof val === "number") return String(val);
+    const str = String(val);
+    if (str.includes(": ") || str.includes("#") || str.startsWith("[") || str.startsWith("{") || str.startsWith("- ") || str.startsWith('"') || str.startsWith("'") || /^(true|false|null|yes|no)$/i.test(str) || /^-?\d+(\.\d+)?$/.test(str)) {
+      return JSON.stringify(str);
+    }
+    return str;
+  }
+  function stringifyFrontmatter(entriesOrData, wrapFences = true) {
+    let list2 = [];
+    if (Array.isArray(entriesOrData)) {
+      list2 = entriesOrData;
+    } else if (entriesOrData && typeof entriesOrData === "object") {
+      list2 = Object.entries(entriesOrData).map(([key, value]) => ({
+        key,
+        value,
+        type: inferType(key, value)
+      }));
+    }
+    const lines = [];
+    if (wrapFences) lines.push("---");
+    for (const item of list2) {
+      const key = item.key;
+      const value = item.value;
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          lines.push(`${key}: []`);
+        } else {
+          lines.push(`${key}:`);
+          for (const el of value) {
+            lines.push(`  - ${formatScalar(el)}`);
+          }
+        }
+      } else if (value && typeof value === "object") {
+        const subKeys = Object.keys(value);
+        if (subKeys.length === 0) {
+          lines.push(`${key}: {}`);
+        } else {
+          lines.push(`${key}:`);
+          for (const subKey of subKeys) {
+            lines.push(`  ${subKey}: ${formatScalar(value[subKey])}`);
+          }
+        }
+      } else {
+        const formatted = formatScalar(value);
+        lines.push(`${key}:${formatted ? " " + formatted : ""}`);
+      }
+    }
+    if (wrapFences) lines.push("---");
+    return lines.join("\n");
+  }
+  function extractFrontmatter(fullText) {
+    if (!fullText || typeof fullText !== "string") {
+      return { hasFrontmatter: false };
+    }
+    if (!fullText.startsWith("---")) {
+      return { hasFrontmatter: false };
+    }
+    const firstNewline = fullText.indexOf("\n");
+    if (firstNewline === -1) {
+      return { hasFrontmatter: false };
+    }
+    const firstLine = fullText.slice(0, firstNewline).trim();
+    if (firstLine !== "---") {
+      return { hasFrontmatter: false };
+    }
+    const lines = fullText.split(/\r?\n/);
+    let closeLineIdx = -1;
+    let charOffset = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim() === "---" || line.trim() === "...") {
+        closeLineIdx = i;
+        break;
+      }
+    }
+    if (closeLineIdx === -1) {
+      return { hasFrontmatter: false };
+    }
+    const yamlLines = lines.slice(1, closeLineIdx);
+    const yamlText = yamlLines.join("\n");
+    const { data: data2, entries } = parseFrontmatter(yamlText);
+    let toOffset = 0;
+    for (let i = 0; i <= closeLineIdx; i++) {
+      toOffset += lines[i].length + (i < lines.length - 1 ? 1 : 0);
+    }
+    return {
+      hasFrontmatter: true,
+      from: 0,
+      to: toOffset,
+      yaml: yamlText,
+      data: data2,
+      entries,
+      lineCount: closeLineIdx + 1
+    };
+  }
+
+  // FlowMark Markdown Editor/src/ui/propertiesCard.js
+  init_dist2();
+  var ICONS = {
+    tag: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+    text: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="12" y1="7" x2="12" y2="17"/></svg>',
+    number: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+    boolean: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="m9 12 2 2 4-4"/></svg>',
+    date: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+    list: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+    object: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+    chevron: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>',
+    plus: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    raw: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+    trash: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    check: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+  };
+  var PROPERTY_TYPES = [
+    { id: "text", label: "Text", icon: ICONS.text },
+    { id: "number", label: "Number", icon: ICONS.number },
+    { id: "boolean", label: "Checkbox", icon: ICONS.boolean },
+    { id: "date", label: "Date", icon: ICONS.date },
+    { id: "tags", label: "Tags", icon: ICONS.tag },
+    { id: "list", label: "List", icon: ICONS.list }
+  ];
+  function collectDocumentTags(docText) {
+    const tags3 = /* @__PURE__ */ new Set();
+    if (!docText) return [];
+    const hashTagRegex = /(?:^|\s)#([a-zA-Z0-9_\-\/]+)/g;
+    let match2;
+    while ((match2 = hashTagRegex.exec(docText)) !== null) {
+      if (!/^\d+$/.test(match2[1])) {
+        tags3.add(match2[1]);
+      }
+    }
+    return Array.from(tags3).sort();
+  }
+  var PropertiesCardWidget = class _PropertiesCardWidget extends WidgetType {
+    /**
+     * @param {Object} spec
+     * @param {number} spec.from
+     * @param {number} spec.to
+     * @param {string} spec.yaml
+     * @param {Array<{ key: string, value: any, type: string }>} spec.entries
+     * @param {Record<string, any>} spec.data
+     * @param {number} spec.lineCount
+     * @param {Function} [spec.onViewSource]
+     */
+    constructor(spec) {
+      super();
+      this.spec = spec;
+      this._root = null;
+      this._resizeObserver = null;
+    }
+    eq(other) {
+      return other instanceof _PropertiesCardWidget && this.spec.from === other.spec.from && this.spec.to === other.spec.to && this.spec.yaml === other.spec.yaml;
+    }
+    toDOM(view2) {
+      const root = document.createElement("div");
+      root.className = "cm-embed-block cm-properties-card-wrap";
+      root.tabIndex = -1;
+      this._root = root;
+      const card = document.createElement("div");
+      card.className = "fm-properties-card";
+      const header3 = document.createElement("div");
+      header3.className = "fm-prop-header";
+      const foldBtn = document.createElement("button");
+      foldBtn.className = "fm-prop-fold-btn";
+      foldBtn.innerHTML = ICONS.chevron;
+      foldBtn.title = "Toggle properties";
+      const titleLabel = document.createElement("span");
+      titleLabel.className = "fm-prop-title";
+      titleLabel.textContent = "Properties";
+      const countBadge = document.createElement("span");
+      countBadge.className = "fm-prop-count";
+      countBadge.textContent = String(this.spec.entries.length);
+      const headerLeft = document.createElement("div");
+      headerLeft.className = "fm-prop-header-left";
+      headerLeft.appendChild(foldBtn);
+      headerLeft.appendChild(titleLabel);
+      headerLeft.appendChild(countBadge);
+      const headerActions = document.createElement("div");
+      headerActions.className = "fm-prop-header-actions";
+      const addBtn = document.createElement("button");
+      addBtn.className = "fm-prop-btn fm-prop-add-btn";
+      addBtn.innerHTML = `${ICONS.plus}<span>Add property</span>`;
+      addBtn.title = "Add property";
+      const rawBtn = document.createElement("button");
+      rawBtn.className = "fm-prop-btn fm-prop-raw-btn";
+      rawBtn.innerHTML = ICONS.raw;
+      rawBtn.title = "View source (raw YAML)";
+      headerActions.appendChild(addBtn);
+      headerActions.appendChild(rawBtn);
+      header3.appendChild(headerLeft);
+      header3.appendChild(headerActions);
+      card.appendChild(header3);
+      const body2 = document.createElement("div");
+      body2.className = "fm-prop-body";
+      foldBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        card.classList.toggle("collapsed");
+        if (typeof view2.requestMeasure === "function") view2.requestMeasure();
+      });
+      const triggerViewSource = () => {
+        if (typeof this.spec.onViewSource === "function") {
+          this.spec.onViewSource();
+        } else {
+          view2.dispatch({
+            selection: { anchor: Math.min(view2.state.doc.length, this.spec.from + 4) },
+            scrollIntoView: true
+          });
+          view2.focus();
+        }
+      };
+      rawBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        triggerViewSource();
+      });
+      card.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this._showContextMenu(e.clientX, e.clientY, [
+          {
+            label: "View source",
+            icon: ICONS.raw,
+            action: () => triggerViewSource()
+          },
+          {
+            label: "Add property",
+            icon: ICONS.plus,
+            action: () => addBtn.click()
+          },
+          {
+            label: card.classList.contains("collapsed") ? "Unfold properties" : "Fold properties",
+            icon: ICONS.chevron,
+            action: () => foldBtn.click()
+          }
+        ]);
+      });
+      const commitEntries = (newEntries) => {
+        const newYaml = stringifyFrontmatter(newEntries, true);
+        const fullDoc = view2.state.doc.toString();
+        const insertText = this.spec.to < fullDoc.length && !fullDoc.slice(this.spec.to).startsWith("\n") ? newYaml + "\n" : newYaml;
+        view2.dispatch({
+          changes: { from: this.spec.from, to: this.spec.to, insert: insertText },
+          userEvent: "input.frontmatter"
+        });
+      };
+      const entries = this.spec.entries.map((e) => ({ ...e }));
+      const docTags = collectDocumentTags(view2.state.doc.toString());
+      entries.forEach((entry, index) => {
+        const row = this._createPropertyRow(view2, entry, index, entries, commitEntries, docTags);
+        body2.appendChild(row);
+      });
+      card.appendChild(body2);
+      root.appendChild(card);
+      addBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        let keyName2 = "property";
+        let k = 1;
+        while (entries.some((ent) => ent.key === keyName2)) {
+          keyName2 = `property_${k++}`;
+        }
+        entries.push({
+          key: keyName2,
+          value: "",
+          type: "text"
+        });
+        commitEntries(entries);
+      });
+      if (typeof ResizeObserver !== "undefined") {
+        this._resizeObserver = new ResizeObserver(() => {
+          if (typeof view2.requestMeasure === "function") view2.requestMeasure();
+        });
+        this._resizeObserver.observe(root);
+      }
+      return root;
+    }
+    /**
+     * Display a floating context menu at (x, y).
+     */
+    _showContextMenu(x, y, items) {
+      const existing = document.querySelector(".fm-prop-context-menu");
+      if (existing) existing.remove();
+      const menu = document.createElement("div");
+      menu.className = "fm-prop-context-menu";
+      items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "fm-prop-menu-item";
+        if (item.icon) {
+          const iconSpan = document.createElement("span");
+          iconSpan.innerHTML = item.icon;
+          row.appendChild(iconSpan);
+        }
+        const label = document.createElement("span");
+        label.textContent = item.label;
+        row.appendChild(label);
+        row.addEventListener("click", (e) => {
+          e.stopPropagation();
+          menu.remove();
+          item.action();
+        });
+        menu.appendChild(row);
+      });
+      document.body.appendChild(menu);
+      const rect = menu.getBoundingClientRect();
+      const posX = Math.min(x, window.innerWidth - rect.width - 8);
+      const posY = Math.min(y, window.innerHeight - rect.height - 8);
+      menu.style.left = `${Math.max(8, posX)}px`;
+      menu.style.top = `${Math.max(8, posY)}px`;
+      const closeHandler = (e) => {
+        if (!menu.contains(e.target)) {
+          menu.remove();
+          document.removeEventListener("mousedown", closeHandler);
+        }
+      };
+      setTimeout(() => document.addEventListener("mousedown", closeHandler), 10);
+    }
+    /**
+     * Create an individual property row element.
+     */
+    _createPropertyRow(view2, entry, index, allEntries, commitEntries, docTags) {
+      const row = document.createElement("div");
+      row.className = "fm-prop-row";
+      const keyCol = document.createElement("div");
+      keyCol.className = "fm-prop-key-col";
+      const iconSpan = document.createElement("span");
+      iconSpan.className = "fm-prop-type-icon fm-prop-type-btn";
+      iconSpan.innerHTML = ICONS[entry.type] || ICONS.text;
+      iconSpan.title = `Change property type (${entry.type || "text"})`;
+      iconSpan.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this._showTypeDropdown(iconSpan, entry, allEntries, commitEntries);
+      });
+      const keyName2 = document.createElement("span");
+      keyName2.className = "fm-prop-key-name";
+      keyName2.textContent = entry.key;
+      keyName2.title = "Click to rename key";
+      keyName2.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "fm-prop-key-input";
+        input.value = entry.key;
+        const finishRename = (commit) => {
+          const newKey = input.value.trim();
+          if (commit && newKey && newKey !== entry.key) {
+            entry.key = newKey;
+            entry.type = inferType(newKey, entry.value);
+            commitEntries(allEntries);
+          } else {
+            keyName2.textContent = entry.key;
+            keyCol.replaceChild(keyName2, input);
+          }
+        };
+        input.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            finishRename(true);
+          } else if (ev.key === "Escape") {
+            ev.preventDefault();
+            finishRename(false);
+          }
+        });
+        input.addEventListener("blur", () => finishRename(true));
+        keyCol.replaceChild(input, keyName2);
+        input.focus();
+        input.select();
+      });
+      keyCol.appendChild(iconSpan);
+      keyCol.appendChild(keyName2);
+      row.appendChild(keyCol);
+      const valCol = document.createElement("div");
+      valCol.className = "fm-prop-val-col";
+      if (entry.type === "tags") {
+        this._renderTagChips(valCol, entry, allEntries, commitEntries, docTags);
+      } else if (entry.type === "list") {
+        this._renderListChips(valCol, entry, allEntries, commitEntries);
+      } else if (entry.type === "boolean") {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "fm-prop-checkbox";
+        checkbox.checked = Boolean(entry.value);
+        checkbox.addEventListener("change", () => {
+          entry.value = checkbox.checked;
+          commitEntries(allEntries);
+        });
+        valCol.appendChild(checkbox);
+      } else if (entry.type === "date") {
+        const input = document.createElement("input");
+        input.type = "date";
+        input.className = "fm-prop-text-input fm-prop-date-input";
+        input.value = typeof entry.value === "string" && /^\d{4}-\d{2}-\d{2}/.test(entry.value) ? entry.value.slice(0, 10) : "";
+        input.addEventListener("change", () => {
+          entry.value = input.value;
+          commitEntries(allEntries);
+        });
+        valCol.appendChild(input);
+      } else {
+        const input = document.createElement("input");
+        input.type = entry.type === "number" ? "number" : "text";
+        input.className = "fm-prop-text-input";
+        input.value = entry.value !== void 0 && entry.value !== null ? String(entry.value) : "";
+        input.placeholder = "Empty";
+        const originalVal = input.value;
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            input.blur();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            input.value = originalVal;
+            input.blur();
+          }
+        });
+        input.addEventListener("blur", () => {
+          const newVal = parseScalar(input.value);
+          if (newVal !== entry.value) {
+            entry.value = newVal;
+            commitEntries(allEntries);
+          }
+        });
+        valCol.appendChild(input);
+      }
+      row.appendChild(valCol);
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "fm-prop-del-btn";
+      deleteBtn.innerHTML = ICONS.trash;
+      deleteBtn.title = "Delete property";
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        allEntries.splice(index, 1);
+        commitEntries(allEntries);
+      });
+      row.appendChild(deleteBtn);
+      return row;
+    }
+    /**
+     * Display dropdown to select a type for a property.
+     */
+    _showTypeDropdown(anchorEl, entry, allEntries, commitEntries) {
+      const existing = document.querySelector(".fm-prop-type-dropdown");
+      if (existing) existing.remove();
+      const dropdown = document.createElement("div");
+      dropdown.className = "fm-prop-type-dropdown";
+      PROPERTY_TYPES.forEach((typeOpt) => {
+        const item = document.createElement("div");
+        item.className = "fm-prop-menu-item";
+        if (entry.type === typeOpt.id) item.classList.add("active");
+        const iconSpan = document.createElement("span");
+        iconSpan.innerHTML = typeOpt.icon;
+        item.appendChild(iconSpan);
+        const label = document.createElement("span");
+        label.textContent = typeOpt.label;
+        label.style.flex = "1";
+        item.appendChild(label);
+        if (entry.type === typeOpt.id) {
+          const check = document.createElement("span");
+          check.innerHTML = ICONS.check;
+          item.appendChild(check);
+        }
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          dropdown.remove();
+          if (entry.type === typeOpt.id) return;
+          const newType = typeOpt.id;
+          if (newType === "boolean") {
+            entry.value = Boolean(entry.value);
+          } else if (newType === "number") {
+            const num = parseFloat(entry.value);
+            entry.value = isNaN(num) ? 0 : num;
+          } else if (newType === "date") {
+            entry.value = typeof entry.value === "string" && /^\d{4}-\d{2}-\d{2}/.test(entry.value) ? entry.value.slice(0, 10) : (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+          } else if (newType === "tags" || newType === "list") {
+            entry.value = Array.isArray(entry.value) ? entry.value : entry.value ? [String(entry.value)] : [];
+          } else {
+            entry.value = Array.isArray(entry.value) ? entry.value.join(", ") : String(entry.value ?? "");
+          }
+          entry.type = newType;
+          commitEntries(allEntries);
+        });
+        dropdown.appendChild(item);
+      });
+      document.body.appendChild(dropdown);
+      const anchorRect = anchorEl.getBoundingClientRect();
+      const dropRect = dropdown.getBoundingClientRect();
+      const posX = Math.min(anchorRect.left, window.innerWidth - dropRect.width - 8);
+      const posY = Math.min(anchorRect.bottom + 4, window.innerHeight - dropRect.height - 8);
+      dropdown.style.left = `${Math.max(8, posX)}px`;
+      dropdown.style.top = `${Math.max(8, posY)}px`;
+      const closeHandler = (e) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.remove();
+          document.removeEventListener("mousedown", closeHandler);
+        }
+      };
+      setTimeout(() => document.addEventListener("mousedown", closeHandler), 10);
+    }
+    /**
+     * Render tag chips with inline add input & autocomplete dropdown.
+     */
+    _renderTagChips(container, entry, allEntries, commitEntries, docTags) {
+      const chipsWrap = document.createElement("div");
+      chipsWrap.className = "fm-tag-chips-wrap";
+      const tagsArray = Array.isArray(entry.value) ? entry.value.map(String) : entry.value ? String(entry.value).split(/[,\s]+/).filter(Boolean) : [];
+      tagsArray.forEach((tag2, idx) => {
+        const chip = document.createElement("span");
+        chip.className = "fm-tag-chip";
+        const label = document.createElement("span");
+        label.className = "fm-tag-label";
+        label.textContent = tag2.startsWith("#") ? tag2 : `#${tag2}`;
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "fm-tag-remove-btn";
+        removeBtn.innerHTML = "\xD7";
+        removeBtn.title = `Remove ${tag2}`;
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          tagsArray.splice(idx, 1);
+          entry.value = tagsArray;
+          commitEntries(allEntries);
+        });
+        chip.appendChild(label);
+        chip.appendChild(removeBtn);
+        chipsWrap.appendChild(chip);
+      });
+      const inputWrap = document.createElement("div");
+      inputWrap.className = "fm-tag-input-wrap";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "fm-tag-add-input";
+      input.placeholder = "+ tag";
+      const dropdown = document.createElement("div");
+      dropdown.className = "fm-tag-autocomplete-dropdown hidden";
+      const showSuggestions = () => {
+        const query = input.value.trim().toLowerCase().replace(/^#/, "");
+        const available = docTags.filter((t2) => !tagsArray.includes(t2) && t2.toLowerCase().includes(query));
+        if (available.length === 0) {
+          dropdown.classList.add("hidden");
+          dropdown.innerHTML = "";
+          return;
+        }
+        dropdown.innerHTML = "";
+        available.slice(0, 8).forEach((t2) => {
+          const item = document.createElement("div");
+          item.className = "fm-tag-autocomplete-item";
+          item.textContent = `#${t2}`;
+          item.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            addTag(t2);
+          });
+          dropdown.appendChild(item);
+        });
+        dropdown.classList.remove("hidden");
+      };
+      const addTag = (val) => {
+        const clean = String(val).trim().replace(/^#/, "");
+        if (clean && !tagsArray.includes(clean)) {
+          tagsArray.push(clean);
+          entry.value = tagsArray;
+          commitEntries(allEntries);
+        }
+        input.value = "";
+        dropdown.classList.add("hidden");
+      };
+      input.addEventListener("input", showSuggestions);
+      input.addEventListener("focus", showSuggestions);
+      input.addEventListener("blur", () => {
+        setTimeout(() => dropdown.classList.add("hidden"), 200);
+        if (input.value.trim()) {
+          addTag(input.value.trim());
+        }
+      });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === ",") {
+          e.preventDefault();
+          if (input.value.trim()) addTag(input.value.trim());
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          input.value = "";
+          dropdown.classList.add("hidden");
+        }
+      });
+      inputWrap.appendChild(input);
+      inputWrap.appendChild(dropdown);
+      chipsWrap.appendChild(inputWrap);
+      container.appendChild(chipsWrap);
+    }
+    /**
+     * Render list items as chips with inline add input.
+     */
+    _renderListChips(container, entry, allEntries, commitEntries) {
+      const chipsWrap = document.createElement("div");
+      chipsWrap.className = "fm-tag-chips-wrap";
+      const itemsArray = Array.isArray(entry.value) ? entry.value.map(String) : entry.value ? String(entry.value).split(/[,\s]+/).filter(Boolean) : [];
+      itemsArray.forEach((item, idx) => {
+        const chip = document.createElement("span");
+        chip.className = "fm-tag-chip fm-list-chip";
+        const label = document.createElement("span");
+        label.className = "fm-tag-label";
+        label.textContent = item;
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "fm-tag-remove-btn";
+        removeBtn.innerHTML = "\xD7";
+        removeBtn.title = `Remove ${item}`;
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          itemsArray.splice(idx, 1);
+          entry.value = itemsArray;
+          commitEntries(allEntries);
+        });
+        chip.appendChild(label);
+        chip.appendChild(removeBtn);
+        chipsWrap.appendChild(chip);
+      });
+      const inputWrap = document.createElement("div");
+      inputWrap.className = "fm-tag-input-wrap";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "fm-tag-add-input";
+      input.placeholder = "+ item";
+      const addItem = (val) => {
+        const clean = String(val).trim();
+        if (clean) {
+          itemsArray.push(clean);
+          entry.value = itemsArray;
+          commitEntries(allEntries);
+        }
+        input.value = "";
+      };
+      input.addEventListener("blur", () => {
+        if (input.value.trim()) addItem(input.value.trim());
+      });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === ",") {
+          e.preventDefault();
+          if (input.value.trim()) addItem(input.value.trim());
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          input.value = "";
+        }
+      });
+      inputWrap.appendChild(input);
+      chipsWrap.appendChild(inputWrap);
+      container.appendChild(chipsWrap);
+    }
+    // Pass all events inside properties card to widget DOM without CM6 interference
+    ignoreEvent() {
+      return true;
+    }
+    destroy() {
+      if (this._resizeObserver) {
+        this._resizeObserver.disconnect();
+        this._resizeObserver = null;
+      }
+    }
+  };
+
+  // FlowMark Markdown Editor/src/editor.js
   var HIDE = Decoration.replace({});
   var refreshEffect = StateEffect.define();
   var interaction = { dragging: false };
   var PARSE_MARGIN = 2e3;
   var PARSE_BUDGET_MS = 20;
-  function activeRanges(view2) {
-    return view2.hasFocus ? view2.state.selection.ranges : [];
-  }
   function rangeTouches(ranges, from3, to) {
     for (const r2 of ranges) if (r2.from <= to && r2.to >= from3) return true;
     return false;
   }
   function inlineIsActive(view2, from3, to) {
-    return rangeTouches(activeRanges(view2), from3, to);
+    if (!view2.hasFocus) return false;
+    for (const r2 of view2.state.selection.ranges) {
+      if (r2.from >= from3 && r2.to <= to) return true;
+    }
+    return false;
   }
   function lineIsActive(view2, pos) {
+    if (!view2.hasFocus) return false;
     const line = view2.state.doc.lineAt(pos);
-    return rangeTouches(activeRanges(view2), line.from, line.to);
+    for (const r2 of view2.state.selection.ranges) {
+      if (r2.from >= line.from && r2.to <= line.to) return true;
+    }
+    return false;
   }
   function skipSpaces(doc2, pos) {
     const line = doc2.lineAt(pos);
@@ -77370,6 +78181,7 @@ $$
   };
   function scanEmbeds(state) {
     const doc2 = state.doc;
+    let frontmatter = null;
     const callouts = [];
     const images = [];
     const tables = [];
@@ -77378,6 +78190,40 @@ $$
     for (let n = 1; n <= doc2.lines; n++) {
       const line = doc2.line(n);
       const text6 = line.text;
+      if (n === 1 && text6.trim() === "---") {
+        let closeLine = null;
+        for (let k = 2; k <= doc2.lines; k++) {
+          const nextLine = doc2.line(k);
+          if (nextLine.text.trim() === "---" || nextLine.text.trim() === "...") {
+            closeLine = nextLine;
+            break;
+          }
+        }
+        if (closeLine) {
+          const fullDoc = doc2.toString();
+          const extracted = extractFrontmatter(fullDoc);
+          if (extracted.hasFrontmatter) {
+            frontmatter = {
+              ...extracted,
+              from: 0,
+              to: closeLine.to
+            };
+            n = closeLine.number;
+            continue;
+          }
+        } else {
+          frontmatter = {
+            hasFrontmatter: true,
+            from: 0,
+            to: line.to,
+            yaml: "",
+            data: {},
+            entries: [],
+            lineCount: 1
+          };
+          continue;
+        }
+      }
       if (FENCE_RE.test(text6)) {
         inFence = !inFence;
         continue;
@@ -77544,12 +78390,49 @@ $$
     }
     const keptMath = math2.filter((item) => !images.some((image) => item.from < image.to && item.to > image.from));
     const keptImages = images.filter((image) => !keptMath.some((item) => image.from < item.to && image.to > item.from));
-    return { callouts, images: keptImages, tables, math: keptMath };
+    return { frontmatter, callouts, images: keptImages, tables, math: keptMath };
   }
+  var setRawFrontmatterEffect = StateEffect.define();
+  var rawFrontmatterField = StateField.define({
+    create: () => false,
+    update(isRaw, tr) {
+      for (const e of tr.effects) {
+        if (e.is(setRawFrontmatterEffect)) return e.value;
+      }
+      if (isRaw && tr.selection) {
+        const { frontmatter } = scanEmbeds(tr.state);
+        if (frontmatter && !rangeTouches(tr.state.selection.ranges, frontmatter.from, frontmatter.to)) {
+          return false;
+        }
+      }
+      return isRaw;
+    }
+  });
   function buildEmbedDecos(state) {
     const ranges = [];
-    const { callouts, images, tables, math: math2 } = scanEmbeds(state);
+    const { frontmatter, callouts, images, tables, math: math2 } = scanEmbeds(state);
     const selection = state.selection.ranges;
+    if (frontmatter) {
+      const isRaw = state.field(rawFrontmatterField, false);
+      if (!isRaw) {
+        ranges.push(Decoration.replace({
+          widget: new PropertiesCardWidget({
+            ...frontmatter,
+            onViewSource: () => {
+              if (typeof view !== "undefined" && view) {
+                view.dispatch({
+                  effects: setRawFrontmatterEffect.of(true),
+                  selection: { anchor: Math.min(view.state.doc.length, frontmatter.from + 4) },
+                  scrollIntoView: true
+                });
+                view.focus();
+              }
+            }
+          }),
+          block: true
+        }).range(frontmatter.from, frontmatter.to));
+      }
+    }
     for (const block3 of callouts) {
       if (rangeTouches(selection, block3.from, block3.to)) continue;
       ranges.push(Decoration.replace({
@@ -77611,7 +78494,7 @@ $$
   var embedField = StateField.define({
     create: (state) => buildEmbedDecos(state),
     update(deco, tr) {
-      if (!tr.docChanged && !tr.selection && !tr.effects.some((effect) => effect.is(tableCellUiEffect))) {
+      if (!tr.docChanged && !tr.selection && !tr.effects.some((effect) => effect.is(tableCellUiEffect) || effect.is(setRawFrontmatterEffect))) {
         return deco;
       }
       return buildEmbedDecos(tr.state);
@@ -77965,6 +78848,29 @@ $$
       decos.push(HIDE.range(closing4.from, endLine.to));
     }
   }
+  function isFrontmatterDelimiter(state, pos) {
+    const doc2 = state.doc;
+    if (doc2.lines < 2) return false;
+    const line = doc2.lineAt(pos);
+    const trimmed = line.text.trim();
+    if (trimmed !== "---" && trimmed !== "...") return false;
+    if (line.number === 1) {
+      for (let k = 2; k <= doc2.lines; k++) {
+        const next2 = doc2.line(k).text.trim();
+        if (next2 === "---" || next2 === "...") return true;
+      }
+      return false;
+    }
+    if (doc2.line(1).text.trim() === "---") {
+      for (let k = 2; k <= doc2.lines; k++) {
+        const next2 = doc2.line(k).text.trim();
+        if (next2 === "---" || next2 === "...") {
+          return k === line.number;
+        }
+      }
+    }
+    return false;
+  }
   var activeSyntaxPlugin = ViewPlugin.fromClass(class {
     constructor(view2) {
       this.decorations = this.compute(view2);
@@ -78025,6 +78931,7 @@ $$
         }
         if (name2 === "HorizontalRule") {
           if (embedCovers(view2.state, node.from)) return;
+          if (isFrontmatterDelimiter(view2.state, node.from)) return;
           if (!lineIsActive(view2, node.from)) {
             const line = doc2.lineAt(node.from);
             decos.push(Decoration.line({ class: "cm-hr-line" }).range(line.from));
@@ -78099,7 +79006,7 @@ $$
         // Horizontal padding centres the 720px reading column deterministically,
         // without relying on auto margins surviving the theme cascade. The CSS
         // `max-width` on `.cm-content` stays as a second line of defence.
-        padding: "64px max(40px, calc((100% - 720px) / 2)) 120px"
+        padding: "48px max(40px, calc((100% - 720px) / 2)) 120px"
       },
       ".cm-content": {
         padding: "0",
@@ -78109,8 +79016,8 @@ $$
       // Line metrics belong to the line, never to a concealing element.
       ".cm-line": { padding: "0", lineHeight: "var(--fm-line-height, 1.9)" },
       ".cm-gutters": { display: "none" },
-      ".cm-selectionBackground": { background: `${accentColor}30 !important` },
-      "&.cm-focused .cm-selectionBackground": { background: `${accentColor}40 !important` },
+      ".cm-selectionBackground": { background: `${accentColor}38 !important` },
+      "&.cm-focused .cm-selectionBackground": { background: `${accentColor}55 !important` },
       ".cm-cursor": { borderLeftColor: accentColor, borderLeftWidth: "2px" },
       ".cm-syntax-show": { color: accentColor, opacity: "0.6" }
     }, { dark: true });
@@ -78146,6 +79053,8 @@ $$
     const isLight = currentTheme !== "theme-dark";
     const color = ACCENTS[name2]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
     document.documentElement.style.setProperty("--accent", color);
+    document.documentElement.style.setProperty("--selection", `${color}38`);
+    document.documentElement.style.setProperty("--selection-active", `${color}55`);
     currentAccent = name2;
     localStorage.setItem("fm-accent", name2);
     if (typeof view !== "undefined" && view) {
@@ -78222,9 +79131,11 @@ $$
       updateAppName();
       updatePlaceholder();
       updateWordCount();
+      updateDocumentTitleInput();
     } else {
       document.getElementById("editor").classList.add("hidden");
       updateAppName();
+      updateDocumentTitleInput();
       showWelcome();
     }
   }
@@ -78269,6 +79180,7 @@ $$
       updateAppName();
       updatePlaceholder();
       updateWordCount();
+      updateDocumentTitleInput();
       tabBarUI.render();
       sessionManager.scheduleSave();
       return;
@@ -78280,6 +79192,7 @@ $$
       dirty: false
     });
     tabManager.add(doc2, true);
+    updateDocumentTitleInput();
     sessionManager.scheduleSave();
   }
   async function saveFile() {
@@ -78288,6 +79201,7 @@ $$
     const res = await doc2.save(window.fileAPI);
     if (res.noPath) return saveAsFile();
     updateAppName();
+    updateDocumentTitleInput();
     tabBarUI.render();
     sessionManager.scheduleSave();
   }
@@ -78300,6 +79214,7 @@ $$
     doc2.setPath(res.filePath);
     doc2.markDirty(false);
     updateAppName();
+    updateDocumentTitleInput();
     tabBarUI.render();
     sessionManager.scheduleSave();
   }
@@ -78307,6 +79222,146 @@ $$
     if (searchPanelOpen(view.state)) closeSearchPanel(view);
     else openSearchPanel(view);
   }
+  var setTitleDataEffect = StateEffect.define();
+  var titleDataField = StateField.define({
+    create: () => ({ value: "", placeholder: "Untitled", hidden: true }),
+    update(data2, tr) {
+      for (const e of tr.effects) {
+        if (e.is(setTitleDataEffect)) return e.value;
+      }
+      return data2;
+    }
+  });
+  var TitleInputWidget = class extends WidgetType {
+    constructor(data2) {
+      super();
+      this._data = data2;
+    }
+    eq(other) {
+      return this._data.value === other._data.value && this._data.placeholder === other._data.placeholder && this._data.hidden === other._data.hidden;
+    }
+    toDOM() {
+      const container = document.createElement("div");
+      container.className = "fm-title-container";
+      if (this._data.hidden) container.classList.add("hidden");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = "fm-title-input";
+      input.className = "fm-title-input";
+      input.value = this._data.value;
+      input.placeholder = this._data.placeholder || "Untitled";
+      input.spellcheck = false;
+      input.autocomplete = "off";
+      input.addEventListener("input", () => {
+        const activeDoc = tabManager.activeDocument;
+        if (!activeDoc) return;
+        const val = input.value.trim();
+        const hadMd = activeDoc.name.toLowerCase().endsWith(".md");
+        if (val) {
+          activeDoc.name = hadMd && !val.toLowerCase().endsWith(".md") ? val + ".md" : val;
+        } else {
+          activeDoc.name = hadMd ? "Untitled.md" : "Untitled";
+        }
+        activeDoc.markDirty(true);
+        tabBarUI.render();
+        updateAppName();
+        sessionManager.scheduleSave();
+      });
+      input.addEventListener("blur", async () => {
+        const activeDoc = tabManager.activeDocument;
+        if (!activeDoc) return;
+        if (activeDoc.path && window.fileAPI?.rename) {
+          const res = await window.fileAPI.rename(activeDoc.path, activeDoc.name);
+          if (res && res.success && res.newPath) {
+            activeDoc.setPath(res.newPath);
+            tabBarUI.render();
+            updateAppName();
+            sessionManager.scheduleSave();
+          }
+        }
+      });
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+          view.focus();
+          view.dispatch({ selection: { anchor: 0 }, scrollIntoView: false });
+        } else if (e.key === "ArrowDown") {
+          if (input.selectionStart === input.value.length) {
+            e.preventDefault();
+            view.focus();
+            view.dispatch({ selection: { anchor: 0 }, scrollIntoView: false });
+          }
+        }
+      });
+      container.addEventListener("click", (e) => {
+        if (e.target !== input) {
+          input.focus();
+        }
+      });
+      container.appendChild(input);
+      return container;
+    }
+    // Tell CM6 to ignore all events inside this widget so native click, focus,
+    // selection, and typing on the input work without editor interference.
+    ignoreEvent() {
+      return true;
+    }
+    get estimatedHeight() {
+      return -1;
+    }
+  };
+  var titleDecoField = StateField.define({
+    create(state) {
+      return buildTitleDeco(state.field(titleDataField));
+    },
+    update(decos, tr) {
+      for (const e of tr.effects) {
+        if (e.is(setTitleDataEffect)) return buildTitleDeco(e.value);
+      }
+      return decos;
+    },
+    provide: (f) => EditorView.decorations.from(f)
+  });
+  function buildTitleDeco(data2) {
+    if (data2.hidden) return Decoration.none;
+    return Decoration.set([
+      Decoration.widget({ widget: new TitleInputWidget(data2), side: -1, block: true }).range(0)
+    ]);
+  }
+  var frontmatterAutoTrigger = EditorState.transactionFilter.of((tr) => {
+    if (!tr.docChanged) return tr;
+    const startLine = tr.startState.doc.line(1);
+    const oldLineText = startLine.text.trim();
+    const newDoc = tr.newDoc;
+    const newLineText = newDoc.line(1).text.trim();
+    if (oldLineText !== "---" && newLineText === "---") {
+      let hasClose = false;
+      for (let i = 2; i <= newDoc.lines; i++) {
+        const t2 = newDoc.line(i).text.trim();
+        if (t2 === "---" || t2 === "...") {
+          hasClose = true;
+          break;
+        }
+      }
+      if (!hasClose) {
+        let touchedLine1 = false;
+        tr.changes.iterChanges((fromA) => {
+          if (fromA <= startLine.to) touchedLine1 = true;
+        });
+        if (touchedLine1) {
+          const rest = tr.startState.doc.sliceString(startLine.to);
+          const newline6 = rest.startsWith("\n") ? "" : "\n";
+          return {
+            changes: { from: 0, to: startLine.to, insert: "---\n---" + newline6 },
+            selection: { anchor: 8 },
+            userEvent: "input.frontmatter"
+          };
+        }
+      }
+    }
+    return tr;
+  });
   function getEditorExtensions() {
     const isLight = currentTheme !== "theme-dark";
     const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
@@ -78384,6 +79439,7 @@ $$
         { key: "Ctrl-k", run: () => registry_default.execute("insert:link", view, view.state), preventDefault: true },
         { key: "Ctrl-Shift-i", run: () => registry_default.execute("insert:image", view, view.state), preventDefault: true },
         { key: "Ctrl-Shift-m", run: () => registry_default.execute("insert:mathInline", view, view.state), preventDefault: true },
+        { key: "Ctrl-;", run: () => registry_default.execute("insert:property", view, view.state), preventDefault: true },
         ...searchKeymap
       ]),
       markdown({ base: markdownLanguage, codeLanguages: languages, extensions: [GFM], addKeymap: true }),
@@ -78392,6 +79448,10 @@ $$
       lineHeightProbe,
       tableMenuDismiss,
       embedField,
+      rawFrontmatterField,
+      frontmatterAutoTrigger,
+      titleDataField,
+      titleDecoField,
       checkboxPlugin,
       bulletPlugin,
       noteLinkPlugin,
@@ -78444,6 +79504,32 @@ Just start writing.
     state: createEditorState(""),
     parent: document.getElementById("editor")
   });
+  function updateDocumentTitleInput() {
+    const activeDoc = tabManager.activeDocument;
+    if (!activeDoc) {
+      view.dispatch({ effects: setTitleDataEffect.of({ value: "", placeholder: "Untitled", hidden: true }) });
+      return;
+    }
+    const isUntitled = !activeDoc.path && /^Untitled(\s+\d+)?(\.md)?$/i.test(activeDoc.name);
+    const cleanName = activeDoc.name.replace(/\.md$/i, "");
+    view.dispatch({
+      effects: setTitleDataEffect.of({
+        value: isUntitled ? "" : cleanName,
+        placeholder: isUntitled ? cleanName : "Untitled",
+        hidden: false
+      })
+    });
+  }
+  view.dom.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowUp" && view.state.selection.main.head === 0) {
+      e.preventDefault();
+      const input = document.getElementById("fm-title-input");
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+  });
   var tabBarUI = new tabs_default({
     container: document.getElementById("tabbar"),
     tabManager,
@@ -78466,10 +79552,28 @@ Just start writing.
     }
     tabBarUI.render();
   });
+  var pointerDown = false;
+  var startX = 0;
+  var startY = 0;
   view.scrollDOM.addEventListener("mousedown", (e) => {
-    if (e.button === 0) interaction.dragging = true;
+    if (e.button === 0) {
+      pointerDown = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    }
+  }, true);
+  window.addEventListener("mousemove", (e) => {
+    if (!pointerDown) return;
+    if (!interaction.dragging) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (dx * dx + dy * dy > 9) {
+        interaction.dragging = true;
+      }
+    }
   }, true);
   window.addEventListener("mouseup", () => {
+    pointerDown = false;
     if (!interaction.dragging) return;
     interaction.dragging = false;
     requestAnimationFrame(() => {
@@ -78699,6 +79803,39 @@ Just start writing.
     run: () => insertCallout(view),
     enabled: () => true
   });
+  function insertFrontmatterProperty(v) {
+    const fullText = v.state.doc.toString();
+    const extracted = extractFrontmatter(fullText);
+    if (extracted.hasFrontmatter) {
+      const entries = extracted.entries.slice();
+      let keyName2 = "property";
+      let k = 1;
+      while (entries.some((e) => e.key === keyName2)) {
+        keyName2 = `property_${k++}`;
+      }
+      entries.push({ key: keyName2, value: "", type: "text" });
+      const newYaml = stringifyFrontmatter(entries, true);
+      const trailingNewline = extracted.to < fullText.length && !fullText.slice(extracted.to).startsWith("\n") ? "\n" : "";
+      v.dispatch({
+        changes: { from: extracted.from, to: extracted.to, insert: newYaml + trailingNewline },
+        userEvent: "input.frontmatter"
+      });
+    } else {
+      const template = "---\ntags: []\n---\n\n";
+      v.dispatch({
+        changes: { from: 0, to: 0, insert: template },
+        selection: { anchor: 4 },
+        userEvent: "input.frontmatter"
+      });
+      v.focus();
+    }
+  }
+  registry_default.registerCommand("insert:property", {
+    label: "Property",
+    shortcut: "Ctrl+;",
+    run: () => insertFrontmatterProperty(view),
+    enabled: () => true
+  });
   registry_default.registerCommand("insert:mathInline", {
     label: "Math (Inline)",
     shortcut: "Ctrl+Shift+M",
@@ -78795,13 +79932,16 @@ Just start writing.
     find: "edit:find",
     exportPDF: "export:pdf",
     exportHTML: "export:html",
+    "insert:property": "insert:property",
     settings: "view:settings",
-    zen: "view:zen"
+    zen: "view:zen",
+    "plugins:manage": "plugins:manage"
   };
   var dropdownMenus = [
     { btn: document.getElementById("file-menu-btn"), menu: document.getElementById("file-dropdown") },
     { btn: document.getElementById("edit-menu-btn"), menu: document.getElementById("edit-dropdown") },
-    { btn: document.getElementById("insert-menu-btn"), menu: document.getElementById("insert-dropdown") }
+    { btn: document.getElementById("insert-menu-btn"), menu: document.getElementById("insert-dropdown") },
+    { btn: document.getElementById("plugins-menu-btn"), menu: document.getElementById("plugins-dropdown") }
   ];
   function closeAllDropdowns() {
     dropdownMenus.forEach(({ menu }) => menu?.classList.add("hidden"));
@@ -79018,8 +80158,143 @@ Just start writing.
   updateAppName();
   updatePlaceholder();
   updateWordCount();
+  updateDocumentTitleInput();
   applyTheme(currentTheme);
+  async function initPlugins() {
+    if (!window.pluginAPI) {
+      console.warn("[editor] Plugin API not available");
+      return;
+    }
+    function applyPluginStyles() {
+      if (!window.pluginManager) return;
+      const css3 = window.pluginManager.getStylesheets();
+      if (css3) {
+        let styleEl = document.getElementById("fm-plugin-styles");
+        if (!styleEl) {
+          styleEl = document.createElement("style");
+          styleEl.id = "fm-plugin-styles";
+          document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = css3;
+      }
+    }
+    function buildPluginsMenu(plugins) {
+      const container = document.getElementById("plugins-menu-items");
+      if (!container) return;
+      container.innerHTML = "";
+      if (!plugins) return;
+      for (const plugin of plugins) {
+        const btn = document.createElement("button");
+        btn.textContent = `${plugin.name} v${plugin.version} ${plugin.active ? "\u2713" : "\u2717"}`;
+        btn.style.opacity = plugin.active ? "1" : "0.5";
+        btn.addEventListener("click", async () => {
+          if (plugin.active) {
+            await window.pluginAPI.disable(plugin.name);
+          } else {
+            await window.pluginAPI.enable(plugin.name);
+          }
+        });
+        container.appendChild(btn);
+      }
+      if (plugins.length === 0) {
+        const empty2 = document.createElement("div");
+        empty2.style.cssText = "padding: 8px 12px; color: var(--muted); font-size: 12px;";
+        empty2.textContent = "No plugins installed";
+        container.appendChild(empty2);
+      }
+    }
+    window.pluginAPI.onPluginsReady((plugins) => {
+      console.log("[editor] Plugins ready:", plugins);
+      window.pluginManager = { getPlugins: () => plugins };
+      applyPluginStyles();
+      buildPluginsMenu(plugins);
+    });
+    window.pluginAPI.onPluginsChanged((plugins) => {
+      console.log("[editor] Plugins changed:", plugins);
+      applyPluginStyles();
+      buildPluginsMenu(plugins);
+    });
+    const originalSave = window.fileAPI.save;
+    window.fileAPI.save = async function(contentOrOpts, maybeContent) {
+      let content3, opts;
+      if (typeof contentOrOpts === "string") {
+        content3 = contentOrOpts;
+      } else if (contentOrOpts && typeof contentOrOpts === "object") {
+        content3 = contentOrOpts.content || "";
+        opts = { ...contentOrOpts };
+        delete opts.content;
+      }
+      if (window.pluginManager && content3) {
+        content3 = window.pluginManager.applyMarkdownTransforms(content3, {
+          filePath: tabManager.activeDocument?.path
+        });
+      }
+      if (opts) {
+        return originalSave({ ...opts, content: content3 });
+      }
+      return originalSave(content3);
+    };
+    let currentViewRef = view;
+    Object.defineProperty(window, "view", {
+      get: () => currentViewRef,
+      set: (v) => {
+        currentViewRef = v;
+      }
+    });
+    const originalSetActive = tabManager.setActive.bind(tabManager);
+    tabManager.setActive = function(id3) {
+      originalSetActive(id3);
+      const doc2 = tabManager.activeDocument;
+      if (doc2) {
+        window.dispatchEvent(new CustomEvent("tab:changed", { detail: doc2 }));
+        window.pluginAPI.emit?.("tab:changed", doc2);
+      }
+    };
+    setInterval(() => {
+      if (view && window.pluginManager) {
+        window.pluginAPI.emit?.("editor:update", view);
+      }
+    }, 2e3);
+    const originalApplyTheme = applyTheme;
+    applyTheme = function(theme2) {
+      originalApplyTheme(theme2);
+      applyPluginStyles();
+    };
+    registry_default.registerCommand("plugins:manage", {
+      label: "Manage Plugins",
+      shortcut: "Ctrl+Shift+P",
+      section: "plugins",
+      run: () => {
+        const btn = document.getElementById("plugins-menu-btn");
+        if (btn) btn.click();
+      },
+      enabled: () => true
+    });
+    if (window.pluginManager) {
+      window.pluginManager._appAPI = {
+        registerCommand: (id3, def) => registry_default.registerCommand(id3, def),
+        unregisterCommand: (id3) => registry_default.unregisterCommand(id3),
+        getCommand: (id3) => registry_default.getCommand(id3),
+        getAllCommands: () => registry_default.getAllCommands(),
+        executeCommand: (id3, view2, state) => registry_default.execute(id3, view2, state),
+        hasCommand: (id3) => registry_default.hasCommand(id3),
+        registerMarkdownTransform: (fn2) => window.pluginManager.registerMarkdownTransform(fn2),
+        registerStylesheet: (css3) => window.pluginManager.registerStylesheet(css3),
+        registerSetting: (key, defaultValue, metadata) => window.pluginManager.settings.register(key, defaultValue, metadata),
+        getSetting: (key) => window.pluginManager.settings.get(key),
+        setSetting: (key, value) => window.pluginManager.settings.set(key, value),
+        getAllSettings: () => window.pluginManager.settings.getAll(),
+        getSettingMetadata: (key) => window.pluginManager.settings.getMetadata(key),
+        on: (event, handler2) => window.pluginManager.on(event, handler2),
+        off: (event, handler2) => window.pluginManager.off(event, handler2),
+        emit: (event, ...args) => window.pluginManager.emit(event, ...args),
+        getPlugins: () => window.pluginManager.getPlugins(),
+        getPath: () => window.pluginManager.settings.getPath?.() || ""
+      };
+    }
+  }
   async function initSession() {
+    await initPlugins();
     const restored = await sessionManager.restore();
     if (!restored) {
       const initialDoc = new Document({
@@ -79029,6 +80304,7 @@ Just start writing.
       });
       tabManager.add(initialDoc, true);
     }
+    updateDocumentTitleInput();
     view.focus();
   }
   initSession();

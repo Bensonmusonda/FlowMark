@@ -15,10 +15,14 @@
         <div id="file-dropdown" class="dropdown-menu hidden">
           <button data-action="new">New File <span class="shortcut">Ctrl+N</span></button>
           <button data-action="open">Open File <span class="shortcut">Ctrl+O</span></button>
+          <button data-action="openFolder">Open Folder</button>
+          <button data-action="toggleSidebar">Toggle Sidebar <span class="shortcut">Ctrl+B</span></button>
           <button data-action="quickOpen">Quick Open <span class="shortcut">Ctrl+P</span></button>
           <button data-action="save">Save <span class="shortcut">Ctrl+S</span></button>
           <button data-action="saveAs">Save As <span class="shortcut">Ctrl+Shift+S</span></button>
           <button data-action="closeTab">Close Tab <span class="shortcut">Ctrl+W</span></button>
+          <button data-action="closeWorkspace">Close Workspace</button>
+          <button data-action="closeWindow">Close Window</button>
           <div class="menu-divider"></div>
           <button data-action="exportPDF">Export PDF</button>
           <button data-action="exportHTML">Export HTML</button>
@@ -48,7 +52,7 @@
       <div class="menu-item-dropdown">
         <button class="topbar-menu-btn" id="insert-menu-btn">Insert</button>
         <div id="insert-dropdown" class="dropdown-menu hidden" data-menu-section="insert">
-          <button data-action="insert:bold">Bold <span class="shortcut">Ctrl+B</span></button>
+          <button data-action="insert:bold">Bold <span class="shortcut">Ctrl+Shift+B</span></button>
           <button data-action="insert:italic">Italic <span class="shortcut">Ctrl+I</span></button>
           <button data-action="insert:strikethrough">Strikethrough <span class="shortcut">Ctrl+Shift+X</span></button>
           <button data-action="insert:inlineCode">Inline Code <span class="shortcut">Ctrl+`</span></button>
@@ -172,28 +176,32 @@
     </div>
   </div>
 
-  <div id="editor-wrap">
-    <div id="welcome">
-      <div id="welcome-inner">
-        <div id="welcome-logo">FlowMark</div>
-        <div id="welcome-actions">
-          <button class="wa-btn" data-action="new">
-            <span class="wa-label">New File</span>
-            <span class="wa-shortcut">Ctrl+N</span>
-          </button>
-          <button class="wa-btn" data-action="open">
-            <span class="wa-label">Open File</span>
-            <span class="wa-shortcut">Ctrl+O</span>
-          </button>
-        </div>
-        <div id="welcome-recents">
-          <div class="recents-heading">Recent</div>
-          <ul id="welcome-recents-list"></ul>
-          <div id="welcome-recents-empty" class="hidden">No recent files</div>
+  <div id="workspace-layout">
+    <aside id="sidebar" aria-label="Workspace files"></aside>
+    <div id="sidebar-splitter" role="separator" aria-label="Resize sidebar" aria-orientation="vertical" tabindex="0"></div>
+    <div id="editor-wrap">
+      <div id="welcome">
+        <div id="welcome-inner">
+          <div id="welcome-logo">FlowMark</div>
+          <div id="welcome-actions">
+            <button class="wa-btn" data-action="new">
+              <span class="wa-label">New File</span>
+              <span class="wa-shortcut">Ctrl+N</span>
+            </button>
+            <button class="wa-btn" data-action="open">
+              <span class="wa-label">Open File</span>
+              <span class="wa-shortcut">Ctrl+O</span>
+            </button>
+          </div>
+          <div id="welcome-recents">
+            <div class="recents-heading">Recent</div>
+            <ul id="welcome-recents-list"></ul>
+            <div id="welcome-recents-empty" class="hidden">No recent files</div>
+          </div>
         </div>
       </div>
+      <div id="editor"></div>
     </div>
-    <div id="editor"></div>
   </div>
   <div id="statusbar">
     <span id="status-bar-text"></span>

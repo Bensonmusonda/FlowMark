@@ -36,16 +36,16 @@ This document outlines the execution roadmap for FlowMark, prioritizing core edi
 ## Stage 3 — Core Workspace & Sidebar Architecture (Phase 6)
 **Goal:** Native multi-file workspace and folder explorer built into the core editor.
 
-- [ ] **Collapsible, Resizable Sidebar:**
-  - Layout container (`#sidebar`) with splitter drag-handle.
-  - Keyboard toggle (`Ctrl+B`) and Zen mode integration (`body.zen #sidebar { display: none }`).
-- [ ] **File & Folder Tree Explorer:**
-  - "Open Folder" command $\rightarrow$ native directory picker.
-  - Hierarchical tree rendering of `.md` files and folders with expand/collapse.
-  - Active tab ↔ active tree item synchronization.
-  - File/folder creation, inline renaming, and deletion.
-  - Persist open workspace directory across restarts in `session.json`.
-- [ ] **File System Watcher:** Integrate `fs.watch` / `chokidar` in main process to update tree on external file changes.
+- [x] **Collapsible, Resizable Sidebar:**
+  - [x] Layout container (`#sidebar`) with splitter drag-handle.
+  - [x] Keyboard toggle (`Ctrl+B`) and Zen mode integration (`body.zen #sidebar { display: none }`).
+- [x] **File & Folder Tree Explorer:**
+  - [x] "Open Folder" command $\rightarrow$ native directory picker.
+  - [x] Hierarchical tree rendering of `.md` files and folders with expand/collapse.
+  - [x] Active tab ↔ active tree item synchronization.
+  - [x] File/folder creation, inline renaming, and deletion.
+  - [x] Persist open workspace directory across restarts in `session.json`.
+- [x] **File System Watcher:** Integrate `fs.watch` in main process to update the tree and refresh clean open documents on external file changes.
 
 ---
 
@@ -53,6 +53,12 @@ This document outlines the execution roadmap for FlowMark, prioritizing core edi
 **Goal:** Extend the sandboxed plugin system to hook into the new workspace and tab surfaces.
 **Reference Document:** `PLUGIN_IDEAS.md`
 
+- [ ] **Right-Side Utility Pane Shell:**
+  - Add a resizable right-side pane to the core workspace layout.
+  - Keep the pane hidden until an option in the workspace navigation activates it.
+  - Render a blank placeholder while no plugin or core view owns the pane.
+  - Reserve the pane for future views such as AI assistants, outlines, backlinks, and plugin panels.
+  - Do not assign a default active option or show the pane at startup.
 - [ ] **Sidebar Activity Bar & Panel API:**
   - Allow sandboxed plugins to register secondary panels (`flowmarkPlugin.ui.registerSidebarPanel({ id, title, icon, render })`).
   - Examples: Table of Contents / Outline, Tag Explorer, Backlinks, Calendar.

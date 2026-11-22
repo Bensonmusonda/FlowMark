@@ -2,12 +2,18 @@ const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron')
 const path = require('path');
 const fs = require('fs');
 const { PluginSandboxHost } = require('./plugins/sandbox/plugin-host.js');
+const { WorkspaceService } = require('./workspace/workspace-service.js');
 
 let win;
 let pluginHost = null;
 let currentFilePath = null;
 const recentFiles = [];
 const MAX_RECENTS = 10;
+const workspaceService = new WorkspaceService((change) => {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('workspace:changed', change);
+  }
+});
 
 function addRecent(filePath) {
   const i = recentFiles.indexOf(filePath);
@@ -307,6 +313,70 @@ ipcMain.handle('session:load', async () => {
   }
 });
 
+ipcMain.handle('workspace:openDialog', async () => {
+  const { filePaths, canceled } = await dialog.showOpenDialog(win, {
+    title: 'Open Folder',
+    properties: ['openDirectory'],
+  });
+  if (canceled || !filePaths.length) return { canceled: true };
+  return { canceled: false, ...workspaceService.setRoot(filePaths[0]) };
+});
+
+ipcMain.handle('workspace:openPath', (_, rootPath) => {
+  if (typeof rootPath !== 'string' || !rootPath.trim()) {
+    throw new Error('A workspace folder path is required');
+  }
+  return workspaceService.setRoot(rootPath);
+});
+
+ipcMain.handle('workspace:getTree', () => ({
+  rootPath: workspaceService.rootPath,
+  tree: workspaceService.getTree(),
+}));
+
+ipcMain.handle('workspace:openFile', (_, relativePath) => {
+  const result = workspaceService.openFile(relativePath);
+  currentFilePath = result.filePath;
+  addRecent(result.filePath);
+  return result;
+});
+
+ipcMain.handle('workspace:create', (_, relativePath, type) => {
+  const result = workspaceService.create(relativePath, type);
+  if (type === 'file') {
+    currentFilePath = result.path;
+    addRecent(result.path);
+  }
+  return result;
+});
+
+ipcMain.handle('workspace:rename', (_, relativePath, newName) => {
+  const result = workspaceService.rename(relativePath, newName);
+  const currentRelative = currentFilePath && path.relative(result.oldPath, currentFilePath);
+  if (currentRelative === '' ||
+      (currentRelative && currentRelative !== '..' &&
+       !currentRelative.startsWith(`..${path.sep}`) && !path.isAbsolute(currentRelative))) {
+    currentFilePath = path.join(result.newPath, currentRelative);
+  }
+  if (currentFilePath) addRecent(currentFilePath);
+  return result;
+});
+
+ipcMain.handle('workspace:delete', (_, relativePath) => {
+  const result = workspaceService.delete(relativePath);
+  const currentRelative = currentFilePath && path.relative(result.path, currentFilePath);
+  if (currentRelative === '' ||
+      (currentRelative && currentRelative !== '..' &&
+       !currentRelative.startsWith(`..${path.sep}`) && !path.isAbsolute(currentRelative))) {
+    currentFilePath = null;
+  }
+  return result;
+});
+ipcMain.handle('workspace:close', () => {
+  workspaceService.close();
+  return { success: true };
+});
+
 ipcMain.on('window:refocus', () => { win.focus(); win.webContents.focus(); });
 ipcMain.on('window:minimize', () => win.minimize());
 ipcMain.on('window:maximize', () => win.isMaximized() ? win.unmaximize() : win.maximize());
@@ -517,6 +587,7 @@ app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(
 
 // Cleanup on quit
 app.on('before-quit', () => {
+  workspaceService.close();
   if (pluginHost) {
     pluginHost.destroy();
   }

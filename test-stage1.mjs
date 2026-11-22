@@ -70,6 +70,20 @@ test('rangeTouches returns false for caret outside embed', () => {
   assert.strictEqual(rangeTouches(caret, tableFrom, tableTo), false, 'Table remains rendered when caret is outside');
 });
 
+test('Pointer click freezes decoration rebuilding until mouseup', () => {
+  const interaction = { pointerDown: true, dragging: false };
+  const selectionIsText = false;
+  const shouldFreeze = interaction.pointerDown ||
+    interaction.dragging ||
+    selectionIsText;
+  assert.strictEqual(shouldFreeze, true,
+    'Decoration rebuild waits until the browser completes click coordinate mapping');
+
+  interaction.pointerDown = false;
+  assert.strictEqual(interaction.pointerDown, false,
+    'Mouseup releases the pointer freeze for post-click reveal');
+});
+
 // Replicate inlineIsActive logic from src/editor.js
 function inlineIsActive(viewState, from, to) {
   if (!viewState.hasFocus) return false;

@@ -11,6 +11,15 @@ const DEFAULT_RULES = [
   { pattern: '--', replacement: '\u2013', description: 'En dash', enabled: true }
 ];
 
+const TABLE_DELIMITER_LINE_RE = /^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$/;
+
+function isTableDelimiterLine(text, offset) {
+  const lineStart = text.lastIndexOf('\n', offset - 1) + 1;
+  const lineEnd = text.indexOf('\n', offset);
+  const line = text.slice(lineStart, lineEnd === -1 ? text.length : lineEnd);
+  return line.includes('|') && TABLE_DELIMITER_LINE_RE.test(line);
+}
+
 async function applyTransforms(inputContent) {
   try {
     if (!flowmarkPlugin.hasPermission('editor.read') || !flowmarkPlugin.hasPermission('editor.write')) {
@@ -34,13 +43,15 @@ async function applyTransforms(inputContent) {
       if (!rule.enabled) continue;
       try {
         if (rule.pattern === '---') {
-          // Never replace '---' when it's alone on a line (horizontal rule or markdown fence)
-          result = result.replace(/(?<!^|\r?\n)---(?!$|\r?\n)/gm, rule.replacement);
+          // Keep Markdown delimiters and standalone horizontal rules/fences intact.
+          result = result.replace(/(?<!^|\r?\n)---(?!$|\r?\n)/gm,
+            (match, offset) => isTableDelimiterLine(result, offset) ? match : rule.replacement);
           continue;
         }
         if (rule.pattern === '--') {
-          // Never replace '--' when part of a longer hyphen sequence (like ---) or on line boundaries
-          result = result.replace(/(?<!-|\r?\n)--(?!-|\r?\n)/gm, rule.replacement);
+          // Keep table delimiters and longer hyphen sequences intact.
+          result = result.replace(/(?<!-|\r?\n)--(?!-|\r?\n)/gm,
+            (match, offset) => isTableDelimiterLine(result, offset) ? match : rule.replacement);
           continue;
         }
         const regex = new RegExp(rule.pattern, 'g');

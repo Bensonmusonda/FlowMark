@@ -225,6 +225,7 @@ console.log('\n💾 SessionManager Tests:');
   const sm = new SessionManager({
     tabManager: tm,
     createEditorState: (content) => ({ doc: { toString: () => content } }),
+    getWorkspacePath: () => 'C:/docs',
   });
 
   await sm.saveNow();
@@ -232,6 +233,7 @@ console.log('\n💾 SessionManager Tests:');
   assert(savedSession !== null, 'SessionManager.saveNow() calls fileAPI.saveSession');
   assert(savedSession.tabs.length === 2, 'Saves both tabs');
   assert(savedSession.activeIndex === 1, 'Saves activeIndex correctly');
+  assert(savedSession.workspacePath === 'C:/docs', 'Persists the open workspace path');
   assert(savedSession.tabs[1].content === 'Draft notes', 'Preserves unsaved content for dirty untitled tab');
 
   // Test restoration
@@ -241,6 +243,9 @@ console.log('\n💾 SessionManager Tests:');
   const sm2 = new SessionManager({
     tabManager: tm2,
     createEditorState: (content) => ({ doc: { toString: () => content } }),
+    restoreWorkspace: async (workspacePath) => {
+      assert(workspacePath === 'C:/docs', 'Restores the saved workspace path');
+    },
   });
 
   const restored = await sm2.restore();

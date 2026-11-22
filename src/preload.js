@@ -23,6 +23,19 @@ contextBridge.exposeInMainWorld('fileAPI', {
   getRecents: ()        => ipcRenderer.invoke('recents:get'),
   loadSession: ()       => ipcRenderer.invoke('session:load'),
   saveSession: (data)   => ipcRenderer.invoke('session:save', data),
+  openWorkspace: ()    => ipcRenderer.invoke('workspace:openDialog'),
+  openWorkspacePath: (rootPath) => ipcRenderer.invoke('workspace:openPath', rootPath),
+  getWorkspaceTree: () => ipcRenderer.invoke('workspace:getTree'),
+  openWorkspaceFile: (relativePath) => ipcRenderer.invoke('workspace:openFile', relativePath),
+  createWorkspaceItem: (relativePath, type) => ipcRenderer.invoke('workspace:create', relativePath, type),
+  renameWorkspaceItem: (relativePath, newName) => ipcRenderer.invoke('workspace:rename', relativePath, newName),
+  deleteWorkspaceItem: (relativePath) => ipcRenderer.invoke('workspace:delete', relativePath),
+  closeWorkspace: () => ipcRenderer.invoke('workspace:close'),
+  onWorkspaceChange: (callback) => {
+    const handler = (_, change) => callback(change);
+    ipcRenderer.on('workspace:changed', handler);
+    return () => ipcRenderer.removeListener('workspace:changed', handler);
+  },
 });
 
 contextBridge.exposeInMainWorld('windowAPI', {

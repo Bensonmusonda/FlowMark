@@ -4,6 +4,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
+import vm from 'vm';
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
@@ -299,6 +300,39 @@ async function runTests() {
     const input = 'Pages 10--20 word---word';
     const output = applyRegexRules(input, DEFAULT_RULES);
     assert.strictEqual(output, 'Pages 10\u201320 word\u2014word');
+  });
+
+  test('Preserves table delimiter hyphens while transforming text in table cells', async () => {
+    const pluginPath = path.join(__dirname, 'src', 'plugins', 'custom-transform', 'index.js');
+    let command;
+    let updatedContent;
+    const pluginApi = {
+      hasPermission: () => true,
+      settings: {
+        get: async () => undefined,
+        register: async () => {},
+      },
+      editor: {
+        getContent: async () => '',
+        setContent: async (content) => { updatedContent = content; },
+      },
+      ui: {
+        registerCommand: (definition) => { command = definition; },
+        addMenuItem: () => {},
+      },
+      on: () => {},
+      log: () => {},
+      warn: () => {},
+      error: () => {},
+    };
+    vm.runInNewContext(fs.readFileSync(pluginPath, 'utf8'), { flowmarkPlugin: pluginApi });
+    const input = '| Term | Notes | Range |\n| -- | :---: | --------- |\n| word---word | x--y | 10--20 |';
+    const output = await command.run(input);
+    assert.strictEqual(
+      output,
+      '| Term | Notes | Range |\n| -- | :---: | --------- |\n| word\u2014word | x\u2013y | 10\u201320 |',
+    );
+    assert.strictEqual(updatedContent, output);
   });
 
   test('Preserves frontmatter delimiters and horizontal rules', () => {

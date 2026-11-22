@@ -26,9 +26,15 @@ import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } 
 import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './commands/completion.js';
 import { Document, TabManager } from './model/document.js';
 import TabBarUI from './ui/tabs.js';
+import FileTreeUI from './ui/fileTree.js';
 import SessionManager from './session/sessionManager.js';
 import { extractFrontmatter, stringifyFrontmatter } from './parser/frontmatter.js';
 import { PropertiesCardWidget } from './ui/propertiesCard.js';
+import {
+  appendTableExitLine,
+  resolveTableExit,
+  resolveTableNavigation,
+} from './editor/table-navigation.js';
 
 // ── Live-preview stability primitives ────────────────────────────────────────
 //
@@ -51,7 +57,7 @@ import { PropertiesCardWidget } from './ui/propertiesCard.js';
 
 const HIDE = Decoration.replace({});          // zero-width, zero-height concealment
 const refreshEffect = StateEffect.define();   // force one rebuild after a drag
-const interaction = { dragging: false };
+const interaction = { dragging: false, pointerDown: false };
 
 const PARSE_MARGIN = 2000;                    // chars past the viewport to parse
 const PARSE_BUDGET_MS = 20;                   // hard budget for that parse
@@ -171,9 +177,12 @@ function updateDecorations(plugin, update) {
     plugin.decorations = plugin.compute(update.view);
     return;
   }
-  // During pointer drag selection within the current viewport, freeze decorations
-  // so characters never collapse/expand horizontally under the dragging cursor
-  if (interaction.dragging || !update.view.state.selection.main.empty) {
+  // A selection may move before the browser finishes mapping the mousedown
+  // coordinate to a document position. Freezing all decoration rebuilds until
+  // mouseup prevents syntax concealment from changing line geometry underneath
+  // that first click, in both single-click and drag flows.
+  if (interaction.pointerDown || interaction.dragging ||
+      !update.view.state.selection.main.empty) {
     return;
   }
   if (wantsRebuild(update)) plugin.decorations = plugin.compute(update.view);
@@ -527,58 +536,12 @@ const tableScrollPositions = new Map();
 // Rebuilds the embed field for UI-only changes (opening a phantom row,
 // cancelling an edit) that do not touch the document or the selection.
 const tableCellUiEffect = StateEffect.define();
+const tableSourceEffect = StateEffect.define();
 
 function tableCellAt(spec, row, col) {
   if (row === -1) return spec.header.cells[col];
   const sourceRow = spec.rows[row];
   return sourceRow ? sourceRow.cells[col] : undefined;
-}
-
-/** Next cell for a navigation key; `spec.rows.length` is the phantom row. */
-function tableResolveNav(spec, row, col, nav) {
-  const colCount = Math.max(1, spec.header.cells.length);
-  const rowCount = spec.rows.length;
-  const phantom = rowCount;
-  switch (nav) {
-    case 'enter': {
-      // Only Enter may reach the phantom row; navigation never creates rows.
-      const next = row + 1;
-      return next > phantom ? 'exit-below' : { row: next, col };
-    }
-    case 'down': {
-      const next = row + 1;
-      return next >= rowCount ? 'exit-below' : { row: next, col };
-    }
-    case 'up': {
-      const next = row - 1;
-      return next < -1 ? 'exit-above' : { row: next, col };
-    }
-    case 'next': {
-      let r = row;
-      let c = col + 1;
-      if (c >= colCount) { r += 1; c = 0; }
-      return r >= rowCount ? 'exit-below' : { row: r, col: c };
-    }
-    case 'prev': {
-      let r = row;
-      let c = col - 1;
-      if (c < 0) { r -= 1; c = colCount - 1; }
-      return r < -1 ? 'exit-above' : { row: r, col: c };
-    }
-    case 'right':
-      return col + 1 < colCount ? { row, col: col + 1 } : null;
-    case 'left':
-      return col > 0 ? { row, col: col - 1 } : null;
-    default:
-      return null;
-  }
-}
-
-function tableExitPosition(spec, doc, direction) {
-  if (direction === 'exit-above') {
-    return doc.lineAt(Math.max(0, spec.from - 1)).from;
-  }
-  return doc.lineAt(Math.min(doc.length, spec.to + 1)).from;
 }
 
 function tableCellElement(root, row, col) {
@@ -619,14 +582,14 @@ function applyTableCellCommit(view, root, spec, row, col, value, nav, changed) {
         : spec.delimiterLineTo;
       changes.push({ from: insertAt, to: insertAt, insert: '\n| ' + cells.join(' | ') + ' |' });
       const grown = { header: spec.header, rows: spec.rows.concat([{ cells }]) };
-      const target = nav === 'none' ? null : tableResolveNav(grown, spec.rows.length, col, nav);
+      const target = nav === 'none' ? null : resolveTableNavigation(grown, spec.rows.length, col, nav);
       if (target === 'exit-below' || target === 'exit-above') {
-        exit = tableExitPosition(spec, doc, target);
+        exit = resolveTableExit(spec, doc, target);
       } else if (target) {
         pending = { table: spec.from, row: target.row, col: target.col };
       }
     } else if (nav !== 'none') {
-      exit = tableExitPosition(spec, doc, 'exit-below');
+      exit = resolveTableExit(spec, doc, 'exit-below');
     }
   } else {
     const sourceCell = tableCellAt(spec, row, col);
@@ -653,9 +616,9 @@ function applyTableCellCommit(view, root, spec, row, col, value, nav, changed) {
       });
     }
     if (nav !== 'none') {
-      const target = tableResolveNav(spec, row, col, nav);
+      const target = resolveTableNavigation(spec, row, col, nav);
       if (target === 'exit-below' || target === 'exit-above') {
-        exit = tableExitPosition(spec, doc, target);
+        exit = resolveTableExit(spec, doc, target);
       } else if (target) {
         pending = { table: spec.from, row: target.row, col: target.col };
       }
@@ -681,7 +644,10 @@ function applyTableCellCommit(view, root, spec, row, col, value, nav, changed) {
     }
   }
 
-  if (exit !== null) pending = null;
+  if (exit !== null) {
+    pending = null;
+    changes.splice(0, changes.length, ...appendTableExitLine(doc, changes, exit));
+  }
 
   // Record the undo caret *before* publishing the pending cell: the
   // selection-only dispatch rebuilds the widget, and a pending queue set first
@@ -697,7 +663,7 @@ function applyTableCellCommit(view, root, spec, row, col, value, nav, changed) {
     // inside the table text.
     const changeSet = view.state.changes(changes);
     transaction.changes = changeSet;
-    transaction.selection = { anchor: changeSet.mapPos(exit, 1) };
+    transaction.selection = { anchor: changeSet.mapPos(exit.position, 1) };
   } else if (changes.length) {
     transaction.changes = changes;
   }
@@ -783,12 +749,12 @@ function startTableCellEditor(view, root, spec, cellEl, row, col, clientX) {
       e.preventDefault();
       // At the table's edge stay in the cell instead of closing the editor and
       // handing the key to the document (which caused cursor loss + scrolling).
-      if (tableResolveNav(spec, row, col, 'left')) handle.commit('left');
+      if (resolveTableNavigation(spec, row, col, 'left')) handle.commit('left');
     } else if (e.key === 'ArrowRight' &&
                input.selectionStart === input.value.length &&
                input.selectionEnd === input.value.length) {
       e.preventDefault();
-      if (tableResolveNav(spec, row, col, 'right')) handle.commit('right');
+      if (resolveTableNavigation(spec, row, col, 'right')) handle.commit('right');
     }
   });
   input.addEventListener('blur', () => { if (!done) handle.commit('none'); });
@@ -812,11 +778,17 @@ function startTableCellEditor(view, root, spec, cellEl, row, col, clientX) {
 
 function revealTableSource(view, spec) {
   pendingTableCell = null;
-  view.dispatch({
-    selection: { anchor: Math.min(view.state.doc.length, spec.from + 2) },
-    effects: tableCellUiEffect.of(null),
+  requestAnimationFrame(() => {
+    const fresh = scanEmbeds(view.state).tables.find(
+      (table) => table.from === spec.from && table.key === spec.key,
+    );
+    if (!fresh) return;
+    view.dispatch({
+      selection: { anchor: Math.min(view.state.doc.length, fresh.from + 2) },
+      effects: tableSourceEffect.of(fresh.from),
+    });
+    view.focus();
   });
-  view.focus();
 }
 
 /**
@@ -1914,9 +1886,26 @@ export const rawFrontmatterField = StateField.define({
   },
 });
 
-function buildEmbedDecos(state) {
+const tableSourceField = StateField.define({
+  create: () => null,
+  update(tableFrom, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(tableSourceEffect)) return effect.value;
+    }
+    if (tableFrom === null || (!tr.docChanged && !tr.selection)) return tableFrom;
+
+    const mappedFrom = tr.docChanged ? tr.changes.mapPos(tableFrom, -1) : tableFrom;
+    const table = scanEmbeds(tr.state).tables.find(item => item.from === mappedFrom);
+    const cursor = tr.state.selection.main;
+    return table && cursor.empty && cursor.head >= table.from && cursor.head <= table.to
+      ? mappedFrom
+      : null;
+  },
+});
+
+function buildEmbedDecos(state, tableSourceFrom = null, embeds = scanEmbeds(state)) {
   const ranges = [];
-  const { frontmatter, callouts, images, tables, math } = scanEmbeds(state);
+  const { frontmatter, callouts, images, tables, math } = embeds;
   const selection = state.selection.ranges;
 
   if (frontmatter) {
@@ -1952,7 +1941,7 @@ function buildEmbedDecos(state) {
   }
 
   for (const table of tables) {
-    if (rangeTouches(selection, table.from, table.to)) continue;
+    if (tableSourceFrom === table.from && rangeTouches(selection, table.from, table.to)) continue;
     const pending = pendingTableCell;
     const uiKey = pending && pending.table === table.from
       ? pending.row + ':' + pending.col
@@ -2003,11 +1992,16 @@ function buildEmbedDecos(state) {
 const embedField = StateField.define({
   create: (state) => buildEmbedDecos(state),
   update(deco, tr) {
+    // Do not conceal or reveal block embeds while a pointer is in flight.
+    // Changing replacement ranges in the mousedown transaction can move the
+    // line under the pointer and make the first click select the next line.
+    if (interaction.pointerDown && tr.selection && !tr.docChanged) return deco;
     if (!tr.docChanged && !tr.selection &&
-        !tr.effects.some((effect) => effect.is(tableCellUiEffect) || effect.is(setRawFrontmatterEffect))) {
+        !tr.effects.some((effect) =>
+          effect.is(tableCellUiEffect) || effect.is(tableSourceEffect) || effect.is(setRawFrontmatterEffect))) {
       return deco;
     }
-    return buildEmbedDecos(tr.state);
+    return buildEmbedDecos(tr.state, tr.state.field(tableSourceField, false));
   },
   provide: (field) => EditorView.decorations.from(field),
 });
@@ -2853,6 +2847,9 @@ function showConfirm(message, okLabel = 'OK') {
 // ── Document switching & tab actions ─────────────────────────────────────────
 function switchDocument(fromDoc, toDoc) {
   if (fromDoc && typeof view !== 'undefined' && view) {
+    if (view.state.field(tableSourceField, false) !== null) {
+      view.dispatch({ effects: tableSourceEffect.of(null) });
+    }
     fromDoc.editorState = view.state;
     fromDoc.scrollPosition = view.scrollDOM.scrollTop;
   }
@@ -2951,6 +2948,7 @@ async function saveFile() {
   updateAppName();
   updateDocumentTitleInput();
   tabBarUI.render();
+  fileTreeUI?.setActivePath(doc.path);
   sessionManager.scheduleSave();
 }
 
@@ -2965,6 +2963,7 @@ async function saveAsFile() {
   updateAppName();
   updateDocumentTitleInput();
   tabBarUI.render();
+  fileTreeUI?.setActivePath(doc.path);
   sessionManager.scheduleSave();
 }
 
@@ -3174,7 +3173,7 @@ function getEditorExtensions() {
       { key: 'Ctrl-f', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
       { key: 'Ctrl-h', run: () => { CommandRegistry.execute('edit:find', view, view.state); return true; } },
       { key: 'F11', run: () => { CommandRegistry.execute('view:zen', view, view.state); return true; } },
-      { key: 'Ctrl-b', run: () => CommandRegistry.execute('insert:bold', view, view.state), preventDefault: true },
+      { key: 'Ctrl-Shift-b', run: () => CommandRegistry.execute('insert:bold', view, view.state), preventDefault: true },
       { key: 'Ctrl-i', run: () => CommandRegistry.execute('insert:italic', view, view.state), preventDefault: true },
       { key: 'Ctrl-Shift-x', run: () => CommandRegistry.execute('insert:strikethrough', view, view.state), preventDefault: true },
       { key: 'Ctrl-`', run: () => CommandRegistry.execute('insert:inlineCode', view, view.state), preventDefault: true },
@@ -3190,6 +3189,7 @@ function getEditorExtensions() {
     highlightCompartment.of(makeHighlight(!isLight, color)),
     lineHeightProbe,
     tableMenuDismiss,
+    tableSourceField,
     embedField,
     rawFrontmatterField,
     frontmatterAutoTrigger,
@@ -3282,6 +3282,16 @@ const view = new EditorView({
   }
 });
 
+view.dom.addEventListener('focusout', (event) => {
+  if (event.relatedTarget && view.dom.contains(event.relatedTarget)) return;
+  if (view.state.field(tableSourceField, false) === null) return;
+  requestAnimationFrame(() => {
+    if (!view.hasFocus && view.state.field(tableSourceField, false) !== null) {
+      view.dispatch({ effects: tableSourceEffect.of(null) });
+    }
+  });
+});
+
 // Hooks used by PluginSandboxHost via executeJavaScript
 window.CommandRegistry = CommandRegistry;
 window.getEditorContent = () => view.state.doc.toString();
@@ -3338,6 +3348,245 @@ const tabBarUI = new TabBarUI({
 const sessionManager = new SessionManager({
   tabManager,
   createEditorState,
+  getWorkspacePath: () => workspacePath,
+  restoreWorkspace: restoreWorkspacePath,
+});
+
+let workspacePath = null;
+let workspaceTree = [];
+let fileTreeUI;
+
+function normalizedFilePath(filePath) {
+  return String(filePath || '').replace(/\\/g, '/').toLowerCase();
+}
+
+function joinWorkspacePath(rootPath, relativePath) {
+  const separator = rootPath.includes('\\') ? '\\' : '/';
+  const root = rootPath.endsWith('\\') || rootPath.endsWith('/') ? rootPath : rootPath + separator;
+  return root + String(relativePath).replace(/[\\/]/g, separator);
+}
+
+function updateWorkspaceUI(result) {
+  workspacePath = result.rootPath || null;
+  workspaceTree = Array.isArray(result.tree) ? result.tree : [];
+  fileTreeUI?.setWorkspace({ rootPath: workspacePath, tree: workspaceTree });
+  fileTreeUI?.setActivePath(tabManager.activeDocument?.path);
+}
+
+async function restoreWorkspacePath(rootPath) {
+  const result = await window.fileAPI.openWorkspacePath(rootPath);
+  updateWorkspaceUI(result);
+}
+
+async function openWorkspaceFolder() {
+  try {
+    const result = await window.fileAPI.openWorkspace();
+    if (!result || result.canceled) return;
+    updateWorkspaceUI(result);
+    sessionManager.scheduleSave();
+  } catch (error) {
+    alert(`Unable to open workspace: ${error.message}`);
+  }
+}
+
+async function closeWorkspace() {
+  if (!workspacePath) return;
+  try {
+    await window.fileAPI.closeWorkspace();
+    workspacePath = null;
+    workspaceTree = [];
+    fileTreeUI?.setWorkspace({ rootPath: null, tree: [] });
+    fileTreeUI?.setActivePath(tabManager.activeDocument?.path);
+    sessionManager.scheduleSave();
+  } catch (error) {
+    alert(`Unable to close workspace: ${error.message}`);
+  }
+}
+
+function closeWindow() {
+  window.windowAPI?.close();
+}
+
+async function refreshWorkspaceTree() {
+  const result = await window.fileAPI.getWorkspaceTree();
+  updateWorkspaceUI(result);
+}
+
+async function createWorkspaceItem(parentPath, name, type) {
+  try {
+    const separator = workspacePath?.includes('\\') ? '\\' : '/';
+    const relativePath = parentPath ? `${parentPath}${separator}${name}` : name;
+    const result = await window.fileAPI.createWorkspaceItem(relativePath, type);
+    await refreshWorkspaceTree();
+    if (type === 'file') openFilePath(result.path, result.content);
+    sessionManager.scheduleSave();
+  } catch (error) {
+    alert(`Unable to create workspace item: ${error.message}`);
+  }
+}
+
+async function renameWorkspaceItem(entry, newName) {
+  try {
+    const result = await window.fileAPI.renameWorkspaceItem(entry.relativePath, newName);
+    const oldPath = normalizedFilePath(result.oldPath);
+    for (const doc of tabManager.documents) {
+      const docPath = normalizedFilePath(doc.path);
+      if (docPath === oldPath) {
+        doc.setPath(result.newPath);
+      } else if (docPath.startsWith(`${oldPath}/`)) {
+        doc.setPath(result.newPath + doc.path.slice(result.oldPath.length));
+      }
+    }
+    tabBarUI.render();
+    updateAppName();
+    updateDocumentTitleInput();
+    await refreshWorkspaceTree();
+    sessionManager.scheduleSave();
+  } catch (error) {
+    alert(`Unable to rename workspace item: ${error.message}`);
+  }
+}
+
+async function deleteWorkspaceItem(entry) {
+  try {
+    const itemPath = normalizedFilePath(joinWorkspacePath(workspacePath, entry.relativePath));
+    const matchingDocs = tabManager.documents.filter(doc => {
+      const docPath = normalizedFilePath(doc.path);
+      return docPath === itemPath || docPath.startsWith(`${itemPath}/`);
+    });
+    const dirtyDocs = matchingDocs.filter(doc => doc.dirty);
+    if (dirtyDocs.length) {
+      const names = dirtyDocs.map(doc => `"${doc.name}"`).join(', ');
+      const confirmed = await showConfirm(
+        `Deleting "${entry.name}" will discard unsaved changes in ${names}. Continue?`,
+        'Delete',
+      );
+      if (!confirmed) return;
+    } else {
+      const confirmed = await showConfirm(`Delete "${entry.name}"?`, 'Delete');
+      if (!confirmed) return;
+    }
+
+    await window.fileAPI.deleteWorkspaceItem(entry.relativePath);
+    matchingDocs.forEach(doc => tabManager.remove(doc.id));
+    await refreshWorkspaceTree();
+    updateDocumentTitleInput();
+    sessionManager.scheduleSave();
+  } catch (error) {
+    alert(`Unable to delete workspace item: ${error.message}`);
+  }
+}
+
+async function openWorkspaceFile(relativePath) {
+  try {
+    const result = await window.fileAPI.openWorkspaceFile(relativePath);
+    openFilePath(result.filePath, result.content);
+    fileTreeUI?.setActivePath(result.filePath);
+  } catch (error) {
+    alert(`Unable to open workspace file: ${error.message}`);
+  }
+}
+
+async function handleWorkspaceChange(change) {
+  if (change?.error) {
+    console.error('Workspace file watcher stopped:', change.error);
+    return;
+  }
+  try {
+    await refreshWorkspaceTree();
+  } catch (error) {
+    console.error('Failed to refresh workspace tree:', error);
+    return;
+  }
+
+  const changedPaths = Array.isArray(change?.relativePaths)
+    ? change.relativePaths
+    : [change?.relativePath ?? null];
+  if (!changedPaths.includes(null) && !changedPaths.some(filePath => /\.md$/i.test(filePath))) return;
+  const workspacePrefix = `${normalizedFilePath(workspacePath).replace(/\/+$/, '')}/`;
+  const changedMarkdownPaths = changedPaths
+    .filter(filePath => filePath && /\.md$/i.test(filePath))
+    .map(filePath => normalizedFilePath(joinWorkspacePath(workspacePath, filePath)));
+  const reloadAll = changedPaths.includes(null);
+  const candidates = tabManager.documents.filter(doc =>
+    doc.path && !doc.dirty && normalizedFilePath(doc.path).startsWith(workspacePrefix) &&
+    (reloadAll || changedMarkdownPaths.includes(normalizedFilePath(doc.path))));
+  for (const doc of candidates) {
+    try {
+      const stateBeforeRead = doc.getState();
+      const relativePath = doc.path.slice(workspacePath.length).replace(/^[\\/]+/, '');
+      const result = await window.fileAPI.openWorkspaceFile(relativePath);
+      if (result && !result.canceled && !doc.dirty && doc.getState() === stateBeforeRead) {
+        const scrollTop = doc.id === tabManager.activeId ? view.scrollDOM.scrollTop : doc.scrollPosition;
+        doc.setState(createEditorState(result.content));
+        if (doc.id === tabManager.activeId) {
+          view.setState(doc.editorState);
+          view.scrollDOM.scrollTop = scrollTop;
+          updateWordCount();
+          updatePlaceholder();
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to refresh externally changed file "${doc.path}":`, error);
+    }
+  }
+}
+
+fileTreeUI = new FileTreeUI({
+  container: document.getElementById('sidebar'),
+  onOpenFolder: openWorkspaceFolder,
+  onOpenFile: openWorkspaceFile,
+  onCreate: createWorkspaceItem,
+  onRename: renameWorkspaceItem,
+  onDelete: deleteWorkspaceItem,
+  onToggleSidebar: toggleSidebar,
+});
+window.fileAPI?.onWorkspaceChange?.((change) => {
+  handleWorkspaceChange(change).catch(error =>
+    console.error('Failed to process workspace change:', error));
+});
+
+let sidebarWidth = 250;
+function toggleSidebar() {
+  document.body.classList.toggle('sidebar-collapsed');
+  const collapsed = document.body.classList.contains('sidebar-collapsed');
+  const navButton = document.querySelector('.sidebar-nav-button');
+  if (navButton) {
+    navButton.title = collapsed ? 'Expand workspace' : 'Collapse workspace';
+    navButton.setAttribute('aria-label', navButton.title);
+    navButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  }
+}
+
+const sidebarSplitter = document.getElementById('sidebar-splitter');
+sidebarSplitter.addEventListener('pointerdown', (event) => {
+  if (document.body.classList.contains('zen')) return;
+  event.preventDefault();
+  sidebarSplitter.setPointerCapture(event.pointerId);
+  const layoutLeft = document.getElementById('workspace-layout').getBoundingClientRect().left;
+  const move = (moveEvent) => {
+    sidebarWidth = Math.max(150, Math.min(520, moveEvent.clientX - layoutLeft));
+    const sidebar = document.getElementById('sidebar');
+    sidebar.style.width = `${sidebarWidth}px`;
+    sidebar.style.flexBasis = `${sidebarWidth}px`;
+  };
+  const finish = () => {
+    sidebarSplitter.removeEventListener('pointermove', move);
+    sidebarSplitter.removeEventListener('pointerup', finish);
+    sidebarSplitter.removeEventListener('pointercancel', finish);
+  };
+  sidebarSplitter.addEventListener('pointermove', move);
+  sidebarSplitter.addEventListener('pointerup', finish, { once: true });
+  sidebarSplitter.addEventListener('pointercancel', finish, { once: true });
+});
+
+sidebarSplitter.addEventListener('keydown', (event) => {
+  if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+  event.preventDefault();
+  sidebarWidth = Math.max(150, Math.min(520, sidebarWidth + (event.key === 'ArrowRight' ? 16 : -16)));
+  const sidebar = document.getElementById('sidebar');
+  sidebar.style.width = `${sidebarWidth}px`;
+  sidebar.style.flexBasis = `${sidebarWidth}px`;
 });
 
 let currentActiveId = null;
@@ -3350,6 +3599,7 @@ tabManager.onChange(() => {
     switchDocument(prevDoc, active);
   }
   tabBarUI.render();
+  fileTreeUI?.setActivePath(active?.path);
 });
 
 // Freeze decoration rebuilds during pointer drag-select, then
@@ -3362,6 +3612,7 @@ let startY = 0;
 
 view.scrollDOM.addEventListener('mousedown', e => {
   if (e.button === 0) {
+    interaction.pointerDown = true;
     pointerDown = true;
     startX = e.clientX;
     startY = e.clientY;
@@ -3380,8 +3631,15 @@ window.addEventListener('mousemove', e => {
 }, true);
 
 window.addEventListener('mouseup', () => {
+  interaction.pointerDown = false;
   pointerDown = false;
-  if (!interaction.dragging) return;
+  if (!interaction.dragging) {
+    requestAnimationFrame(() => {
+      if (!view.dom.isConnected) return;
+      view.dispatch({ effects: refreshEffect.of(null) });
+    });
+    return;
+  }
   interaction.dragging = false;
   requestAnimationFrame(() => {
     if (!view.dom.isConnected) return;
@@ -3585,7 +3843,7 @@ CommandRegistry.registerCommand('edit:find', {
 // Insert commands
 CommandRegistry.registerCommand('insert:bold', {
   label: 'Bold',
-  shortcut: 'Ctrl+B',
+  shortcut: 'Ctrl+Shift+B',
   run: () => wrapSelection(view, { open: '**', close: '**', placeholder: 'bold text' }),
   enabled: () => true,
 });
@@ -3776,10 +4034,39 @@ CommandRegistry.registerCommand('view:zen', {
   enabled: () => true,
 });
 
+CommandRegistry.registerCommand('view:toggleSidebar', {
+  label: 'Toggle Sidebar',
+  shortcut: 'Ctrl+B',
+  run: toggleSidebar,
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('workspace:openFolder', {
+  label: 'Open Folder',
+  run: openWorkspaceFolder,
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('workspace:close', {
+  label: 'Close Workspace',
+  run: closeWorkspace,
+  enabled: () => Boolean(workspacePath),
+});
+
+CommandRegistry.registerCommand('window:close', {
+  label: 'Close Window',
+  run: closeWindow,
+  enabled: () => true,
+});
+
 // ── Dropdown menus (File, Edit, Insert) ──────────────────────────────────────
 const dropdownActionToCommand = {
   new: 'file:new',
   open: 'file:open',
+  openFolder: 'workspace:openFolder',
+  closeWorkspace: 'workspace:close',
+  closeWindow: 'window:close',
+  toggleSidebar: 'view:toggleSidebar',
   save: 'file:save',
   saveAs: 'file:saveAs',
   closeTab: 'file:closeTab',
@@ -3992,7 +4279,11 @@ document.addEventListener('keydown', e => {
 window.addEventListener('keydown', (e) => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   const key = e.key.toLowerCase();
-  if (key === 'f' || key === 'h') {
+  if (key === 'b' && !e.shiftKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    CommandRegistry.execute('view:toggleSidebar', view, view.state);
+  } else if (key === 'f' || key === 'h') {
     e.preventDefault();
     e.stopPropagation();
     CommandRegistry.execute('edit:find', view, view.state);

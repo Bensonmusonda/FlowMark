@@ -48,7 +48,9 @@ fully editable. Up/down are free because the input is single-line.
 
 Exit boundaries: `Up` from the header row places the caret on the line above the
 table; `Down` from an empty phantom row (or `Tab` past the last cell of the phantom)
-places it on the line below.
+places it on the line below. If the table ends at EOF with no following line,
+exiting appends one newline and places the caret on that new line; it does not
+create another table row.
 
 ## 3. Phantom row
 

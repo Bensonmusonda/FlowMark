@@ -12,10 +12,14 @@ export class SessionManager {
    * @param {Object} options
    * @param {import('../model/document.js').TabManager} options.tabManager
    * @param {Function} options.createEditorState - (initialContent) => EditorState
+   * @param {Function} [options.getWorkspacePath] - Returns the current workspace path
+   * @param {Function} [options.restoreWorkspace] - Opens the restored workspace path
    */
-  constructor({ tabManager, createEditorState }) {
+  constructor({ tabManager, createEditorState, getWorkspacePath, restoreWorkspace }) {
     this.tabManager = tabManager;
     this.createEditorState = createEditorState;
+    this.getWorkspacePath = getWorkspacePath || (() => null);
+    this.restoreWorkspace = restoreWorkspace || (async () => {});
   }
 
   /**
@@ -51,6 +55,7 @@ export class SessionManager {
       version: 1,
       tabs: tabsData,
       activeIndex: activeIndex >= 0 ? activeIndex : 0,
+      workspacePath: this.getWorkspacePath(),
       timestamp: Date.now(),
     };
 
@@ -71,7 +76,22 @@ export class SessionManager {
     try {
       const session = await window.fileAPI.loadSession();
       if (!session || !Array.isArray(session.tabs) || session.tabs.length === 0) {
+        if (session?.workspacePath) {
+          try {
+            await this.restoreWorkspace(session.workspacePath);
+          } catch (err) {
+            console.warn('Failed to restore workspace:', err);
+          }
+        }
         return false;
+      }
+
+      if (session.workspacePath) {
+        try {
+          await this.restoreWorkspace(session.workspacePath);
+        } catch (err) {
+          console.warn('Failed to restore workspace:', err);
+        }
       }
 
       for (let i = 0; i < session.tabs.length; i++) {
