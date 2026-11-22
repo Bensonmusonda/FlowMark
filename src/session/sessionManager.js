@@ -44,6 +44,8 @@ export class SessionManager {
         name: doc.name,
         dirty: doc.dirty,
         scrollPosition: doc.scrollPosition,
+        viewType: doc.viewType,
+        viewData: doc.viewData,
         // If untitled or dirty, preserve content
         content: (!doc.path || doc.dirty) ? doc.getText() : undefined,
       };
@@ -119,6 +121,8 @@ export class SessionManager {
           editorState: state,
           dirty: Boolean(item.dirty),
           scrollPosition: item.scrollPosition || 0,
+          viewType: item.viewType || 'markdown',
+          viewData: item.viewData || null,
         });
 
         this.tabManager.add(doc, false);

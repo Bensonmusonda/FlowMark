@@ -114,6 +114,7 @@ export class FileTreeUI {
       if (this.onToggleSidebar) this.onToggleSidebar();
     });
     nav.appendChild(workspaceNavButton);
+
     this.container.appendChild(nav);
 
     const panel = document.createElement('div');

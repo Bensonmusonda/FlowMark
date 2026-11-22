@@ -31,12 +31,21 @@ const arg = (name) => {
 const PLUGIN_ID = arg('plugin-id');
 const PLUGIN_PERMISSIONS = new Set(arg('plugin-permissions').split(',').filter(Boolean));
 const commandHandlers = new Map();
+const slashCommandHandlers = new Map();
 const beforeSaveHandlers = [];
+const smartPasteHandlers = [];
 
 // Host tells us a command was clicked in the main window
 ipcRenderer.on('plugin:command', (_, { id }) => {
   const fn = commandHandlers.get(id);
   if (fn) { try { fn(); } catch (e) { console.error(e); } }
+});
+
+ipcRenderer.on('plugin:slashCommand', (_, { id }) => {
+  const fn = slashCommandHandlers.get(id);
+  if (fn) {
+    try { fn(); } catch (e) { console.error(e); }
+  }
 });
 
 // Host asks us to transform content before save
@@ -51,6 +60,20 @@ ipcRenderer.on('file:beforeSave', async (_, { requestId, content }) => {
     }
   }
   ipcRenderer.send('file:beforeSaveResult', { requestId, content: result });
+});
+
+ipcRenderer.on('clipboard:smartPaste', async (_, { requestId, text, html }) => {
+  let result = { text, html };
+  for (const handler of smartPasteHandlers) {
+    try {
+      const transformed = await handler(result);
+      if (typeof transformed === 'string') result = { text: transformed, html: '' };
+      else if (transformed && typeof transformed === 'object') result = { ...result, ...transformed };
+    } catch (e) {
+      console.error(`[plugin:${PLUGIN_ID}] smartPaste handler error:`, e);
+    }
+  }
+  ipcRenderer.send('clipboard:smartPasteResult', { requestId, result });
 });
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -148,7 +171,16 @@ const pluginAPI = {
       const handler = (_, data) => callback(data);
       ipcRenderer.on('editor:selectionChanged', handler);
       return () => ipcRenderer.removeListener('editor:selectionChanged', handler);
-    }
+    },
+    registerSlashCommand: (command) => {
+      if (!hasPermission('editor.slashCommands')) {
+        return Promise.reject(new Error('Permission denied: editor.slashCommands'));
+      }
+      const { run, ...meta } = command || {};
+      if (typeof run === 'function') slashCommandHandlers.set(meta.id, run);
+      return sendRequest('editor:registerSlashCommand', { command: meta });
+    },
+    removeSlashCommand: (commandId) => sendRequest('editor:removeSlashCommand', { commandId })
   },
 
   // File API
@@ -230,7 +262,31 @@ const pluginAPI = {
       if (typeof run === 'function') commandHandlers.set(meta.id, run);
       if (!hasPermission('editor.commands')) return Promise.reject(new Error('Permission denied: editor.commands'));
       return sendRequest('ui:registerCommand', { command: meta });
-    }
+    },
+    registerSidebarPanel: (panel) => {
+      if (!hasPermission('ui.panels')) return Promise.reject(new Error('Permission denied: ui.panels'));
+      return sendRequest('ui:registerSidebarPanel', { panel });
+    },
+    removeSidebarPanel: (panelId) => sendRequest('ui:removeSidebarPanel', { panelId }),
+  },
+
+  // Custom tab views
+  views: {
+    registerCustomView: (view) => {
+      if (!hasPermission('ui.customViews')) return Promise.reject(new Error('Permission denied: ui.customViews'));
+      return sendRequest('ui:registerCustomView', { view });
+    },
+    open: (viewId, options = {}) => {
+      if (!hasPermission('ui.customViews')) return Promise.reject(new Error('Permission denied: ui.customViews'));
+      if (!options || typeof options !== 'object' || Array.isArray(options)) {
+        return Promise.reject(new TypeError('Custom view options must be an object'));
+      }
+      const payload = { viewId };
+      if (options.name !== undefined) payload.name = options.name;
+      if (options.state !== undefined) payload.state = options.state;
+      return sendRequest('ui:openCustomView', payload);
+    },
+    removeCustomView: (viewId) => sendRequest('ui:removeCustomView', { viewId })
   },
 
   // Clipboard API
@@ -250,6 +306,13 @@ const pluginAPI = {
     writeHTML: (html) => {
       if (!hasPermission('clipboard.write')) return Promise.reject(new Error('Permission denied: clipboard.write'));
       return sendRequest('clipboard:writeHTML', { html });
+    },
+    registerSmartPaste: (handler) => {
+      if (!hasPermission('clipboard.smartPaste')) {
+        return Promise.reject(new Error('Permission denied: clipboard.smartPaste'));
+      }
+      if (typeof handler === 'function') smartPasteHandlers.push(handler);
+      return Promise.resolve({ success: true });
     }
   },
 

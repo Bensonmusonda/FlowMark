@@ -53,16 +53,23 @@ This document outlines the execution roadmap for FlowMark, prioritizing core edi
 **Goal:** Extend the sandboxed plugin system to hook into the new workspace and tab surfaces.
 **Reference Document:** `PLUGIN_IDEAS.md`
 
-- [ ] **Right-Side Utility Pane Shell:**
+- [x] **Right-Side Utility Pane Shell:**
   - Add a resizable right-side pane to the core workspace layout.
   - Keep the pane hidden until an option in the workspace navigation activates it.
   - Render a blank placeholder while no plugin or core view owns the pane.
   - Reserve the pane for future views such as AI assistants, outlines, backlinks, and plugin panels.
   - Do not assign a default active option or show the pane at startup.
-- [ ] **Sidebar Activity Bar & Panel API:**
+- [x] **Sidebar Activity Bar & Panel API:**
   - Allow sandboxed plugins to register secondary panels (`flowmarkPlugin.ui.registerSidebarPanel({ id, title, icon, render })`).
   - Examples: Table of Contents / Outline, Tag Explorer, Backlinks, Calendar.
-- [ ] **Custom Tab Views API:**
-  - Support `Document.viewType !== 'markdown'` so tabs can host non-text views (Excalidraw canvas, Kanban, Preview) via sandboxed `<iframe>` / `<webview>`.
-- [ ] **Slash Command & Smart Paste Extensions:**
+- [x] **Custom Tab Views API:**
+  - Let plugins register and explicitly open non-Markdown tabs through `flowmarkPlugin.views.open(viewId, { name, state })`.
+  - Send `{ type: 'flowmark:custom-view:init', viewId, state }` to the sandboxed iframe; persist updates posted as `{ type: 'flowmark:custom-view:state', viewId, state }` (JSON, maximum 256 KB).
+  - Preserve Markdown editor state when switching between view types, and keep editor-only save/export operations unavailable in custom tabs.
+  - Keep extension-based automatic file routing separate; registering a view does not change ordinary file opening.
+- [ ] **Plugin-Extensible Inline Markdown Renderers:**
+  - Let plugins register renderers for named fenced-code languages; Mermaid is one example, not a special case.
+  - Pass each matching block's source to a plugin-owned sandboxed renderer and show its output as an inline preview without changing the Markdown document.
+  - Preserve editing by revealing the raw fence and source while the caret is inside the block; fall back to source when no renderer is registered or rendering fails, and clean up previews when blocks leave view.
+- [x] **Slash Command & Smart Paste Extensions:**
   - Floating `/` insert menu and clipboard conversion hooks.

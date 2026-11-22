@@ -132,6 +132,49 @@ body.theme-sepia .topbar-menu-btn:hover {
   display: none;
 }
 
+#utility-activity-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: 8px;
+  -webkit-app-region: no-drag;
+}
+
+.utility-activity-button {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.utility-activity-button:hover,
+.utility-activity-button:focus-visible {
+  color: var(--text);
+  background: rgba(127, 127, 127, 0.14);
+  outline: none;
+}
+
+.utility-activity-button[aria-pressed="true"] {
+  color: var(--text);
+  background: transparent;
+}
+
+.utility-activity-button[aria-pressed="true"]:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.utility-activity-button .line-icon {
+  stroke-width: 1.7;
+}
+
 .tab-strip {
   display: flex;
   align-items: center;
@@ -316,6 +359,8 @@ body.zen #titlebar { opacity: 0; pointer-events: none; display: none; }
 body.zen #tabbar { display: none; }
 body.zen #sidebar,
 body.zen #sidebar-splitter { display: none; }
+body.zen #utility-pane,
+body.zen #utility-pane-splitter { display: none; }
 body.zen #workspace-layout { height: 100vh; }
 body.zen #editor-wrap { height: 100vh; flex: 1; }
 body.sidebar-collapsed #sidebar-splitter { display: none; }
@@ -659,6 +704,161 @@ body.sidebar-collapsed .sidebar-nav {
 #sidebar-splitter:hover,
 #sidebar-splitter:focus-visible {
   background: var(--accent);
+  outline: none;
+}
+
+/* ── Right utility pane ── */
+#utility-pane {
+  width: 320px;
+  min-width: 220px;
+  max-width: 520px;
+  flex: 0 0 320px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+}
+
+#utility-pane[hidden],
+#utility-pane-splitter[hidden] {
+  display: none;
+}
+
+#utility-pane-splitter {
+  flex: 0 0 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 1;
+}
+
+#utility-pane-splitter:hover,
+#utility-pane-splitter:focus-visible {
+  background: var(--accent);
+  outline: none;
+}
+
+.utility-pane-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  overflow: hidden;
+}
+
+.utility-pane-header {
+  height: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.utility-pane-close {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.utility-pane-close:hover,
+.utility-pane-close:focus-visible {
+  color: var(--text);
+  background: rgba(127, 127, 127, 0.12);
+  outline: none;
+}
+
+.utility-pane-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.utility-pane-placeholder {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+}
+
+.utility-plugin-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--bg-surface);
+}
+
+#custom-view {
+  position: absolute;
+  inset: 0;
+  background: var(--bg);
+}
+
+#custom-view.hidden {
+  display: none;
+}
+
+#custom-view iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--bg);
+}
+
+.custom-view-placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.fm-slash-menu {
+  position: fixed;
+  z-index: 200;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+}
+
+.fm-slash-item {
+  width: 100%;
+  min-height: 32px;
+  display: block;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  font: 12px var(--font-ui);
+  text-align: left;
+  padding: 7px 9px;
+  cursor: pointer;
+}
+
+.fm-slash-item:hover,
+.fm-slash-item:focus-visible {
+  background: rgba(127, 127, 127, 0.12);
   outline: none;
 }
 

@@ -27,6 +27,7 @@ import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './c
 import { Document, TabManager } from './model/document.js';
 import TabBarUI from './ui/tabs.js';
 import FileTreeUI from './ui/fileTree.js';
+import { UtilityPane } from './ui/utilityPane.js';
 import SessionManager from './session/sessionManager.js';
 import { extractFrontmatter, stringifyFrontmatter } from './parser/frontmatter.js';
 import { PropertiesCardWidget } from './ui/propertiesCard.js';
@@ -2809,6 +2810,51 @@ function applyTheme(theme) {
 
 // ── State & Tab Management ───────────────────────────────────────────────────
 const tabManager = new TabManager();
+const registeredCustomViews = new Map();
+
+function customViewKey(pluginId, viewId) {
+  return `${pluginId}:${viewId}`;
+}
+
+function findCustomViewForDocument(doc) {
+  const { pluginId, viewId } = doc.viewData || {};
+  if (pluginId && viewId) {
+    return registeredCustomViews.get(customViewKey(pluginId, viewId)) || null;
+  }
+  if (viewId) {
+    const matches = [...registeredCustomViews.values()].filter(view => view.id === viewId);
+    if (matches.length === 1) return matches[0];
+  }
+  return null;
+}
+
+function renderCustomView(doc) {
+  const container = document.getElementById('custom-view');
+  container.classList.remove('hidden');
+  container.replaceChildren();
+
+  const view = findCustomViewForDocument(doc);
+  if (!view?.entryUrl) {
+    const placeholder = document.createElement('div');
+    placeholder.className = 'custom-view-placeholder';
+    placeholder.textContent = 'This custom view is unavailable. Enable its plugin to open it.';
+    container.appendChild(placeholder);
+    return;
+  }
+
+  const frame = document.createElement('iframe');
+  frame.sandbox = 'allow-scripts';
+  frame.title = doc.name;
+  frame.addEventListener('load', () => {
+    frame.contentWindow?.postMessage({
+      type: 'flowmark:custom-view:init',
+      viewId: view.id,
+      state: doc.viewData?.state ?? null,
+    }, '*');
+  }, { once: true });
+  frame.src = view.entryUrl;
+  container.appendChild(frame);
+}
 
 function updateAppName() {
   const doc = tabManager.activeDocument;
@@ -2846,7 +2892,7 @@ function showConfirm(message, okLabel = 'OK') {
 
 // ── Document switching & tab actions ─────────────────────────────────────────
 function switchDocument(fromDoc, toDoc) {
-  if (fromDoc && typeof view !== 'undefined' && view) {
+  if (fromDoc?.viewType === 'markdown' && typeof view !== 'undefined' && view) {
     if (view.state.field(tableSourceField, false) !== null) {
       view.dispatch({ effects: tableSourceEffect.of(null) });
     }
@@ -2855,22 +2901,31 @@ function switchDocument(fromDoc, toDoc) {
   }
   if (toDoc) {
     hideWelcome();
-    document.getElementById('editor').classList.remove('hidden');
-    view.setState(toDoc.editorState);
-    view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
-    const isLight = currentTheme !== 'theme-dark';
-    const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
-    view.dispatch({ effects: [
-      themeCompartment.reconfigure(makeTheme(color)),
-      highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
-    ]});
-    view.focus();
+    if (toDoc.viewType && toDoc.viewType !== 'markdown') {
+      document.getElementById('editor').classList.add('hidden');
+      renderCustomView(toDoc);
+    } else {
+      document.getElementById('custom-view').classList.add('hidden');
+      document.getElementById('custom-view').replaceChildren();
+      document.getElementById('editor').classList.remove('hidden');
+      view.setState(toDoc.editorState);
+      view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
+      const isLight = currentTheme !== 'theme-dark';
+      const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
+      view.dispatch({ effects: [
+        themeCompartment.reconfigure(makeTheme(color)),
+        highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
+      ]});
+      view.focus();
+    }
     updateAppName();
     updatePlaceholder();
     updateWordCount();
     updateDocumentTitleInput();
   } else {
     document.getElementById('editor').classList.add('hidden');
+    document.getElementById('custom-view').classList.add('hidden');
+    document.getElementById('custom-view').replaceChildren();
     updateAppName();
     updateDocumentTitleInput();
     showWelcome();
@@ -3294,21 +3349,42 @@ view.dom.addEventListener('focusout', (event) => {
 
 // Hooks used by PluginSandboxHost via executeJavaScript
 window.CommandRegistry = CommandRegistry;
-window.getEditorContent = () => view.state.doc.toString();
-window.setEditorContent = (text) => view.dispatch({
-  changes: { from: 0, to: view.state.doc.length, insert: text },
-});
+function requireActiveMarkdownDocument() {
+  const activeDocument = tabManager.activeDocument;
+  if (!activeDocument || activeDocument.viewType !== 'markdown') {
+    throw new Error('No active Markdown document');
+  }
+}
+window.getEditorContent = () => {
+  requireActiveMarkdownDocument();
+  return view.state.doc.toString();
+};
+window.setEditorContent = (text) => {
+  requireActiveMarkdownDocument();
+  return view.dispatch({
+    changes: { from: 0, to: view.state.doc.length, insert: text },
+  });
+};
 window.getEditorSelection = () => {
+  requireActiveMarkdownDocument();
   const { from, to, empty } = view.state.selection.main;
   return { from, to, empty, text: view.state.sliceDoc(from, to) };
 };
-window.setEditorSelection = (sel) => view.dispatch({
-  selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to },
-});
+window.setEditorSelection = (sel) => {
+  requireActiveMarkdownDocument();
+  return view.dispatch({
+    selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to },
+  });
+};
 window.replaceEditorSelection = (text) => {
+  requireActiveMarkdownDocument();
   const { from, to } = view.state.selection.main;
   view.dispatch({ changes: { from, to, insert: text }, selection: { anchor: from + text.length } });
   view.focus();
+};
+window.executePluginEditorCommand = (commandId) => {
+  requireActiveMarkdownDocument();
+  return CommandRegistry.execute(commandId, view, view.state);
 };
 
 function updateDocumentTitleInput() {
@@ -3541,6 +3617,11 @@ fileTreeUI = new FileTreeUI({
   onDelete: deleteWorkspaceItem,
   onToggleSidebar: toggleSidebar,
 });
+const utilityPane = new UtilityPane({
+  pane: document.getElementById('utility-pane'),
+  splitter: document.getElementById('utility-pane-splitter'),
+  activityBar: document.getElementById('utility-activity-bar'),
+});
 window.fileAPI?.onWorkspaceChange?.((change) => {
   handleWorkspaceChange(change).catch(error =>
     console.error('Failed to process workspace change:', error));
@@ -3693,14 +3774,14 @@ CommandRegistry.registerCommand('file:save', {
   label: 'Save',
   shortcut: 'Ctrl+S',
   run: () => saveFile(),
-  enabled: () => true,
+  enabled: () => tabManager.activeDocument?.viewType === 'markdown',
 });
 
 CommandRegistry.registerCommand('file:saveAs', {
   label: 'Save As',
   shortcut: 'Ctrl+Shift+S',
   run: () => saveAsFile(),
-  enabled: () => true,
+  enabled: () => tabManager.activeDocument?.viewType === 'markdown',
 });
 
 CommandRegistry.registerCommand('file:closeTab', {
@@ -4003,7 +4084,7 @@ CommandRegistry.registerCommand('export:pdf', {
       doc.getText(), document.body.className);
     if (result && result.error) alert('Export failed: ' + result.error);
   },
-  enabled: () => true,
+  enabled: () => tabManager.activeDocument?.viewType === 'markdown',
 });
 
 CommandRegistry.registerCommand('export:html', {
@@ -4015,7 +4096,7 @@ CommandRegistry.registerCommand('export:html', {
       doc.getText(), document.body.className);
     if (result && result.error) alert('Export failed: ' + result.error);
   },
-  enabled: () => true,
+  enabled: () => tabManager.activeDocument?.viewType === 'markdown',
 });
 
 // View commands
@@ -4324,7 +4405,8 @@ document.getElementById('editor-wrap').addEventListener('click', async e => {
 function updateWordCount() {
   const el = document.getElementById('word-count');
   if (!el) return;
-  if (typeof view === 'undefined' || !view || !tabManager.activeDocument) {
+  if (typeof view === 'undefined' || !view
+    || tabManager.activeDocument?.viewType !== 'markdown') {
     el.textContent = '';
     return;
   }
@@ -4343,11 +4425,13 @@ updateDocumentTitleInput();
 applyTheme(currentTheme);
 
 // ── Plugin System Integration ──────────────────────────────────────────────────
+const slashCommands = new Map();
 async function initPlugins() {
   if (!window.pluginManager) {
     console.warn('[editor] Plugin API not available');
     return;
   }
+  const registeredUtilityPanels = new Map();
 
   // Apply plugin stylesheets
   async function applyPluginStyles() {
@@ -4407,6 +4491,71 @@ async function initPlugins() {
     console.log('[editor] Plugins changed:', plugins);
     applyPluginStyles();
     buildPluginsMenu(plugins);
+  });
+
+  window.uiAPI?.onRegisterSidebarPanel?.((panel) => {
+    registeredUtilityPanels.set(panel.id, panel);
+    utilityPane.registerPanel(panel);
+  });
+  window.uiAPI?.onRemoveSidebarPanel?.(({ panelId, pluginId }) => {
+    registeredUtilityPanels.delete(panelId);
+    utilityPane.unregisterPanel(pluginId, [panelId]);
+  });
+  window.uiAPI?.onRegisterCustomView?.((view) => {
+    registeredCustomViews.set(customViewKey(view.pluginId, view.id), view);
+    const active = tabManager.activeDocument;
+    if (active?.viewData?.pluginId === view.pluginId && active?.viewData?.viewId === view.id) {
+      renderCustomView(active);
+    }
+  });
+  window.uiAPI?.onRemoveCustomView?.(({ viewId, pluginId }) => {
+    registeredCustomViews.delete(customViewKey(pluginId, viewId));
+    const active = tabManager.activeDocument;
+    if (active?.viewData?.pluginId === pluginId && active?.viewData?.viewId === viewId) {
+      renderCustomView(active);
+    }
+  });
+  window.uiAPI?.onOpenCustomView?.(({ pluginId, viewId, name, state }) => {
+    const view = registeredCustomViews.get(customViewKey(pluginId, viewId));
+    if (!view) {
+      console.error(`Cannot open unregistered custom view "${pluginId}:${viewId}"`);
+      return;
+    }
+    const doc = new Document({
+      name: name || view.name,
+      viewType: `plugin:${pluginId}:${viewId}`,
+      viewData: { pluginId, viewId, state: state ?? null },
+    });
+    tabManager.add(doc, true);
+    sessionManager.scheduleSave();
+  });
+  window.addEventListener('message', (event) => {
+    const active = tabManager.activeDocument;
+    const frame = document.getElementById('custom-view').querySelector('iframe');
+    if (!active || active.viewType === 'markdown' || !frame || event.source !== frame.contentWindow) return;
+    if (event.data?.type !== 'flowmark:custom-view:state'
+      || event.data.viewId !== active.viewData?.viewId) return;
+
+    let serializedState;
+    try {
+      serializedState = JSON.stringify(event.data.state);
+    } catch (error) {
+      console.warn('Ignoring non-serializable custom view state:', error);
+      return;
+    }
+    if (typeof serializedState !== 'string'
+      || new TextEncoder().encode(serializedState).length > 262144) {
+      console.warn('Ignoring custom view state larger than 256 KB');
+      return;
+    }
+    active.viewData = { ...active.viewData, state: JSON.parse(serializedState) };
+    sessionManager.scheduleSave();
+  });
+  window.uiAPI?.onRegisterSlashCommand?.((pluginId, command) => {
+    slashCommands.set(command.id, { ...command, pluginId });
+  });
+  window.uiAPI?.onRemoveSlashCommand?.((_pluginId, commandId) => {
+    slashCommands.delete(commandId);
   });
 
   // Apply markdown transforms before save
@@ -4518,7 +4667,9 @@ async function initPlugins() {
     }
   });
 
-  window.uiAPI?.onPluginDisabled?.(({ pluginId, commands, menuItems }) => {
+  window.uiAPI?.onPluginDisabled?.(({
+    pluginId, commands, sidebarPanels, customViews, slashCommands: pluginSlashCommands,
+  }) => {
     // Clear status bar if this plugin set it
     const statusEl = document.getElementById('status-bar-text');
     if (statusEl && statusEl.textContent.startsWith(`[${pluginId}]`)) {
@@ -4534,6 +4685,19 @@ async function initPlugins() {
         CommandRegistry.unregisterCommand(id);
       }
     }
+    for (const [id, panel] of registeredUtilityPanels) {
+      if (panel.pluginId === pluginId) registeredUtilityPanels.delete(id);
+    }
+    utilityPane.unregisterPanel(pluginId, Array.isArray(sidebarPanels) ? sidebarPanels : []);
+    for (const viewId of Array.isArray(customViews) ? customViews : []) {
+      registeredCustomViews.delete(customViewKey(pluginId, viewId));
+    }
+    const active = tabManager.activeDocument;
+    if (active?.viewData?.pluginId === pluginId) renderCustomView(active);
+    for (const [commandId, command] of slashCommands) {
+      if (command.pluginId === pluginId) slashCommands.delete(commandId);
+    }
+    if (Array.isArray(pluginSlashCommands) && pluginSlashCommands.length) hideSlashMenu();
   });
 
   window.settingsAPI?.onChange((key, value, options = {}) => {
@@ -4579,6 +4743,68 @@ async function initPlugins() {
     };
   }
 }
+
+// ── Slash command & smart paste extension hooks ──────────────────────────────
+let slashMenu = null;
+function hideSlashMenu() {
+  slashMenu?.remove();
+  slashMenu = null;
+}
+
+function showSlashMenu() {
+  hideSlashMenu();
+  if (!slashCommands.size) return;
+  slashMenu = document.createElement('div');
+  slashMenu.className = 'fm-slash-menu';
+  slashMenu.setAttribute('role', 'listbox');
+  for (const command of slashCommands.values()) {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'fm-slash-item';
+    item.textContent = command.label;
+    item.setAttribute('role', 'option');
+    item.addEventListener('mousedown', (event) => {
+      event.preventDefault();
+      hideSlashMenu();
+      window.pluginManager?.invokeSlashCommand?.(command.pluginId, command.id);
+    });
+    slashMenu.appendChild(item);
+  }
+  document.body.appendChild(slashMenu);
+  const coords = view.coordsAtPos(view.state.selection.main.head);
+  if (coords) {
+    slashMenu.style.left = `${coords.left}px`;
+    slashMenu.style.top = `${coords.bottom + 4}px`;
+  }
+}
+
+view.contentDOM.addEventListener('keydown', (event) => {
+  if (event.key === '/') {
+    setTimeout(showSlashMenu, 0);
+  } else if (event.key === 'Escape') {
+    hideSlashMenu();
+  }
+});
+
+view.contentDOM.addEventListener('paste', async (event) => {
+  if (!window.pluginManager?.applySmartPaste) return;
+  event.preventDefault();
+  const data = event.clipboardData;
+  const result = await window.pluginManager.applySmartPaste({
+    text: data?.getData('text/plain') || '',
+    html: data?.getData('text/html') || '',
+  });
+  const text = typeof result?.text === 'string'
+    ? result.text
+    : (typeof result === 'string' ? result : '');
+  if (!text) return;
+  const { from, to } = view.state.selection.main;
+  view.dispatch({
+    changes: { from, to, insert: text },
+    selection: { anchor: from + text.length },
+  });
+  view.focus();
+});
 
 async function initSession() {
   await initPlugins();

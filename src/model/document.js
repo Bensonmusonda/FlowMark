@@ -15,6 +15,8 @@ export class Document {
    * @param {boolean} [options.dirty]
    * @param {number} [options.scrollPosition]
    * @param {string} [options.initialContent]
+   * @param {string} [options.viewType] - Document view kind ('markdown' or 'plugin:<id>')
+   * @param {Object} [options.viewData] - Serialized state/data for custom views
    */
   constructor(options = {}) {
     this.id = options.id || `doc_${nextDocId++}_${Date.now()}`;
@@ -24,6 +26,8 @@ export class Document {
     this.dirty = Boolean(options.dirty);
     this.scrollPosition = options.scrollPosition || 0;
     this.selection = options.selection || null;
+    this.viewType = options.viewType || 'markdown';
+    this.viewData = options.viewData || null;
   }
 
   _basename(filePath) {
@@ -121,6 +125,8 @@ export class Document {
       name: this.name,
       dirty: this.dirty,
       scrollPosition: this.scrollPosition,
+      viewType: this.viewType,
+      viewData: this.viewData,
       // For unsaved (no path) documents, preserve content in session
       content: !this.path ? this.getText() : undefined,
     };

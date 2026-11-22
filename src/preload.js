@@ -59,6 +59,8 @@ contextBridge.exposeInMainWorld('pluginManager', {
   setSetting: (key, value) => ipcRenderer.invoke('plugins:settings:set', { key, value }),
   getStylesheets: () => ipcRenderer.invoke('plugins:getStylesheets'),
   invokeCommand: (pluginId, commandId) => ipcRenderer.invoke('plugins:invokeCommand', { pluginId, commandId }),
+  invokeSlashCommand: (pluginId, commandId) => ipcRenderer.invoke('plugins:invokeSlashCommand', { pluginId, commandId }),
+  applySmartPaste: (data) => ipcRenderer.invoke('plugins:smartPaste', data),
   onPluginsReady: (callback) => {
     ipcRenderer.on('plugins:ready', (_, plugins) => callback(plugins));
   },
@@ -122,6 +124,41 @@ contextBridge.exposeInMainWorld('uiAPI', {
     const handler = (_, data) => callback(data);
     ipcRenderer.on('plugin:disabled', handler);
     return () => ipcRenderer.removeListener('plugin:disabled', handler);
+  },
+  onRegisterSidebarPanel: (callback) => {
+    const handler = (_, panel) => callback(panel);
+    ipcRenderer.on('ui:registerSidebarPanel', handler);
+    return () => ipcRenderer.removeListener('ui:registerSidebarPanel', handler);
+  },
+  onRemoveSidebarPanel: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('ui:removeSidebarPanel', handler);
+    return () => ipcRenderer.removeListener('ui:removeSidebarPanel', handler);
+  },
+  onRegisterCustomView: (callback) => {
+    const handler = (_, view) => callback(view);
+    ipcRenderer.on('ui:registerCustomView', handler);
+    return () => ipcRenderer.removeListener('ui:registerCustomView', handler);
+  },
+  onRemoveCustomView: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('ui:removeCustomView', handler);
+    return () => ipcRenderer.removeListener('ui:removeCustomView', handler);
+  },
+  onOpenCustomView: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('ui:openCustomView', handler);
+    return () => ipcRenderer.removeListener('ui:openCustomView', handler);
+  },
+  onRegisterSlashCommand: (callback) => {
+    const handler = (_, data) => callback(data.pluginId, data.command);
+    ipcRenderer.on('plugin:registerSlashCommand', handler);
+    return () => ipcRenderer.removeListener('plugin:registerSlashCommand', handler);
+  },
+  onRemoveSlashCommand: (callback) => {
+    const handler = (_, data) => callback(data.pluginId, data.commandId);
+    ipcRenderer.on('plugin:removeSlashCommand', handler);
+    return () => ipcRenderer.removeListener('plugin:removeSlashCommand', handler);
   },
 });
 

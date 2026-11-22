@@ -75987,6 +75987,8 @@ $$
      * @param {boolean} [options.dirty]
      * @param {number} [options.scrollPosition]
      * @param {string} [options.initialContent]
+     * @param {string} [options.viewType] - Document view kind ('markdown' or 'plugin:<id>')
+     * @param {Object} [options.viewData] - Serialized state/data for custom views
      */
     constructor(options = {}) {
       this.id = options.id || `doc_${nextDocId++}_${Date.now()}`;
@@ -75996,6 +75998,8 @@ $$
       this.dirty = Boolean(options.dirty);
       this.scrollPosition = options.scrollPosition || 0;
       this.selection = options.selection || null;
+      this.viewType = options.viewType || "markdown";
+      this.viewData = options.viewData || null;
     }
     _basename(filePath) {
       if (!filePath) return "untitled.md";
@@ -76084,6 +76088,8 @@ $$
         name: this.name,
         dirty: this.dirty,
         scrollPosition: this.scrollPosition,
+        viewType: this.viewType,
+        viewData: this.viewData,
         // For unsaved (no path) documents, preserve content in session
         content: !this.path ? this.getText() : void 0
       };
@@ -76413,6 +76419,12 @@ $$
     ]
   ];
 
+  // node_modules/lucide/dist/esm/icons/panel-right.mjs
+  var PanelRight = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M15 3v18" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/pencil.mjs
   var Pencil = [
     [
@@ -76431,6 +76443,12 @@ $$
     ["path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" }],
     ["path", { d: "M3 6h18" }],
     ["path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/x.mjs
+  var X = [
+    ["path", { d: "M18 6 6 18" }],
+    ["path", { d: "m6 6 12 12" }]
   ];
 
   // src/ui/fileTree.js
@@ -76726,6 +76744,155 @@ $$
   };
   var fileTree_default = FileTreeUI;
 
+  // src/ui/utilityPane.js
+  function clampUtilityPaneWidth(width) {
+    return Math.max(220, Math.min(520, Number(width) || 320));
+  }
+  var UtilityPane = class {
+    constructor({ pane, splitter, activityBar, onWidthChange }) {
+      this.pane = pane;
+      this.splitter = splitter;
+      this.activityBar = activityBar;
+      this.onWidthChange = onWidthChange;
+      this.width = 320;
+      this.activeId = null;
+      this.panels = /* @__PURE__ */ new Map();
+      this.bind();
+      this.renderActivities();
+    }
+    bind() {
+      const closeButton = this.pane.querySelector("[data-utility-close]");
+      if (closeButton) {
+        closeButton.replaceChildren(createElement(X, {
+          width: 16,
+          height: 16,
+          "aria-hidden": "true",
+          "focusable": "false",
+          class: "line-icon"
+        }));
+      }
+      this.splitter.addEventListener("pointerdown", (event) => {
+        if (document.body.classList.contains("zen")) return;
+        event.preventDefault();
+        this.splitter.setPointerCapture(event.pointerId);
+        const move = (moveEvent) => {
+          const layout = document.getElementById("workspace-layout").getBoundingClientRect();
+          this.resize(layout.right - moveEvent.clientX);
+        };
+        const finish = () => {
+          this.splitter.removeEventListener("pointermove", move);
+          this.splitter.removeEventListener("pointerup", finish);
+          this.splitter.removeEventListener("pointercancel", finish);
+        };
+        this.splitter.addEventListener("pointermove", move);
+        this.splitter.addEventListener("pointerup", finish, { once: true });
+        this.splitter.addEventListener("pointercancel", finish, { once: true });
+      });
+      this.splitter.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+        event.preventDefault();
+        this.resize(this.width + (event.key === "ArrowLeft" ? 16 : -16));
+      });
+      this.pane.querySelector("[data-utility-close]")?.addEventListener("click", () => this.close());
+      this.activityBar?.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-utility-id]");
+        if (!button) return;
+        const id3 = button.dataset.utilityId || null;
+        if (!id3 && this.activeId === null && !this.pane.hidden) this.close();
+        else this.activate(id3);
+      });
+    }
+    resize(width) {
+      this.width = clampUtilityPaneWidth(width);
+      this.pane.style.width = `${this.width}px`;
+      this.pane.style.flexBasis = `${this.width}px`;
+      this.onWidthChange?.(this.width);
+    }
+    registerPanel(panel) {
+      if (!panel?.id) return false;
+      this.panels.set(panel.id, panel);
+      this.renderActivities();
+      return true;
+    }
+    unregisterPanel(pluginId, panelIds = []) {
+      for (const [id3, panel] of this.panels) {
+        if (panel.pluginId === pluginId && (!panelIds.length || panelIds.includes(id3))) {
+          this.panels.delete(id3);
+        }
+      }
+      if (this.activeId && !this.panels.has(this.activeId)) this.close();
+      this.renderActivities();
+    }
+    activate(panelId = null) {
+      if (panelId && !this.panels.has(panelId)) {
+        panelId = null;
+      }
+      this.activeId = panelId;
+      this.pane.hidden = false;
+      this.splitter.hidden = false;
+      document.body.classList.add("utility-pane-open");
+      this.pane.dataset.activeId = panelId || "";
+      this.render();
+      this.renderActivities();
+    }
+    close() {
+      if (this.pane.contains(document.activeElement)) {
+        this.activityBar?.querySelector(".utility-activity-button")?.focus();
+      }
+      this.pane.hidden = true;
+      this.splitter.hidden = true;
+      document.body.classList.remove("utility-pane-open");
+      delete this.pane.dataset.activeId;
+      this.activeId = null;
+      this.renderActivities();
+    }
+    renderActivities() {
+      if (!this.activityBar) return;
+      this.activityBar.replaceChildren();
+      const addButton = (id3, title, icon) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "utility-activity-button";
+        button.dataset.utilityId = id3 || "";
+        button.title = title;
+        button.setAttribute("aria-label", title);
+        button.setAttribute("aria-pressed", !this.pane.hidden && this.activeId === id3 ? "true" : "false");
+        button.appendChild(createElement(icon, {
+          width: 18,
+          height: 18,
+          "aria-hidden": "true",
+          "focusable": "false",
+          class: "line-icon"
+        }));
+        this.activityBar.appendChild(button);
+      };
+      addButton(null, "Utility pane", PanelRight);
+      for (const panel of this.panels.values()) {
+        addButton(panel.id, panel.title, PanelRight);
+      }
+    }
+    render() {
+      const title = this.pane.querySelector("[data-utility-title]");
+      const content3 = this.pane.querySelector("[data-utility-content]");
+      const panel = this.activeId ? this.panels.get(this.activeId) : null;
+      title.textContent = panel?.title || "Utility";
+      content3.replaceChildren();
+      if (panel?.entryUrl) {
+        const frame = document.createElement("iframe");
+        frame.className = "utility-plugin-frame";
+        frame.title = panel.title;
+        frame.sandbox = "allow-scripts";
+        frame.src = panel.entryUrl;
+        content3.appendChild(frame);
+        return;
+      }
+      const placeholder = document.createElement("div");
+      placeholder.className = "utility-pane-placeholder";
+      placeholder.textContent = "No plugin or core view owns this panel.";
+      content3.appendChild(placeholder);
+    }
+  };
+
   // src/session/sessionManager.js
   var saveTimeout = null;
   var SessionManager = class {
@@ -76763,6 +76930,8 @@ $$
           name: doc2.name,
           dirty: doc2.dirty,
           scrollPosition: doc2.scrollPosition,
+          viewType: doc2.viewType,
+          viewData: doc2.viewData,
           // If untitled or dirty, preserve content
           content: !doc2.path || doc2.dirty ? doc2.getText() : void 0
         };
@@ -76827,7 +76996,9 @@ $$
             name: item.name,
             editorState: state,
             dirty: Boolean(item.dirty),
-            scrollPosition: item.scrollPosition || 0
+            scrollPosition: item.scrollPosition || 0,
+            viewType: item.viewType || "markdown",
+            viewData: item.viewData || null
           });
           this.tabManager.add(doc2, false);
         }
@@ -79987,6 +80158,46 @@ $$
     syncWindowBackground();
   }
   var tabManager = new TabManager();
+  var registeredCustomViews = /* @__PURE__ */ new Map();
+  function customViewKey(pluginId, viewId) {
+    return `${pluginId}:${viewId}`;
+  }
+  function findCustomViewForDocument(doc2) {
+    const { pluginId, viewId } = doc2.viewData || {};
+    if (pluginId && viewId) {
+      return registeredCustomViews.get(customViewKey(pluginId, viewId)) || null;
+    }
+    if (viewId) {
+      const matches = [...registeredCustomViews.values()].filter((view2) => view2.id === viewId);
+      if (matches.length === 1) return matches[0];
+    }
+    return null;
+  }
+  function renderCustomView(doc2) {
+    const container = document.getElementById("custom-view");
+    container.classList.remove("hidden");
+    container.replaceChildren();
+    const view2 = findCustomViewForDocument(doc2);
+    if (!view2?.entryUrl) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "custom-view-placeholder";
+      placeholder.textContent = "This custom view is unavailable. Enable its plugin to open it.";
+      container.appendChild(placeholder);
+      return;
+    }
+    const frame = document.createElement("iframe");
+    frame.sandbox = "allow-scripts";
+    frame.title = doc2.name;
+    frame.addEventListener("load", () => {
+      frame.contentWindow?.postMessage({
+        type: "flowmark:custom-view:init",
+        viewId: view2.id,
+        state: doc2.viewData?.state ?? null
+      }, "*");
+    }, { once: true });
+    frame.src = view2.entryUrl;
+    container.appendChild(frame);
+  }
   function updateAppName() {
     const doc2 = tabManager.activeDocument;
     const label = doc2 ? doc2.name || "untitled" : "untitled";
@@ -80020,7 +80231,7 @@ $$
     });
   }
   function switchDocument(fromDoc, toDoc) {
-    if (fromDoc && typeof view !== "undefined" && view) {
+    if (fromDoc?.viewType === "markdown" && typeof view !== "undefined" && view) {
       if (view.state.field(tableSourceField, false) !== null) {
         view.dispatch({ effects: tableSourceEffect.of(null) });
       }
@@ -80029,22 +80240,31 @@ $$
     }
     if (toDoc) {
       hideWelcome();
-      document.getElementById("editor").classList.remove("hidden");
-      view.setState(toDoc.editorState);
-      view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
-      const isLight = currentTheme !== "theme-dark";
-      const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
-      view.dispatch({ effects: [
-        themeCompartment.reconfigure(makeTheme(color)),
-        highlightCompartment.reconfigure(makeHighlight(!isLight, color))
-      ] });
-      view.focus();
+      if (toDoc.viewType && toDoc.viewType !== "markdown") {
+        document.getElementById("editor").classList.add("hidden");
+        renderCustomView(toDoc);
+      } else {
+        document.getElementById("custom-view").classList.add("hidden");
+        document.getElementById("custom-view").replaceChildren();
+        document.getElementById("editor").classList.remove("hidden");
+        view.setState(toDoc.editorState);
+        view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
+        const isLight = currentTheme !== "theme-dark";
+        const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+        view.dispatch({ effects: [
+          themeCompartment.reconfigure(makeTheme(color)),
+          highlightCompartment.reconfigure(makeHighlight(!isLight, color))
+        ] });
+        view.focus();
+      }
       updateAppName();
       updatePlaceholder();
       updateWordCount();
       updateDocumentTitleInput();
     } else {
       document.getElementById("editor").classList.add("hidden");
+      document.getElementById("custom-view").classList.add("hidden");
+      document.getElementById("custom-view").replaceChildren();
       updateAppName();
       updateDocumentTitleInput();
       showWelcome();
@@ -80456,21 +80676,42 @@ Just start writing.
     });
   });
   window.CommandRegistry = registry_default;
-  window.getEditorContent = () => view.state.doc.toString();
-  window.setEditorContent = (text6) => view.dispatch({
-    changes: { from: 0, to: view.state.doc.length, insert: text6 }
-  });
+  function requireActiveMarkdownDocument() {
+    const activeDocument = tabManager.activeDocument;
+    if (!activeDocument || activeDocument.viewType !== "markdown") {
+      throw new Error("No active Markdown document");
+    }
+  }
+  window.getEditorContent = () => {
+    requireActiveMarkdownDocument();
+    return view.state.doc.toString();
+  };
+  window.setEditorContent = (text6) => {
+    requireActiveMarkdownDocument();
+    return view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: text6 }
+    });
+  };
   window.getEditorSelection = () => {
+    requireActiveMarkdownDocument();
     const { from: from3, to, empty: empty2 } = view.state.selection.main;
     return { from: from3, to, empty: empty2, text: view.state.sliceDoc(from3, to) };
   };
-  window.setEditorSelection = (sel) => view.dispatch({
-    selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to }
-  });
+  window.setEditorSelection = (sel) => {
+    requireActiveMarkdownDocument();
+    return view.dispatch({
+      selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to }
+    });
+  };
   window.replaceEditorSelection = (text6) => {
+    requireActiveMarkdownDocument();
     const { from: from3, to } = view.state.selection.main;
     view.dispatch({ changes: { from: from3, to, insert: text6 }, selection: { anchor: from3 + text6.length } });
     view.focus();
+  };
+  window.executePluginEditorCommand = (commandId) => {
+    requireActiveMarkdownDocument();
+    return registry_default.execute(commandId, view, view.state);
   };
   function updateDocumentTitleInput() {
     const activeDoc = tabManager.activeDocument;
@@ -80678,6 +80919,11 @@ Just start writing.
     onDelete: deleteWorkspaceItem,
     onToggleSidebar: toggleSidebar
   });
+  var utilityPane = new UtilityPane({
+    pane: document.getElementById("utility-pane"),
+    splitter: document.getElementById("utility-pane-splitter"),
+    activityBar: document.getElementById("utility-activity-bar")
+  });
   window.fileAPI?.onWorkspaceChange?.((change) => {
     handleWorkspaceChange(change).catch((error) => console.error("Failed to process workspace change:", error));
   });
@@ -80807,13 +81053,13 @@ Just start writing.
     label: "Save",
     shortcut: "Ctrl+S",
     run: () => saveFile(),
-    enabled: () => true
+    enabled: () => tabManager.activeDocument?.viewType === "markdown"
   });
   registry_default.registerCommand("file:saveAs", {
     label: "Save As",
     shortcut: "Ctrl+Shift+S",
     run: () => saveAsFile(),
-    enabled: () => true
+    enabled: () => tabManager.activeDocument?.viewType === "markdown"
   });
   registry_default.registerCommand("file:closeTab", {
     label: "Close Tab",
@@ -81082,7 +81328,7 @@ Just start writing.
       );
       if (result && result.error) alert("Export failed: " + result.error);
     },
-    enabled: () => true
+    enabled: () => tabManager.activeDocument?.viewType === "markdown"
   });
   registry_default.registerCommand("export:html", {
     label: "Export HTML",
@@ -81095,7 +81341,7 @@ Just start writing.
       );
       if (result && result.error) alert("Export failed: " + result.error);
     },
-    enabled: () => true
+    enabled: () => tabManager.activeDocument?.viewType === "markdown"
   });
   registry_default.registerCommand("view:settings", {
     label: "Settings",
@@ -81365,7 +81611,7 @@ Just start writing.
   function updateWordCount() {
     const el = document.getElementById("word-count");
     if (!el) return;
-    if (typeof view === "undefined" || !view || !tabManager.activeDocument) {
+    if (typeof view === "undefined" || !view || tabManager.activeDocument?.viewType !== "markdown") {
       el.textContent = "";
       return;
     }
@@ -81380,11 +81626,13 @@ Just start writing.
   updateWordCount();
   updateDocumentTitleInput();
   applyTheme(currentTheme);
+  var slashCommands = /* @__PURE__ */ new Map();
   async function initPlugins() {
     if (!window.pluginManager) {
       console.warn("[editor] Plugin API not available");
       return;
     }
+    const registeredUtilityPanels = /* @__PURE__ */ new Map();
     async function applyPluginStyles() {
       if (!window.pluginManager) return;
       const css3 = await window.pluginManager.getStylesheets();
@@ -81433,6 +81681,67 @@ Just start writing.
       console.log("[editor] Plugins changed:", plugins);
       applyPluginStyles();
       buildPluginsMenu(plugins);
+    });
+    window.uiAPI?.onRegisterSidebarPanel?.((panel) => {
+      registeredUtilityPanels.set(panel.id, panel);
+      utilityPane.registerPanel(panel);
+    });
+    window.uiAPI?.onRemoveSidebarPanel?.(({ panelId, pluginId }) => {
+      registeredUtilityPanels.delete(panelId);
+      utilityPane.unregisterPanel(pluginId, [panelId]);
+    });
+    window.uiAPI?.onRegisterCustomView?.((view2) => {
+      registeredCustomViews.set(customViewKey(view2.pluginId, view2.id), view2);
+      const active = tabManager.activeDocument;
+      if (active?.viewData?.pluginId === view2.pluginId && active?.viewData?.viewId === view2.id) {
+        renderCustomView(active);
+      }
+    });
+    window.uiAPI?.onRemoveCustomView?.(({ viewId, pluginId }) => {
+      registeredCustomViews.delete(customViewKey(pluginId, viewId));
+      const active = tabManager.activeDocument;
+      if (active?.viewData?.pluginId === pluginId && active?.viewData?.viewId === viewId) {
+        renderCustomView(active);
+      }
+    });
+    window.uiAPI?.onOpenCustomView?.(({ pluginId, viewId, name: name2, state }) => {
+      const view2 = registeredCustomViews.get(customViewKey(pluginId, viewId));
+      if (!view2) {
+        console.error(`Cannot open unregistered custom view "${pluginId}:${viewId}"`);
+        return;
+      }
+      const doc2 = new Document({
+        name: name2 || view2.name,
+        viewType: `plugin:${pluginId}:${viewId}`,
+        viewData: { pluginId, viewId, state: state ?? null }
+      });
+      tabManager.add(doc2, true);
+      sessionManager.scheduleSave();
+    });
+    window.addEventListener("message", (event) => {
+      const active = tabManager.activeDocument;
+      const frame = document.getElementById("custom-view").querySelector("iframe");
+      if (!active || active.viewType === "markdown" || !frame || event.source !== frame.contentWindow) return;
+      if (event.data?.type !== "flowmark:custom-view:state" || event.data.viewId !== active.viewData?.viewId) return;
+      let serializedState;
+      try {
+        serializedState = JSON.stringify(event.data.state);
+      } catch (error) {
+        console.warn("Ignoring non-serializable custom view state:", error);
+        return;
+      }
+      if (typeof serializedState !== "string" || new TextEncoder().encode(serializedState).length > 262144) {
+        console.warn("Ignoring custom view state larger than 256 KB");
+        return;
+      }
+      active.viewData = { ...active.viewData, state: JSON.parse(serializedState) };
+      sessionManager.scheduleSave();
+    });
+    window.uiAPI?.onRegisterSlashCommand?.((pluginId, command3) => {
+      slashCommands.set(command3.id, { ...command3, pluginId });
+    });
+    window.uiAPI?.onRemoveSlashCommand?.((_pluginId, commandId) => {
+      slashCommands.delete(commandId);
     });
     const originalSave = window.fileAPI.save;
     window.fileAPI.save = async function(contentOrOpts, maybeContent) {
@@ -81526,7 +81835,13 @@ Just start writing.
         });
       }
     });
-    window.uiAPI?.onPluginDisabled?.(({ pluginId, commands: commands2, menuItems }) => {
+    window.uiAPI?.onPluginDisabled?.(({
+      pluginId,
+      commands: commands2,
+      sidebarPanels,
+      customViews,
+      slashCommands: pluginSlashCommands
+    }) => {
       const statusEl = document.getElementById("status-bar-text");
       if (statusEl && statusEl.textContent.startsWith(`[${pluginId}]`)) {
         statusEl.textContent = "";
@@ -81539,6 +81854,19 @@ Just start writing.
           registry_default.unregisterCommand(id3);
         }
       }
+      for (const [id3, panel] of registeredUtilityPanels) {
+        if (panel.pluginId === pluginId) registeredUtilityPanels.delete(id3);
+      }
+      utilityPane.unregisterPanel(pluginId, Array.isArray(sidebarPanels) ? sidebarPanels : []);
+      for (const viewId of Array.isArray(customViews) ? customViews : []) {
+        registeredCustomViews.delete(customViewKey(pluginId, viewId));
+      }
+      const active = tabManager.activeDocument;
+      if (active?.viewData?.pluginId === pluginId) renderCustomView(active);
+      for (const [commandId, command3] of slashCommands) {
+        if (command3.pluginId === pluginId) slashCommands.delete(commandId);
+      }
+      if (Array.isArray(pluginSlashCommands) && pluginSlashCommands.length) hideSlashMenu();
     });
     window.settingsAPI?.onChange((key, value, options = {}) => {
       console.log("[editor] Plugin setting changed:", key, value, options);
@@ -81577,6 +81905,61 @@ Just start writing.
       };
     }
   }
+  var slashMenu = null;
+  function hideSlashMenu() {
+    slashMenu?.remove();
+    slashMenu = null;
+  }
+  function showSlashMenu() {
+    hideSlashMenu();
+    if (!slashCommands.size) return;
+    slashMenu = document.createElement("div");
+    slashMenu.className = "fm-slash-menu";
+    slashMenu.setAttribute("role", "listbox");
+    for (const command3 of slashCommands.values()) {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "fm-slash-item";
+      item.textContent = command3.label;
+      item.setAttribute("role", "option");
+      item.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        hideSlashMenu();
+        window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id);
+      });
+      slashMenu.appendChild(item);
+    }
+    document.body.appendChild(slashMenu);
+    const coords = view.coordsAtPos(view.state.selection.main.head);
+    if (coords) {
+      slashMenu.style.left = `${coords.left}px`;
+      slashMenu.style.top = `${coords.bottom + 4}px`;
+    }
+  }
+  view.contentDOM.addEventListener("keydown", (event) => {
+    if (event.key === "/") {
+      setTimeout(showSlashMenu, 0);
+    } else if (event.key === "Escape") {
+      hideSlashMenu();
+    }
+  });
+  view.contentDOM.addEventListener("paste", async (event) => {
+    if (!window.pluginManager?.applySmartPaste) return;
+    event.preventDefault();
+    const data2 = event.clipboardData;
+    const result = await window.pluginManager.applySmartPaste({
+      text: data2?.getData("text/plain") || "",
+      html: data2?.getData("text/html") || ""
+    });
+    const text6 = typeof result?.text === "string" ? result.text : typeof result === "string" ? result : "";
+    if (!text6) return;
+    const { from: from3, to } = view.state.selection.main;
+    view.dispatch({
+      changes: { from: from3, to, insert: text6 },
+      selection: { anchor: from3 + text6.length }
+    });
+    view.focus();
+  });
   async function initSession() {
     await initPlugins();
     const restored = await sessionManager.restore();
@@ -81605,8 +81988,10 @@ lucide/dist/esm/icons/folder-open.mjs:
 lucide/dist/esm/icons/folder-root.mjs:
 lucide/dist/esm/icons/folder-plus.mjs:
 lucide/dist/esm/icons/folder.mjs:
+lucide/dist/esm/icons/panel-right.mjs:
 lucide/dist/esm/icons/pencil.mjs:
 lucide/dist/esm/icons/trash.mjs:
+lucide/dist/esm/icons/x.mjs:
 lucide/dist/esm/lucide.mjs:
   (**
    * @license lucide v1.77.0 - ISC

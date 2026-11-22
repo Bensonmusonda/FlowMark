@@ -123,6 +123,9 @@ class PluginSandboxHost {
       pluginId,
       commands: [...plugin.uiCommands],
       menuItems: [...plugin.uiMenuItems],
+      sidebarPanels: [...(plugin.uiSidebarPanels || [])],
+      customViews: [...(plugin.uiCustomViews || [])],
+      slashCommands: [...(plugin.uiSlashCommands || [])],
     });
   }
 
@@ -134,6 +137,13 @@ class PluginSandboxHost {
     const p = this.plugins.get(pluginId);
     if (!p || !p.window || p.window.isDestroyed()) return false;
     p.window.webContents.send('plugin:command', { id: commandId });
+    return true;
+  }
+
+  invokeSlashCommand(pluginId, commandId) {
+    const plugin = this.plugins.get(pluginId);
+    if (!plugin || !plugin.window || plugin.window.isDestroyed()) return false;
+    plugin.window.webContents.send('plugin:slashCommand', { id: commandId });
     return true;
   }
 
@@ -178,6 +188,37 @@ class PluginSandboxHost {
     return currentContent;
   }
 
+  async applySmartPaste(initialData) {
+    let current = initialData && typeof initialData === 'object'
+      ? { text: String(initialData.text || ''), html: String(initialData.html || '') }
+      : { text: String(initialData || ''), html: '' };
+    for (const plugin of this.plugins.values()) {
+      if (plugin.state !== 'ready' || !plugin.window || plugin.window.isDestroyed()) continue;
+      if (!plugin.permissions.has('clipboard.smartPaste')) continue;
+      current = await new Promise((resolve) => {
+        const requestId = `paste-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const timeout = setTimeout(() => {
+          ipcMain.removeListener('clipboard:smartPasteResult', handler);
+          resolve(current);
+        }, 1500);
+        const handler = (_, response) => {
+          if (response?.requestId === requestId) {
+            clearTimeout(timeout);
+            ipcMain.removeListener('clipboard:smartPasteResult', handler);
+            resolve(response.result && typeof response.result === 'object' ? response.result : current);
+          }
+        };
+        ipcMain.on('clipboard:smartPasteResult', handler);
+        plugin.window.webContents.send('clipboard:smartPaste', {
+          requestId,
+          text: current.text,
+          html: current.html,
+        });
+      });
+    }
+    return current;
+  }
+
   _registerCoreHandlers() {
     // Editor handlers - ensure serializable returns
     this.registerHandler('editor:getContent', async () => {
@@ -211,7 +252,7 @@ class PluginSandboxHost {
 
     this.registerHandler('editor:executeCommand', async ({ commandId }) => {
       await this.mainWindow.webContents.executeJavaScript(
-        `window.CommandRegistry?.execute?.(${JSON.stringify(commandId)}, window.view, window.view?.state); null`);
+        `window.executePluginEditorCommand?.(${JSON.stringify(commandId)}); null`);
       return { success: true };
     });
 
@@ -358,6 +399,119 @@ class PluginSandboxHost {
       return { success: true };
     });
 
+    this.registerHandler('ui:registerSidebarPanel', async ({ panel }, _event, plugin) => {
+      if (!panel || typeof panel.id !== 'string' || !/^[a-z0-9-:]+$/.test(panel.id)
+        || typeof panel.title !== 'string' || panel.title.length > 200) {
+        throw new Error('Invalid sidebar panel');
+      }
+      plugin.uiSidebarPanels.add(panel.id);
+      let entryUrl = null;
+      if (typeof panel.entry === 'string') {
+        const entryPath = path.resolve(plugin.path, panel.entry);
+        if (!entryPath.startsWith(path.resolve(plugin.path) + path.sep)) {
+          throw new Error('Sidebar panel entry must remain inside the plugin directory');
+        }
+        if (!fs.existsSync(entryPath)) throw new Error('Sidebar panel entry not found');
+        entryUrl = pathToFileURL(entryPath).href;
+      }
+      const registered = {
+        id: panel.id,
+        title: panel.title,
+        icon: typeof panel.icon === 'string' ? panel.icon : 'panel-right',
+        entryUrl,
+        pluginId: plugin.manifest.name,
+      };
+      this.mainWindow.webContents.send('ui:registerSidebarPanel', registered);
+      return { success: true };
+    });
+
+    this.registerHandler('ui:removeSidebarPanel', async ({ panelId }, _event, plugin) => {
+      if (!plugin.uiSidebarPanels.has(panelId)) throw new Error('Plugin does not own this sidebar panel');
+      plugin.uiSidebarPanels.delete(panelId);
+      this.mainWindow.webContents.send('ui:removeSidebarPanel', {
+        panelId,
+        pluginId: plugin.manifest.name,
+      });
+      return { success: true };
+    });
+
+    this.registerHandler('ui:registerCustomView', async ({ view }, _event, plugin) => {
+      if (!view || typeof view.id !== 'string' || !/^[a-z0-9-:]+$/.test(view.id)
+        || typeof view.name !== 'string' || !Array.isArray(view.extensions)
+        || typeof view.entry !== 'string') {
+        throw new Error('Invalid custom view');
+      }
+      const entryPath = path.resolve(plugin.path, view.entry);
+      if (!entryPath.startsWith(path.resolve(plugin.path) + path.sep) || !fs.existsSync(entryPath)) {
+        throw new Error('Custom view entry must exist inside the plugin directory');
+      }
+      plugin.uiCustomViews.add(view.id);
+      this.mainWindow.webContents.send('ui:registerCustomView', {
+        id: view.id,
+        name: view.name,
+        extensions: view.extensions,
+        entryUrl: pathToFileURL(entryPath).href,
+        pluginId: plugin.manifest.name,
+      });
+      return { success: true };
+    });
+
+    this.registerHandler('ui:removeCustomView', async ({ viewId }, _event, plugin) => {
+      if (!plugin.uiCustomViews.has(viewId)) throw new Error('Plugin does not own this custom view');
+      plugin.uiCustomViews.delete(viewId);
+      this.mainWindow.webContents.send('ui:removeCustomView', { viewId, pluginId: plugin.manifest.name });
+      return { success: true };
+    });
+
+    this.registerHandler('ui:openCustomView', async ({ viewId, name, state }, _event, plugin) => {
+      if (typeof viewId !== 'string' || !plugin.uiCustomViews.has(viewId)) {
+        throw new Error('Plugin does not own this custom view');
+      }
+      if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.length > 200)) {
+        throw new Error('Invalid custom view tab name');
+      }
+      let serializedState;
+      try {
+        serializedState = JSON.stringify(state === undefined ? null : state);
+      } catch {
+        throw new Error('Custom view state must be JSON-serializable');
+      }
+      if (typeof serializedState !== 'string' || Buffer.byteLength(serializedState, 'utf8') > 262144) {
+        throw new Error('Custom view state must be at most 256 KB');
+      }
+      const safeState = JSON.parse(serializedState);
+      this.mainWindow.webContents.send('ui:openCustomView', {
+        pluginId: plugin.manifest.name,
+        viewId,
+        name: name?.trim(),
+        state: safeState,
+      });
+      return { success: true };
+    });
+
+    this.registerHandler('editor:registerSlashCommand', async ({ command }, _event, plugin) => {
+      if (!command || typeof command.id !== 'string' || !/^[a-z0-9-:]+$/.test(command.id)
+        || typeof command.label !== 'string') {
+        throw new Error('Invalid slash command');
+      }
+      plugin.uiSlashCommands.add(command.id);
+      this.mainWindow.webContents.send('plugin:registerSlashCommand', {
+        pluginId: plugin.manifest.name,
+        command,
+      });
+      return { success: true };
+    });
+
+    this.registerHandler('editor:removeSlashCommand', async ({ commandId }, _event, plugin) => {
+      if (!plugin.uiSlashCommands.has(commandId)) throw new Error('Plugin does not own this slash command');
+      plugin.uiSlashCommands.delete(commandId);
+      this.mainWindow.webContents.send('plugin:removeSlashCommand', {
+        pluginId: plugin.manifest.name,
+        commandId,
+      });
+      return { success: true };
+    });
+
     // Clipboard handlers
     this.registerHandler('clipboard:readText', async () => {
       return this.mainWindow.webContents.executeJavaScript('navigator.clipboard.readText()');
@@ -495,6 +649,9 @@ class PluginSandboxHost {
       permissions: new Set(manifest.permissions || []),
       uiCommands: new Set((manifest.commands || []).map(command => command.id)),
       uiMenuItems: new Set((manifest.menu_items || []).map(item => item.id)),
+      uiSidebarPanels: new Set(),
+      uiCustomViews: new Set(),
+      uiSlashCommands: new Set(),
       state: 'loading',
     };
     this.plugins.set(pluginId, plugin);   // must exist BEFORE the window loads

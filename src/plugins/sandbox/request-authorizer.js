@@ -24,6 +24,14 @@ const REQUEST_PERMISSIONS = Object.freeze({
   'clipboard:writeText': 'clipboard.write',
   'clipboard:readHTML': 'clipboard.read',
   'clipboard:writeHTML': 'clipboard.write',
+  'ui:registerSidebarPanel': 'ui.panels',
+  'ui:removeSidebarPanel': 'ui.panels',
+  'ui:registerCustomView': 'ui.customViews',
+  'ui:removeCustomView': 'ui.customViews',
+  'ui:openCustomView': 'ui.customViews',
+  'editor:registerSlashCommand': 'editor.slashCommands',
+  'editor:removeSlashCommand': 'editor.slashCommands',
+  'clipboard:registerSmartPaste': 'clipboard.smartPaste',
   'network:fetch': 'network.request',
 });
 

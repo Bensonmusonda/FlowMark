@@ -30,6 +30,10 @@
           "ui.notifications",
           "clipboard.read",
           "clipboard.write",
+          "ui.panels",
+          "ui.customViews",
+          "editor.slashCommands",
+          "clipboard.smartPaste",
           "network.request",
           "network.request:write"
         ]

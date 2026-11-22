@@ -94,6 +94,8 @@
     <!-- Tabs strip directly on topbar -->
     <div id="tabbar"></div>
 
+    <nav id="utility-activity-bar" aria-label="Utility views"></nav>
+
     <div id="window-controls">
       <button id="btn-min" title="Minimize" aria-label="Minimize">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
@@ -201,7 +203,20 @@
         </div>
       </div>
       <div id="editor"></div>
+      <div id="custom-view" class="hidden" aria-label="Custom document view"></div>
     </div>
+    <div id="utility-pane-splitter" role="separator" aria-label="Resize utility pane" aria-orientation="vertical" tabindex="0" hidden></div>
+    <aside id="utility-pane" aria-label="Utility pane" hidden>
+      <div class="utility-pane-card">
+        <header class="utility-pane-header">
+          <span data-utility-title>Utility</span>
+          <button type="button" class="utility-pane-close" data-utility-close title="Close utility pane" aria-label="Close utility pane"></button>
+        </header>
+        <div class="utility-pane-content" data-utility-content>
+          <div class="utility-pane-placeholder">No plugin or core view owns this panel.</div>
+        </div>
+      </div>
+    </aside>
   </div>
   <div id="statusbar">
     <span id="status-bar-text"></span>

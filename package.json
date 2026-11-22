@@ -7,7 +7,7 @@
     "license": "MIT",
     "scripts": {
         "build": "esbuild src/editor.js --bundle --outfile=src/editor.new.bundle.js --format=iife --platform=browser",
-        "test": "node test-completion.mjs && node test-frontmatter.mjs && node test-phase4.mjs && node test-table-navigation.mjs && node test-tabs-session.mjs && node test-plugins.mjs && node test-stage1.mjs && node test-workspace.mjs",
+        "test": "node test-completion.mjs && node test-frontmatter.mjs && node test-phase4.mjs && node test-table-navigation.mjs && node test-tabs-session.mjs && node test-plugins.mjs && node test-stage1.mjs && node test-workspace.mjs && node test-stage4.mjs",
         "start": "npm run build && node_modules\\electron\\dist\\electron.exe .",
         "start:dev": "npm run build && node_modules\\electron\\dist\\electron.exe . --dev",
         "dist": "npm run build && electron-builder --win",

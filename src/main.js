@@ -477,6 +477,12 @@ ipcMain.handle('plugins:getStylesheets', () => {
 ipcMain.handle('plugins:invokeCommand', (_, { pluginId, commandId }) =>
   pluginHost ? pluginHost.invokeCommand(pluginId, commandId) : false);
 
+ipcMain.handle('plugins:invokeSlashCommand', (_, { pluginId, commandId }) =>
+  pluginHost ? pluginHost.invokeSlashCommand(pluginId, commandId) : false);
+
+ipcMain.handle('plugins:smartPaste', async (_, data) =>
+  pluginHost ? pluginHost.applySmartPaste(data) : data);
+
 // Renderer -> plugin windows (these channels were previously going nowhere)
 ipcMain.on('editor:contentChanged', (_, data) =>
   pluginHost?.broadcast('editor:contentChanged', data, 'editor.read'));
