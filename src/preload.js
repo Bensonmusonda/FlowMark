@@ -53,19 +53,36 @@ contextBridge.exposeInMainWorld('pluginManager', {
   getPlugins: () => ipcRenderer.invoke('plugins:get'),
   enable: (name) => ipcRenderer.invoke('plugins:enable', name),
   disable: (name) => ipcRenderer.invoke('plugins:disable', name),
+  installFromFolder: () => ipcRenderer.invoke('plugins:installFromFolder'),
   install: (sourcePath) => ipcRenderer.invoke('plugins:install', sourcePath),
   uninstall: (name) => ipcRenderer.invoke('plugins:uninstall', name),
-  getSettings: () => ipcRenderer.invoke('plugins:settings:get'),
-  setSetting: (key, value) => ipcRenderer.invoke('plugins:settings:set', { key, value }),
+  getSettings: (pluginId) => ipcRenderer.invoke('plugins:settings:get', pluginId),
+  setSetting: (pluginIdOrKey, keyOrValue, maybeValue) => {
+    let payload;
+    if (maybeValue !== undefined) {
+      payload = { pluginId: pluginIdOrKey, key: keyOrValue, value: maybeValue };
+    } else if (typeof pluginIdOrKey === 'object' && pluginIdOrKey !== null) {
+      payload = pluginIdOrKey;
+    } else {
+      payload = { key: pluginIdOrKey, value: keyOrValue };
+    }
+    return ipcRenderer.invoke('plugins:settings:set', payload);
+  },
+  reload: () => ipcRenderer.invoke('plugins:reload'),
+  openPluginsFolder: () => ipcRenderer.invoke('plugins:openPluginsFolder'),
   getStylesheets: () => ipcRenderer.invoke('plugins:getStylesheets'),
   invokeCommand: (pluginId, commandId) => ipcRenderer.invoke('plugins:invokeCommand', { pluginId, commandId }),
-  invokeSlashCommand: (pluginId, commandId) => ipcRenderer.invoke('plugins:invokeSlashCommand', { pluginId, commandId }),
+  invokeSlashCommand: (pluginId, commandId, triggerPos) => ipcRenderer.invoke('plugins:invokeSlashCommand', { pluginId, commandId, triggerPos }),
   applySmartPaste: (data) => ipcRenderer.invoke('plugins:smartPaste', data),
   onPluginsReady: (callback) => {
-    ipcRenderer.on('plugins:ready', (_, plugins) => callback(plugins));
+    const handler = (_, plugins) => callback(plugins);
+    ipcRenderer.on('plugins:ready', handler);
+    return () => ipcRenderer.removeListener('plugins:ready', handler);
   },
   onPluginsChanged: (callback) => {
-    ipcRenderer.on('plugins:changed', (_, plugins) => callback(plugins));
+    const handler = (_, plugins) => callback(plugins);
+    ipcRenderer.on('plugins:changed', handler);
+    return () => ipcRenderer.removeListener('plugins:changed', handler);
   },
 });
 
@@ -164,6 +181,7 @@ contextBridge.exposeInMainWorld('uiAPI', {
 
 contextBridge.exposeInMainWorld('shellAPI', {
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
+  openPath: (targetPath) => ipcRenderer.invoke('shell:openPath', targetPath),
 });
 
 contextBridge.exposeInMainWorld('settingsAPI', {

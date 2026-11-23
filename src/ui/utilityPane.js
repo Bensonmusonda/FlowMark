@@ -1,4 +1,5 @@
 import { createElement, PanelRight, X } from 'lucide';
+import { resolvePluginPanelIcon } from './pluginPanelIcons.js';
 
 export function clampUtilityPaneWidth(width) {
   return Math.max(220, Math.min(520, Number(width) || 320));
@@ -71,14 +72,14 @@ export class UtilityPane {
 
   registerPanel(panel) {
     if (!panel?.id) return false;
-    this.panels.set(panel.id, panel);
+    this.panels.set(panel.instanceId || panel.id, panel);
     this.renderActivities();
     return true;
   }
 
   unregisterPanel(pluginId, panelIds = []) {
     for (const [id, panel] of this.panels) {
-      if (panel.pluginId === pluginId && (!panelIds.length || panelIds.includes(id))) {
+      if (panel.pluginId === pluginId && (!panelIds.length || panelIds.includes(panel.id))) {
         this.panels.delete(id);
       }
     }
@@ -133,7 +134,7 @@ export class UtilityPane {
     };
     addButton(null, 'Utility pane', PanelRight);
     for (const panel of this.panels.values()) {
-      addButton(panel.id, panel.title, PanelRight);
+      addButton(panel.instanceId || panel.id, panel.title, resolvePluginPanelIcon(panel.icon));
     }
   }
 

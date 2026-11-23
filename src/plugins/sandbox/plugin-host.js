@@ -140,10 +140,10 @@ class PluginSandboxHost {
     return true;
   }
 
-  invokeSlashCommand(pluginId, commandId) {
+  invokeSlashCommand(pluginId, commandId, triggerPos) {
     const plugin = this.plugins.get(pluginId);
     if (!plugin || !plugin.window || plugin.window.isDestroyed()) return false;
-    plugin.window.webContents.send('plugin:slashCommand', { id: commandId });
+    plugin.window.webContents.send('plugin:slashCommand', { id: commandId, triggerPos });
     return true;
   }
 
@@ -310,8 +310,8 @@ class PluginSandboxHost {
       return this.settingsStore.get(plugin.manifest.name, key) ?? null;
     });
 
-    this.registerHandler('settings:register', async ({ key, defaultValue }, _event, plugin) => {
-      this.settingsStore.register(plugin.manifest.name, key, defaultValue);
+    this.registerHandler('settings:register', async ({ key, defaultValue, metadata }, _event, plugin) => {
+      this.settingsStore.register(plugin.manifest.name, key, defaultValue, metadata);
       return { success: true };
     });
 
@@ -401,10 +401,14 @@ class PluginSandboxHost {
 
     this.registerHandler('ui:registerSidebarPanel', async ({ panel }, _event, plugin) => {
       if (!panel || typeof panel.id !== 'string' || !/^[a-z0-9-:]+$/.test(panel.id)
-        || typeof panel.title !== 'string' || panel.title.length > 200) {
+        || typeof panel.title !== 'string' || panel.title.length > 200
+        || (panel.icon !== undefined && (typeof panel.icon !== 'string' || panel.icon.length > 64))) {
         throw new Error('Invalid sidebar panel');
       }
-      plugin.uiSidebarPanels.add(panel.id);
+      const location = panel.location ?? 'right';
+      if (location !== 'left' && location !== 'right') {
+        throw new Error('Sidebar panel location must be "left" or "right"');
+      }
       let entryUrl = null;
       if (typeof panel.entry === 'string') {
         const entryPath = path.resolve(plugin.path, panel.entry);
@@ -414,10 +418,12 @@ class PluginSandboxHost {
         if (!fs.existsSync(entryPath)) throw new Error('Sidebar panel entry not found');
         entryUrl = pathToFileURL(entryPath).href;
       }
+      plugin.uiSidebarPanels.add(panel.id);
       const registered = {
         id: panel.id,
         title: panel.title,
         icon: typeof panel.icon === 'string' ? panel.icon : 'panel-right',
+        location,
         entryUrl,
         pluginId: plugin.manifest.name,
       };
@@ -494,6 +500,7 @@ class PluginSandboxHost {
         || typeof command.label !== 'string') {
         throw new Error('Invalid slash command');
       }
+      console.log(`[PluginHost] Registering slash command: ${command.id} for ${plugin.manifest.name}`);
       plugin.uiSlashCommands.add(command.id);
       this.mainWindow.webContents.send('plugin:registerSlashCommand', {
         pluginId: plugin.manifest.name,
@@ -504,6 +511,7 @@ class PluginSandboxHost {
 
     this.registerHandler('editor:removeSlashCommand', async ({ commandId }, _event, plugin) => {
       if (!plugin.uiSlashCommands.has(commandId)) throw new Error('Plugin does not own this slash command');
+      console.log(`[PluginHost] Removing slash command: ${commandId} for ${plugin.manifest.name}`);
       plugin.uiSlashCommands.delete(commandId);
       this.mainWindow.webContents.send('plugin:removeSlashCommand', {
         pluginId: plugin.manifest.name,
@@ -652,6 +660,7 @@ class PluginSandboxHost {
       uiSidebarPanels: new Set(),
       uiCustomViews: new Set(),
       uiSlashCommands: new Set(),
+      stylesheet: manifest.stylesheet || '',
       state: 'loading',
     };
     this.plugins.set(pluginId, plugin);   // must exist BEFORE the window loads
@@ -740,10 +749,62 @@ class PluginSandboxHost {
         enabled: plugin.state === 'loading' || plugin.state === 'ready',
         permissions: [...plugin.permissions],
         commands: plugin.manifest.commands || [],
+        menuItems: plugin.manifest.menu_items || [],
+        sidebarPanels: [...(plugin.uiSidebarPanels || [])],
+        customViews: [...(plugin.uiCustomViews || [])],
+        slashCommands: [...(plugin.uiSlashCommands || [])],
+        path: plugin.path,
         error: plugin.error
       });
     }
     return list;
+  }
+
+  getPluginSettings(pluginId) {
+    if (pluginId) {
+      return {
+        values: this.settingsStore.getAll(pluginId),
+        metadata: this.settingsStore.getAllMetadata(pluginId),
+      };
+    }
+    const all = {};
+    for (const id of this.plugins.keys()) {
+      all[id] = {
+        values: this.settingsStore.getAll(id),
+        metadata: this.settingsStore.getAllMetadata(id),
+      };
+    }
+    return all;
+  }
+
+  async reloadAll() {
+    for (const [id, plugin] of this.plugins) {
+      if (plugin.state === 'ready' || plugin.state === 'loading' || plugin.state === 'error') {
+        try {
+          const manifest = await this.loadManifest(plugin.path);
+          plugin.manifest = manifest;
+          plugin.permissions = new Set(manifest.permissions || []);
+          plugin.uiCommands = new Set((manifest.commands || []).map(c => c.id));
+          plugin.uiMenuItems = new Set((manifest.menu_items || []).map(i => i.id));
+          if (plugin.window && !plugin.window.isDestroyed()) {
+            plugin.window.destroy();
+          }
+          plugin.window = null;
+          plugin.state = 'loading';
+          plugin.error = null;
+          await this.createPluginWindow(plugin);
+        } catch (err) {
+          plugin.state = 'error';
+          plugin.error = err instanceof Error ? err.message : String(err);
+          if (plugin.window && !plugin.window.isDestroyed()) {
+            plugin.window.destroy();
+          }
+          plugin.window = null;
+        }
+      }
+    }
+    this._notifyPluginsChanged();
+    return true;
   }
 
   _copyDir(src, dest) {

@@ -60,8 +60,13 @@ This document outlines the execution roadmap for FlowMark, prioritizing core edi
   - Reserve the pane for future views such as AI assistants, outlines, backlinks, and plugin panels.
   - Do not assign a default active option or show the pane at startup.
 - [x] **Sidebar Activity Bar & Panel API:**
-  - Allow sandboxed plugins to register secondary panels (`flowmarkPlugin.ui.registerSidebarPanel({ id, title, icon, render })`).
+  - Allow sandboxed plugins to register panels in either sidebar with `flowmarkPlugin.ui.registerSidebarPanel({ id, title, icon, entry, location })`; `location` defaults to `right` and can be `left`.
+  - Left-side plugin panels appear beside the built-in Explorer in the existing activity rail; load each iframe on first activation and preserve its mounted state when switching views.
+  - Resolve plugin icon names through a bounded Lucide icon set and render panel entries in sandboxed iframes; unknown icon names use a fallback.
   - Examples: Table of Contents / Outline, Tag Explorer, Backlinks, Calendar.
+- [x] **Local Plugin Installation:**
+  - Add `Plugins > Install Plugin from Folder...` with a native folder picker and manifest validation.
+  - Copy and load the selected plugin through the sandbox host; ZIP installation and online catalogs remain out of scope.
 - [x] **Custom Tab Views API:**
   - Let plugins register and explicitly open non-Markdown tabs through `flowmarkPlugin.views.open(viewId, { name, state })`.
   - Send `{ type: 'flowmark:custom-view:init', viewId, state }` to the sandboxed iframe; persist updates posted as `{ type: 'flowmark:custom-view:state', viewId, state }` (JSON, maximum 256 KB).
@@ -71,5 +76,16 @@ This document outlines the execution roadmap for FlowMark, prioritizing core edi
   - Let plugins register renderers for named fenced-code languages; Mermaid is one example, not a special case.
   - Pass each matching block's source to a plugin-owned sandboxed renderer and show its output as an inline preview without changing the Markdown document.
   - Preserve editing by revealing the raw fence and source while the caret is inside the block; fall back to source when no renderer is registered or rendering fails, and clean up previews when blocks leave view.
+- [ ] **Host-Managed Plugin Overlays:**
+  - Let plugins request bounded floating UI anchored to host-defined surfaces, including tabs, without granting access to FlowMark's DOM.
+  - Render plugin content in a sandboxed frame; have the host control positioning, size, focus, dismissal, and cleanup when the anchor or workspace changes.
 - [x] **Slash Command & Smart Paste Extensions:**
   - Floating `/` insert menu and clipboard conversion hooks.
+
+## Future — Appearance & Theme Packs
+**Goal:** Support shareable application themes without treating themes as executable plugins.
+
+- [ ] **Declarative Theme Packs:**
+  - Define themes as data mapped to approved design tokens and editor syntax colors, with no executable code or arbitrary application-wide CSS.
+  - Support light/dark variants, preview and restore, and validate contrast and missing-token fallbacks.
+  - Keep theme installation and selection separate from plugin permissions and activation; package infrastructure may be shared.

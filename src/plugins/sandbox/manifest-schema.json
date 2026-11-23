@@ -9,7 +9,10 @@
     "manifest_version": { "type": "integer", "const": 1 },
     "description": { "type": "string", "maxLength": 200 },
     "author": { "type": "string" },
-    "entry_point": { "type": "string", "description": "Relative path to plugin entry point (ES module)" },
+    "entry_point": {
+      "type": "string",
+      "description": "Relative path to plugin entry point. HTML loads directly; other entries are loaded as classic scripts, not ES modules."
+    },
     "permissions": {
       "type": "array",
       "items": {

@@ -398,6 +398,11 @@ ipcMain.handle('shell:openExternal', async (_, url) => {
   return false;
 });
 
+ipcMain.handle('shell:openPath', async (_, targetPath) => {
+  if (!targetPath || typeof targetPath !== 'string') return '';
+  return shell.openPath(targetPath);
+});
+
 // ── Plugin Sandbox IPC ──────────────────────────────────────────────────────
 
 ipcMain.handle('plugins:get', () => {
@@ -427,6 +432,23 @@ ipcMain.handle('plugins:disable', async (_, name) => {
   }
 });
 
+ipcMain.handle('plugins:installFromFolder', async () => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    const { filePaths, canceled } = await dialog.showOpenDialog(win, {
+      title: 'Select a plugin folder containing plugin.json',
+      properties: ['openDirectory'],
+    });
+    if (canceled || !filePaths[0]) return { success: false, canceled: true };
+
+    const pluginId = await pluginHost.installPlugin(filePaths[0]);
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true, pluginId };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
 ipcMain.handle('plugins:install', async (_, sourcePath) => {
   if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
   try {
@@ -449,13 +471,53 @@ ipcMain.handle('plugins:uninstall', async (_, name) => {
   }
 });
 
-ipcMain.handle('plugins:settings:get', () => {
-  // Would return plugin settings
-  return {};
+ipcMain.handle('plugins:settings:get', (_, pluginId) => {
+  if (!pluginHost) return {};
+  return pluginHost.getPluginSettings(pluginId);
 });
 
-ipcMain.handle('plugins:settings:set', async (_, { key, value }) => {
-  // Would write to settings store
+ipcMain.handle('plugins:settings:set', async (_, payload) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    let { pluginId, key, value } = payload || {};
+    if (!pluginId && typeof key === 'string' && key.includes('.')) {
+      pluginId = key.slice(0, key.indexOf('.'));
+    }
+    if (!pluginId || !key) {
+      throw new Error('pluginId and key are required');
+    }
+    pluginHost.settingsStore.set(pluginId, key, value);
+    const change = { key, value, pluginId };
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('settings:changed', change);
+    }
+    const plugin = pluginHost.plugins.get(pluginId);
+    if (plugin && plugin.window && !plugin.window.isDestroyed()) {
+      plugin.window.webContents.send('settings:changed', { key, value });
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+ipcMain.handle('plugins:reload', async () => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    await pluginHost.reloadAll();
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    }
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+ipcMain.handle('plugins:openPluginsFolder', async () => {
+  const pluginsDir = path.join(app.getPath('userData'), 'plugins');
+  fs.mkdirSync(pluginsDir, { recursive: true });
+  await shell.openPath(pluginsDir);
   return { success: true };
 });
 
@@ -477,8 +539,8 @@ ipcMain.handle('plugins:getStylesheets', () => {
 ipcMain.handle('plugins:invokeCommand', (_, { pluginId, commandId }) =>
   pluginHost ? pluginHost.invokeCommand(pluginId, commandId) : false);
 
-ipcMain.handle('plugins:invokeSlashCommand', (_, { pluginId, commandId }) =>
-  pluginHost ? pluginHost.invokeSlashCommand(pluginId, commandId) : false);
+ipcMain.handle('plugins:invokeSlashCommand', (_, { pluginId, commandId, triggerPos }) =>
+  pluginHost ? pluginHost.invokeSlashCommand(pluginId, commandId, triggerPos) : false);
 
 ipcMain.handle('plugins:smartPaste', async (_, data) =>
   pluginHost ? pluginHost.applySmartPaste(data) : data);

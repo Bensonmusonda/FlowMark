@@ -32,23 +32,27 @@ This document logs approved architectural concepts, mechanics, and future extens
 ---
 
 ## 2. Activity Bar & Sidebar Panels
-**Concept:** A collapsible left sidebar where the Core Workspace/Folder Explorer lives, alongside panels contributed by plugins.
+**Concept:** A collapsible left sidebar where the Core Workspace/Folder Explorer lives alongside plugin-contributed panels. Panels may also target the separate right utility pane.
 
 ### Mechanics:
 - **Core Sidebar**: FlowMark core provides the resizable split pane, collapse/expand toggle (`Ctrl+B`), and the native Folder/File Explorer.
-- **Plugin Panel Extension**: Plugins can register secondary panels that appear as icon tabs in the activity bar.
+- **Plugin Panel Extension**: Plugins can register sandboxed panel entries in the left activity rail or the right utility pane. `location` defaults to `right` for compatibility; use `left` to add an activity beside Explorer. A panel's iframe loads on first activation and remains mounted when switching between views.
+- **Panel Entry**: `entry` names an HTML file inside the plugin directory. The host loads it in an iframe with scripts enabled but without Node integration or access to FlowMark's DOM.
+- **Activity Icons**: `icon` accepts a supported Lucide name: `book-open`, `bot`, `brain`, `calendar-days`, `code-xml`, `file`, `folder-root`, `git-branch`, `layers`, `list-tree`, `message-square`, `network`, `panel-left`, `panel-right`, `puzzle`, `search`, `settings`, or `tags`. Unknown names use a fallback icon.
+- **Installation**: Use **Plugins > Install Plugin from Folder...** to choose a local directory containing `plugin.json`. ZIP archives and online plugin catalogs are not currently supported.
 - **Example Plugin Panels**:
   - **Outline / Table of Contents**: Parsed `# Headings` tree with click-to-scroll.
   - **Tag Explorer**: Aggregates all `#tags` across workspace notes.
   - **Backlinks / Graph View**: Displays document connections.
   - **Calendar / Daily Notes**: Mini calendar for date-based note taking.
-- **Proposed API**:
+- **API**:
   ```js
   flowmarkPlugin.ui.registerSidebarPanel({
     id: 'outline',
     title: 'Document Outline',
     icon: 'list-tree',
-    render(container) { ... }
+    entry: 'outline.html',
+    location: 'left'
   });
   ```
 

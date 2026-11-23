@@ -28,6 +28,7 @@ import { Document, TabManager } from './model/document.js';
 import TabBarUI from './ui/tabs.js';
 import FileTreeUI from './ui/fileTree.js';
 import { UtilityPane } from './ui/utilityPane.js';
+import { PluginManagerPanel } from './ui/plugins-panel.js';
 import SessionManager from './session/sessionManager.js';
 import { extractFrontmatter, stringifyFrontmatter } from './parser/frontmatter.js';
 import { PropertiesCardWidget } from './ui/propertiesCard.js';
@@ -3376,10 +3377,12 @@ window.setEditorSelection = (sel) => {
     selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to },
   });
 };
-window.replaceEditorSelection = (text) => {
+window.replaceEditorSelection = (text, from) => {
   requireActiveMarkdownDocument();
-  const { from, to } = view.state.selection.main;
-  view.dispatch({ changes: { from, to, insert: text }, selection: { anchor: from + text.length } });
+  const selection = view.state.selection.main;
+  const replaceFrom = typeof from === 'number' ? from : selection.from;
+  const replaceTo = selection.to;
+  view.dispatch({ changes: { from: replaceFrom, to: replaceTo, insert: text }, selection: { anchor: replaceFrom + text.length } });
   view.focus();
 };
 window.executePluginEditorCommand = (commandId) => {
@@ -3760,6 +3763,25 @@ CommandRegistry.registerCommand('file:new', {
   label: 'New File',
   shortcut: 'Ctrl+N',
   run: () => newFile(),
+  enabled: () => true,
+});
+
+CommandRegistry.registerCommand('plugins:install', {
+  label: 'Install Plugin from Folder...',
+  section: 'plugins',
+  run: async () => {
+    try {
+      const result = await window.pluginManager.installFromFolder();
+      if (result?.canceled) return;
+      if (!result?.success) {
+        alert(`Plugin installation failed: ${result?.error || 'Unknown error'}`);
+        return;
+      }
+      alert(`Plugin "${result.pluginId}" installed.`);
+    } catch (error) {
+      alert(`Plugin installation failed: ${error.message}`);
+    }
+  },
   enabled: () => true,
 });
 
@@ -4160,6 +4182,7 @@ const dropdownActionToCommand = {
   settings: 'view:settings',
   zen: 'view:zen',
   'plugins:manage': 'plugins:manage',
+  'plugins:install': 'plugins:install',
 };
 
 const dropdownMenus = [
@@ -4360,7 +4383,11 @@ document.addEventListener('keydown', e => {
 window.addEventListener('keydown', (e) => {
   if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
   const key = e.key.toLowerCase();
-  if (key === 'b' && !e.shiftKey) {
+  if (key === 'p' && e.shiftKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    CommandRegistry.execute('plugins:manage', view, view.state);
+  } else if (key === 'b' && !e.shiftKey) {
     e.preventDefault();
     e.stopPropagation();
     CommandRegistry.execute('view:toggleSidebar', view, view.state);
@@ -4431,7 +4458,8 @@ async function initPlugins() {
     console.warn('[editor] Plugin API not available');
     return;
   }
-  const registeredUtilityPanels = new Map();
+  const registeredSidebarPanels = new Map();
+  const sidebarPanelInstanceId = (pluginId, panelId) => `${pluginId}:${panelId}`;
 
   // Apply plugin stylesheets
   async function applyPluginStyles() {
@@ -4458,10 +4486,12 @@ async function initPlugins() {
 
     for (const plugin of plugins) {
       const btn = document.createElement('button');
-      btn.textContent = `${plugin.name} v${plugin.version} ${plugin.active ? '✓' : '✗'}`;
-      btn.style.opacity = plugin.active ? '1' : '0.5';
+      const state = plugin.active ? 'enabled' : plugin.enabled ? 'loading' : plugin.error ? 'error' : 'disabled';
+      btn.textContent = `${plugin.name} v${plugin.version} (${state})`;
+      btn.title = plugin.error || `${plugin.name} is ${state}`;
+      btn.style.opacity = plugin.enabled ? '1' : '0.5';
       btn.addEventListener('click', async () => {
-        if (plugin.active) {
+        if (plugin.enabled) {
           await window.pluginManager.disable(plugin.name);
         } else {
           await window.pluginManager.enable(plugin.name);
@@ -4491,15 +4521,26 @@ async function initPlugins() {
     console.log('[editor] Plugins changed:', plugins);
     applyPluginStyles();
     buildPluginsMenu(plugins);
+    // Restore editor focus after plugin changes to prevent input freeze
+    setTimeout(() => view.focus(), 0);
   });
 
   window.uiAPI?.onRegisterSidebarPanel?.((panel) => {
-    registeredUtilityPanels.set(panel.id, panel);
-    utilityPane.registerPanel(panel);
+    const instanceId = sidebarPanelInstanceId(panel.pluginId, panel.id);
+    const registeredPanel = { ...panel, instanceId };
+    const previous = registeredSidebarPanels.get(instanceId);
+    if (previous?.location === 'left') fileTreeUI.unregisterPanel(panel.pluginId, [panel.id]);
+    else if (previous) utilityPane.unregisterPanel(panel.pluginId, [panel.id]);
+    registeredSidebarPanels.set(instanceId, registeredPanel);
+    if (panel.location === 'left') fileTreeUI.registerPanel(registeredPanel);
+    else utilityPane.registerPanel(registeredPanel);
   });
   window.uiAPI?.onRemoveSidebarPanel?.(({ panelId, pluginId }) => {
-    registeredUtilityPanels.delete(panelId);
-    utilityPane.unregisterPanel(pluginId, [panelId]);
+    const instanceId = sidebarPanelInstanceId(pluginId, panelId);
+    const panel = registeredSidebarPanels.get(instanceId);
+    registeredSidebarPanels.delete(instanceId);
+    if (panel?.location === 'left') fileTreeUI.unregisterPanel(pluginId, [panelId]);
+    else utilityPane.unregisterPanel(pluginId, [panelId]);
   });
   window.uiAPI?.onRegisterCustomView?.((view) => {
     registeredCustomViews.set(customViewKey(view.pluginId, view.id), view);
@@ -4552,9 +4593,11 @@ async function initPlugins() {
     sessionManager.scheduleSave();
   });
   window.uiAPI?.onRegisterSlashCommand?.((pluginId, command) => {
+    console.log(`[editor] Received slash command: ${command.id} from ${pluginId}`);
     slashCommands.set(command.id, { ...command, pluginId });
   });
   window.uiAPI?.onRemoveSlashCommand?.((_pluginId, commandId) => {
+    console.log(`[editor] Removed slash command: ${commandId}`);
     slashCommands.delete(commandId);
   });
 
@@ -4685,9 +4728,10 @@ async function initPlugins() {
         CommandRegistry.unregisterCommand(id);
       }
     }
-    for (const [id, panel] of registeredUtilityPanels) {
-      if (panel.pluginId === pluginId) registeredUtilityPanels.delete(id);
+    for (const [id, panel] of registeredSidebarPanels) {
+      if (panel.pluginId === pluginId) registeredSidebarPanels.delete(id);
     }
+    fileTreeUI.unregisterPanel(pluginId, Array.isArray(sidebarPanels) ? sidebarPanels : []);
     utilityPane.unregisterPanel(pluginId, Array.isArray(sidebarPanels) ? sidebarPanels : []);
     for (const viewId of Array.isArray(customViews) ? customViews : []) {
       registeredCustomViews.delete(customViewKey(pluginId, viewId));
@@ -4706,15 +4750,23 @@ async function initPlugins() {
     window.pluginManager?.emit?.('setting:changed', { key, value, pluginId: options.pluginId });
   });
 
+  const pluginsPanelEl = document.getElementById('plugins-panel');
+  const pluginManagerPanel = new PluginManagerPanel({
+    container: pluginsPanelEl,
+    pluginManager: window.pluginManager,
+    showConfirm,
+    onClose: () => {
+      view.focus();
+    },
+  });
+
   // Add Manage Plugins command
   CommandRegistry.registerCommand('plugins:manage', {
     label: 'Manage Plugins',
     shortcut: 'Ctrl+Shift+P',
     section: 'plugins',
     run: () => {
-      // Focus the plugins dropdown
-      const btn = document.getElementById('plugins-menu-btn');
-      if (btn) btn.click();
+      pluginManagerPanel.open();
     },
     enabled: () => true,
   });
@@ -4746,14 +4798,19 @@ async function initPlugins() {
 
 // ── Slash command & smart paste extension hooks ──────────────────────────────
 let slashMenu = null;
+let slashTriggerPos = null; // Position of the '/' trigger character
+
 function hideSlashMenu() {
   slashMenu?.remove();
   slashMenu = null;
+  slashTriggerPos = null;
 }
 
 function showSlashMenu() {
   hideSlashMenu();
   if (!slashCommands.size) return;
+  // Capture the position of the '/' character (cursor is right after it)
+  slashTriggerPos = view.state.selection.main.head - 1;
   slashMenu = document.createElement('div');
   slashMenu.className = 'fm-slash-menu';
   slashMenu.setAttribute('role', 'listbox');
@@ -4766,7 +4823,8 @@ function showSlashMenu() {
     item.addEventListener('mousedown', (event) => {
       event.preventDefault();
       hideSlashMenu();
-      window.pluginManager?.invokeSlashCommand?.(command.pluginId, command.id);
+      // Pass the trigger position so the command can replace the '/' character
+      window.pluginManager?.invokeSlashCommand?.(command.pluginId, command.id, slashTriggerPos);
     });
     slashMenu.appendChild(item);
   }

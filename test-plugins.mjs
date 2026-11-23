@@ -251,6 +251,40 @@ async function runTests() {
     }
   });
 
+  test('Persists and retrieves settings metadata with types and labels', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flowmark-plugin-settings-meta-'));
+    const settingsPath = path.join(tempDir, 'settings.json');
+    try {
+      const store = new PluginSettingsStore(settingsPath);
+      store.register('insert-date', 'insert-date.format', 'YYYY-MM-DD', {
+        type: 'string',
+        label: 'Date Format',
+        description: 'Format string for inserted dates'
+      });
+      store.register('word-count', 'word-count.showChars', true, {
+        type: 'boolean',
+        label: 'Show Characters'
+      });
+
+      const meta = store.getMetadata('insert-date', 'insert-date.format');
+      assert.strictEqual(meta.label, 'Date Format');
+      assert.strictEqual(meta.type, 'string');
+      assert.strictEqual(meta.defaultValue, 'YYYY-MM-DD');
+
+      const allMeta = store.getAllMetadata('word-count');
+      assert.ok(allMeta['word-count.showChars']);
+      assert.strictEqual(allMeta['word-count.showChars'].type, 'boolean');
+
+      // Reload store from disk
+      const reloaded = new PluginSettingsStore(settingsPath);
+      const reloadedMeta = reloaded.getMetadata('insert-date', 'insert-date.format');
+      assert.strictEqual(reloadedMeta.label, 'Date Format');
+      assert.strictEqual(reloadedMeta.description, 'Format string for inserted dates');
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
   console.log('\n🔤 custom-transform Regex Rules:');
   const DEFAULT_RULES = [
     { pattern: '"([^"]*)"', replacement: '\u201c$1\u201d', enabled: true },

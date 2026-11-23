@@ -76345,11 +76345,71 @@ $$
     return createSVGElement([tag2, attrs2, iconNode]);
   };
 
+  // node_modules/lucide/dist/esm/icons/arrow-left.mjs
+  var ArrowLeft = [
+    ["path", { d: "m12 19-7-7 7-7" }],
+    ["path", { d: "M19 12H5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/book-open.mjs
+  var BookOpen = [
+    ["path", { d: "M12 5v16" }],
+    [
+      "path",
+      {
+        d: "M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/bot.mjs
+  var Bot = [
+    ["path", { d: "M12 8V4H8" }],
+    ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2" }],
+    ["path", { d: "M2 14h2" }],
+    ["path", { d: "M20 14h2" }],
+    ["path", { d: "M15 13v2" }],
+    ["path", { d: "M9 13v2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/brain.mjs
+  var Brain = [
+    ["path", { d: "M12 18V5" }],
+    ["path", { d: "M15 13a4.17 4.17 0 01-3-4 4.17 4.17 0 01-3 4" }],
+    ["path", { d: "M17.707 6.294A3 3 0 1012 5a3 3 0 10-5.707 1.294" }],
+    ["path", { d: "M17.996 5.125a4 4 0 012.526 5.77" }],
+    ["path", { d: "M18 18a4 4 0 002-7.465" }],
+    ["path", { d: "M19.967 17.482a4 4 0 11-7.967.517 4 4 0 11-7.967-.517" }],
+    ["path", { d: "M6 18a4 4 0 01-2-7.465" }],
+    ["path", { d: "M6.004 5.125a4 4 0 00-2.526 5.77" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/calendar-days.mjs
+  var CalendarDays = [
+    ["path", { d: "M8 2v3" }],
+    ["path", { d: "M16 2v3" }],
+    ["rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }],
+    ["path", { d: "M3 9h18" }],
+    ["path", { d: "M8 13h.01" }],
+    ["path", { d: "M12 13h.01" }],
+    ["path", { d: "M16 13h.01" }],
+    ["path", { d: "M8 17h.01" }],
+    ["path", { d: "M12 17h.01" }],
+    ["path", { d: "M16 17h.01" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/chevron-down.mjs
   var ChevronDown = [["path", { d: "m6 9 6 6 6-6" }]];
 
   // node_modules/lucide/dist/esm/icons/chevron-right.mjs
   var ChevronRight = [["path", { d: "m9 18 6-6-6-6" }]];
+
+  // node_modules/lucide/dist/esm/icons/code-xml.mjs
+  var CodeXml = [
+    ["path", { d: "m18 16 4-4-4-4" }],
+    ["path", { d: "m6 8-4 4 4 4" }],
+    ["path", { d: "m14.5 4-5 16" }]
+  ];
 
   // node_modules/lucide/dist/esm/icons/file-plus-corner.mjs
   var FilePlusCorner = [
@@ -76419,6 +76479,59 @@ $$
     ]
   ];
 
+  // node_modules/lucide/dist/esm/icons/git-branch.mjs
+  var GitBranch = [
+    ["path", { d: "M15 6a9 9 0 0 0-9 9V3" }],
+    ["circle", { cx: "18", cy: "6", r: "3" }],
+    ["circle", { cx: "6", cy: "18", r: "3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/layers.mjs
+  var Layers = [
+    [
+      "path",
+      {
+        d: "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"
+      }
+    ],
+    ["path", { d: "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" }],
+    ["path", { d: "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/list-tree.mjs
+  var ListTree = [
+    ["path", { d: "M8 5h13" }],
+    ["path", { d: "M13 12h8" }],
+    ["path", { d: "M13 19h8" }],
+    ["path", { d: "M3 10a2 2 0 0 0 2 2h3" }],
+    ["path", { d: "M3 5v12a2 2 0 0 0 2 2h3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/message-square.mjs
+  var MessageSquare = [
+    [
+      "path",
+      {
+        d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/network.mjs
+  var Network = [
+    ["rect", { x: "16", y: "16", width: "6", height: "6", rx: "1" }],
+    ["rect", { x: "2", y: "16", width: "6", height: "6", rx: "1" }],
+    ["rect", { x: "9", y: "2", width: "6", height: "6", rx: "1" }],
+    ["path", { d: "M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" }],
+    ["path", { d: "M12 12V8" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/panel-left.mjs
+  var PanelLeft = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M9 3v18" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/panel-right.mjs
   var PanelRight = [
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
@@ -76436,6 +76549,59 @@ $$
     ["path", { d: "m15 5 4 4" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/puzzle.mjs
+  var Puzzle = [
+    [
+      "path",
+      {
+        d: "M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/refresh-cw.mjs
+  var RefreshCw = [
+    ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" }],
+    ["path", { d: "M21 3v5h-5" }],
+    ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" }],
+    ["path", { d: "M8 16H3v5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/rotate-cw.mjs
+  var RotateCw = [
+    ["path", { d: "M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" }],
+    ["path", { d: "M21 3v5h-5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/search.mjs
+  var Search = [
+    ["path", { d: "m21 21-4.34-4.34" }],
+    ["circle", { cx: "11", cy: "11", r: "8" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/settings.mjs
+  var Settings2 = [
+    [
+      "path",
+      {
+        d: "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+      }
+    ],
+    ["circle", { cx: "12", cy: "12", r: "3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/tags.mjs
+  var Tags4 = [
+    [
+      "path",
+      {
+        d: "M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-4.592 4.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 6 9.172V3a1 1 0 0 1 1-1z"
+      }
+    ],
+    ["path", { d: "M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193" }],
+    ["circle", { cx: "10.5", cy: "6.5", r: ".5", fill: "currentColor" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/trash.mjs
   var Trash = [
     ["path", { d: "M10 11v6" }],
@@ -76445,11 +76611,43 @@ $$
     ["path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/triangle-exclamation-point.mjs
+  var TriangleExclamationPoint = [
+    ["path", { d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" }],
+    ["path", { d: "M12 9v4" }],
+    ["path", { d: "M12 17h.01" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/x.mjs
   var X = [
     ["path", { d: "M18 6 6 18" }],
     ["path", { d: "m6 6 12 12" }]
   ];
+
+  // src/ui/pluginPanelIcons.js
+  var PANEL_ICONS = {
+    "book-open": BookOpen,
+    bot: Bot,
+    brain: Brain,
+    "calendar-days": CalendarDays,
+    "code-xml": CodeXml,
+    file: File,
+    "folder-root": FolderRoot,
+    "git-branch": GitBranch,
+    layers: Layers,
+    "list-tree": ListTree,
+    "message-square": MessageSquare,
+    network: Network,
+    "panel-left": PanelLeft,
+    "panel-right": PanelRight,
+    puzzle: Puzzle,
+    search: Search,
+    settings: Settings2,
+    tags: Tags4
+  };
+  function resolvePluginPanelIcon(name2, fallback2 = PanelRight) {
+    return Object.prototype.hasOwnProperty.call(PANEL_ICONS, name2) ? PANEL_ICONS[name2] : fallback2;
+  }
 
   // src/ui/fileTree.js
   function normalizedPath(value) {
@@ -76470,6 +76668,19 @@ $$
       this.selectedDirectory = "";
       this.expanded = /* @__PURE__ */ new Set([""]);
       this.pendingInput = null;
+      this.panels = /* @__PURE__ */ new Map();
+      this.panelViews = /* @__PURE__ */ new Map();
+      this.activeViewId = "workspace";
+      this.nav = document.createElement("nav");
+      this.nav.className = "sidebar-nav";
+      this.nav.setAttribute("aria-label", "Workspace views");
+      this.viewContainer = document.createElement("div");
+      this.viewContainer.className = "sidebar-view-container";
+      this.workspaceView = document.createElement("div");
+      this.workspaceView.className = "sidebar-panel sidebar-workspace-view";
+      this.viewContainer.appendChild(this.workspaceView);
+      this.container.replaceChildren(this.nav, this.viewContainer);
+      this.renderNavigation();
       this.render();
     }
     setWorkspace({ rootPath, tree }) {
@@ -76505,14 +76716,62 @@ $$
         rename: Pencil,
         remove: Trash
       };
-      const svg = createElement(iconNodes[name2] || Folder, {
+      return this.createLucideIcon(iconNodes[name2] || Folder);
+    }
+    createLucideIcon(icon) {
+      return createElement(icon, {
         width: 20,
         height: 20,
         "aria-hidden": "true",
         "focusable": "false",
         class: "line-icon"
       });
-      return svg;
+    }
+    registerPanel(panel) {
+      if (!panel?.id || panel.location && panel.location !== "left") return false;
+      const key = panel.instanceId || panel.id;
+      const wasActive = this.activeViewId === key;
+      this.unregisterPanelByKey(key);
+      this.panels.set(key, panel);
+      if (wasActive) this.activeViewId = key;
+      const panelView = document.createElement("div");
+      panelView.className = "sidebar-panel sidebar-plugin-view";
+      const header3 = document.createElement("div");
+      header3.className = "sidebar-heading";
+      const title = document.createElement("span");
+      title.className = "sidebar-title";
+      title.textContent = panel.title || "Plugin";
+      header3.appendChild(title);
+      panelView.appendChild(header3);
+      const content3 = document.createElement("div");
+      content3.className = "sidebar-plugin-content";
+      if (!panel.entryUrl) {
+        const placeholder = document.createElement("div");
+        placeholder.className = "sidebar-plugin-placeholder";
+        placeholder.textContent = "This plugin panel has no view.";
+        content3.appendChild(placeholder);
+      }
+      panelView.appendChild(content3);
+      panelView.hidden = true;
+      this.panelViews.set(key, panelView);
+      this.viewContainer.appendChild(panelView);
+      this.renderNavigation();
+      this.updateActiveView();
+      return true;
+    }
+    unregisterPanel(pluginId, panelIds = []) {
+      for (const [key, panel] of this.panels) {
+        if (panel.pluginId !== pluginId || panelIds.length && !panelIds.includes(panel.id)) continue;
+        this.unregisterPanelByKey(key);
+      }
+      this.renderNavigation();
+      this.updateActiveView();
+    }
+    unregisterPanelByKey(key) {
+      this.panels.delete(key);
+      this.panelViews.get(key)?.remove();
+      this.panelViews.delete(key);
+      if (this.activeViewId === key) this.activeViewId = "workspace";
     }
     beginCreate(parentPath, type7) {
       if (!this.rootPath) {
@@ -76525,28 +76784,10 @@ $$
       this.container.querySelector(".tree-inline-input")?.focus();
     }
     render() {
-      const previousTree = this.container.querySelector(".file-tree");
+      const previousTree = this.workspaceView.querySelector(".file-tree");
       const previousScrollTop = previousTree ? previousTree.scrollTop : 0;
       const previousScrollLeft = previousTree ? previousTree.scrollLeft : 0;
-      this.container.replaceChildren();
-      const nav2 = document.createElement("nav");
-      nav2.className = "sidebar-nav";
-      nav2.setAttribute("aria-label", "Workspace navigation");
-      const workspaceNavButton = document.createElement("button");
-      workspaceNavButton.type = "button";
-      workspaceNavButton.className = "sidebar-nav-button active";
-      const collapsed = document.body.classList.contains("sidebar-collapsed");
-      workspaceNavButton.title = collapsed ? "Expand workspace" : "Collapse workspace";
-      workspaceNavButton.setAttribute("aria-label", collapsed ? "Expand workspace" : "Collapse workspace");
-      workspaceNavButton.setAttribute("aria-expanded", collapsed ? "false" : "true");
-      workspaceNavButton.appendChild(this.createIcon("workspace"));
-      workspaceNavButton.addEventListener("click", () => {
-        if (this.onToggleSidebar) this.onToggleSidebar();
-      });
-      nav2.appendChild(workspaceNavButton);
-      this.container.appendChild(nav2);
-      const panel = document.createElement("div");
-      panel.className = "sidebar-panel";
+      this.workspaceView.replaceChildren();
       const header3 = document.createElement("div");
       header3.className = "sidebar-heading";
       const title = document.createElement("span");
@@ -76576,7 +76817,7 @@ $$
         button.addEventListener("click", () => this.beginCreate(this.selectedDirectory, type7));
         header3.appendChild(button);
       }
-      panel.appendChild(header3);
+      this.workspaceView.appendChild(header3);
       const treeRoot = document.createElement("ul");
       treeRoot.className = "file-tree";
       if (!this.rootPath) {
@@ -76596,15 +76837,75 @@ $$
           treeRoot.appendChild(empty2);
         }
       }
-      panel.appendChild(treeRoot);
-      this.container.appendChild(panel);
+      this.workspaceView.appendChild(treeRoot);
+      this.updateActiveView();
       requestAnimationFrame(() => {
-        const nextTree = this.container.querySelector(".file-tree");
+        const nextTree = this.workspaceView.querySelector(".file-tree");
         if (nextTree) {
           nextTree.scrollTop = previousScrollTop;
           nextTree.scrollLeft = previousScrollLeft;
         }
       });
+    }
+    renderNavigation() {
+      const focusedId = this.nav.contains(document.activeElement) ? document.activeElement.dataset.sidebarPanelId : null;
+      this.nav.replaceChildren();
+      const addButton = (id3, icon, title) => {
+        const button = document.createElement("button");
+        const active = this.activeViewId === id3;
+        button.type = "button";
+        button.className = `sidebar-nav-button${active ? " active" : ""}`;
+        button.dataset.sidebarPanelId = id3;
+        button.title = title;
+        button.setAttribute("aria-label", title);
+        button.setAttribute("aria-pressed", active ? "true" : "false");
+        if (id3 === "workspace") {
+          const collapsed = document.body.classList.contains("sidebar-collapsed");
+          button.title = collapsed ? "Expand workspace" : "Collapse workspace";
+          button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+        }
+        button.appendChild(this.createLucideIcon(icon));
+        button.addEventListener("click", () => this.selectView(id3));
+        this.nav.appendChild(button);
+      };
+      addButton("workspace", FolderRoot, "Explorer");
+      for (const [id3, panel] of this.panels) {
+        addButton(id3, resolvePluginPanelIcon(panel.icon, Folder), panel.title || "Plugin panel");
+      }
+      if (focusedId) {
+        [...this.nav.querySelectorAll(".sidebar-nav-button")].find((button) => button.dataset.sidebarPanelId === focusedId)?.focus();
+      }
+    }
+    selectView(id3) {
+      const collapsed = document.body.classList.contains("sidebar-collapsed");
+      if (this.activeViewId === id3 && !collapsed) {
+        this.onToggleSidebar?.();
+        return;
+      }
+      this.activeViewId = id3;
+      if (collapsed) this.onToggleSidebar?.();
+      this.renderNavigation();
+      this.updateActiveView();
+    }
+    updateActiveView() {
+      this.workspaceView.hidden = this.activeViewId !== "workspace";
+      for (const [id3, panelView] of this.panelViews) {
+        panelView.hidden = id3 !== this.activeViewId;
+      }
+      const activePanel = this.panels.get(this.activeViewId);
+      if (activePanel) this.mountPluginPanel(activePanel);
+    }
+    mountPluginPanel(panel) {
+      if (!panel.entryUrl) return;
+      const key = panel.instanceId || panel.id;
+      const content3 = this.panelViews.get(key)?.querySelector(".sidebar-plugin-content");
+      if (!content3 || content3.querySelector("iframe")) return;
+      const frame = document.createElement("iframe");
+      frame.className = "sidebar-plugin-frame";
+      frame.title = panel.title || "Plugin panel";
+      frame.sandbox = "allow-scripts";
+      frame.src = panel.entryUrl;
+      content3.appendChild(frame);
     }
     renderEntries(entries, parent) {
       for (const entry of entries) {
@@ -76810,13 +77111,13 @@ $$
     }
     registerPanel(panel) {
       if (!panel?.id) return false;
-      this.panels.set(panel.id, panel);
+      this.panels.set(panel.instanceId || panel.id, panel);
       this.renderActivities();
       return true;
     }
     unregisterPanel(pluginId, panelIds = []) {
       for (const [id3, panel] of this.panels) {
-        if (panel.pluginId === pluginId && (!panelIds.length || panelIds.includes(id3))) {
+        if (panel.pluginId === pluginId && (!panelIds.length || panelIds.includes(panel.id))) {
           this.panels.delete(id3);
         }
       }
@@ -76868,7 +77169,7 @@ $$
       };
       addButton(null, "Utility pane", PanelRight);
       for (const panel of this.panels.values()) {
-        addButton(panel.id, panel.title, PanelRight);
+        addButton(panel.instanceId || panel.id, panel.title, resolvePluginPanelIcon(panel.icon));
       }
     }
     render() {
@@ -76890,6 +77191,1256 @@ $$
       placeholder.className = "utility-pane-placeholder";
       placeholder.textContent = "No plugin or core view owns this panel.";
       content3.appendChild(placeholder);
+    }
+  };
+
+  // src/ui/plugins-panel.js
+  function createIcon(Icon, props = {}) {
+    return createElement(Icon, {
+      width: 16,
+      height: 16,
+      "aria-hidden": "true",
+      focusable: "false",
+      ...props
+    });
+  }
+  var PluginManagerPanel = class {
+    /**
+     * @param {Object} options
+     * @param {HTMLElement} options.container - Modal overlay container (#plugins-panel)
+     * @param {Object} options.pluginManager - window.pluginManager API
+     * @param {Function} [options.showConfirm] - (message, okLabel) => Promise<boolean>
+     * @param {Function} [options.onClose] - () => void
+     */
+    constructor({ container, pluginManager, showConfirm: showConfirm2, onClose }) {
+      this.container = container;
+      this.pluginManager = pluginManager;
+      this.showConfirm = showConfirm2;
+      this.onClose = onClose;
+      this.isOpen = false;
+      this.plugins = [];
+      this.settingsMap = /* @__PURE__ */ new Map();
+      this.filter = "all";
+      this.searchQuery = "";
+      this.selectedPluginId = null;
+      this.inFlightActions = /* @__PURE__ */ new Set();
+      this.loading = true;
+      this.recentlyInstalled = null;
+      this.toast = null;
+      this.toastTimeout = null;
+      this.isDragging = false;
+      this.previousActiveElement = null;
+      this.unsubscribePluginsChanged = null;
+      this.unsubscribeSettingsChanged = null;
+      this.box = this.container.querySelector("#plugins-box");
+      if (!this.box) {
+        this.box = document.createElement("div");
+        this.box.id = "plugins-box";
+        this.container.appendChild(this.box);
+      }
+      this.box.setAttribute("tabindex", "-1");
+      this._bindOverlayEvents();
+    }
+    /**
+     * Attach backdrop, keyboard trap, and drag-and-drop events to the container and modal box.
+     * @private
+     */
+    _bindOverlayEvents() {
+      this.container.addEventListener("click", (e) => {
+        if (e.target === this.container) {
+          this.close();
+        }
+      });
+      this.container.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          if (this.selectedPluginId) {
+            this.selectedPluginId = null;
+            this.render();
+          } else {
+            this.close();
+          }
+          return;
+        }
+        if (e.key === "Tab") {
+          const focusables = this.box.querySelectorAll(
+            'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusables.length === 0) return;
+          const first = focusables[0];
+          const last2 = focusables[focusables.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last2.focus();
+          } else if (!e.shiftKey && document.activeElement === last2) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+        if (!this.selectedPluginId && (e.key === "/" || (e.ctrlKey || e.metaKey) && (e.key === "f" || e.key === "F"))) {
+          const tag2 = document.activeElement?.tagName?.toLowerCase();
+          if (tag2 !== "input" && tag2 !== "textarea") {
+            e.preventDefault();
+            const searchInput = this.box.querySelector(".plugins-search-input");
+            if (searchInput) {
+              searchInput.focus();
+              searchInput.select();
+            }
+          }
+        }
+      });
+      this.container.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        this.isDragging = true;
+        this.box.classList.add("drag-over");
+        this._updateDropBanner();
+      });
+      this.container.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        if (!this.isDragging) {
+          this.isDragging = true;
+          this.box.classList.add("drag-over");
+          this._updateDropBanner();
+        }
+      });
+      this.container.addEventListener("dragleave", (e) => {
+        if (e.target === this.container || !this.container.contains(e.relatedTarget)) {
+          this.isDragging = false;
+          this.box.classList.remove("drag-over");
+          this._updateDropBanner();
+        }
+      });
+      this.container.addEventListener("drop", (e) => {
+        e.preventDefault();
+        this.isDragging = false;
+        this.box.classList.remove("drag-over");
+        this._updateDropBanner();
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          const folderPath = files[0].path;
+          if (folderPath) {
+            this.installPluginFromPath(folderPath);
+          }
+        }
+      });
+    }
+    /**
+     * Open the plugins manager dialog.
+     */
+    async open() {
+      if (this.isOpen) return;
+      this.isOpen = true;
+      this.selectedPluginId = null;
+      this.previousActiveElement = document.activeElement;
+      this.container.classList.remove("hidden");
+      this.loading = true;
+      this.render();
+      if (this.pluginManager?.onPluginsChanged) {
+        this.unsubscribePluginsChanged = this.pluginManager.onPluginsChanged(
+          (updatedPlugins) => this.handlePluginsChanged(updatedPlugins)
+        );
+      }
+      if (window.settingsAPI?.onChange) {
+        this.unsubscribeSettingsChanged = window.settingsAPI.onChange(() => {
+          this.loadSettings();
+        });
+      }
+      await this.loadData();
+      const searchInput = this.box.querySelector(".plugins-search-input");
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }
+    /**
+     * Close the dialog and clean up subscriptions.
+     */
+    close() {
+      if (!this.isOpen) return;
+      this.isOpen = false;
+      this.selectedPluginId = null;
+      this.container.classList.add("hidden");
+      if (this.unsubscribePluginsChanged) {
+        this.unsubscribePluginsChanged();
+        this.unsubscribePluginsChanged = null;
+      }
+      if (this.unsubscribeSettingsChanged) {
+        this.unsubscribeSettingsChanged();
+        this.unsubscribeSettingsChanged = null;
+      }
+      if (this.toastTimeout) {
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = null;
+      }
+      if (this.previousActiveElement && typeof this.previousActiveElement.focus === "function") {
+        try {
+          this.previousActiveElement.focus();
+        } catch {
+        }
+      }
+      this.onClose?.();
+    }
+    /**
+     * Load plugin list and their settings from main.
+     */
+    async loadData() {
+      try {
+        if (this.pluginManager?.getPlugins) {
+          const plugins = await this.pluginManager.getPlugins();
+          this.plugins = Array.isArray(plugins) ? plugins : [];
+        }
+        await this.loadSettings();
+      } catch (err) {
+        this.showToast(`Error loading plugins: ${err.message}`, "error");
+      } finally {
+        this.loading = false;
+        this.render();
+      }
+    }
+    /**
+     * Fetch all registered settings and metadata for plugins.
+     */
+    async loadSettings() {
+      try {
+        if (this.pluginManager?.getSettings) {
+          const result = await this.pluginManager.getSettings();
+          if (result && typeof result === "object") {
+            for (const [pluginId, data2] of Object.entries(result)) {
+              this.settingsMap.set(pluginId, data2);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[PluginManagerPanel] Failed to load settings:", err);
+      }
+    }
+    /**
+     * Handler for plugins:changed broadcast from main.
+     * @param {Array} updatedPlugins
+     */
+    handlePluginsChanged(updatedPlugins) {
+      if (Array.isArray(updatedPlugins)) {
+        this.plugins = updatedPlugins;
+        this.render();
+      }
+    }
+    /**
+     * Show non-blocking inline feedback message.
+     * @param {string} message
+     * @param {'info'|'success'|'error'} [type]
+     */
+    showToast(message, type7 = "info") {
+      this.toast = { message, type: type7 };
+      if (this.toastTimeout) clearTimeout(this.toastTimeout);
+      this.toastTimeout = setTimeout(() => {
+        this.toast = null;
+        this._updateToast();
+      }, 4500);
+      this._updateToast();
+    }
+    /**
+     * Install a plugin by picking a folder.
+     */
+    async installFromFolder() {
+      try {
+        if (!this.pluginManager?.installFromFolder) return;
+        const result = await this.pluginManager.installFromFolder();
+        if (result?.success) {
+          this.recentlyInstalled = result.pluginId;
+          this.showToast(`Plugin "${result.pluginId}" installed successfully!`, "success");
+          await this.loadData();
+        } else if (result?.error) {
+          this.showToast(`Install failed: ${result.error}`, "error");
+        }
+      } catch (err) {
+        this.showToast(`Install error: ${err.message}`, "error");
+      }
+    }
+    /**
+     * Install a plugin from a specified directory path (used by drag-and-drop).
+     * @param {string} sourcePath
+     */
+    async installPluginFromPath(sourcePath) {
+      try {
+        if (!this.pluginManager?.install) return;
+        this.showToast("Installing plugin...", "info");
+        const result = await this.pluginManager.install(sourcePath);
+        if (result?.success !== false) {
+          const id3 = result?.pluginId || sourcePath.split(/[\\/]/).pop();
+          this.recentlyInstalled = id3;
+          this.showToast(`Plugin "${id3}" installed successfully!`, "success");
+          await this.loadData();
+        } else {
+          this.showToast(`Install failed: ${result?.error || "Unknown error"}`, "error");
+        }
+      } catch (err) {
+        this.showToast(`Install error: ${err.message}`, "error");
+      }
+    }
+    /**
+     * Toggle a plugin enabled/disabled with optimistic update and rollback on failure.
+     * @param {Object} plugin
+     * @param {boolean} enable
+     */
+    async togglePlugin(plugin, enable) {
+      if (this.inFlightActions.has(plugin.name)) return;
+      this.inFlightActions.add(plugin.name);
+      const prevEnabled = plugin.enabled;
+      const prevActive = plugin.active;
+      const prevError = plugin.error;
+      plugin.enabled = enable;
+      if (enable) {
+        plugin.active = true;
+        plugin.error = null;
+      } else {
+        plugin.active = false;
+      }
+      this._renderListContent();
+      try {
+        const res = enable ? await this.pluginManager.enable(plugin.name) : await this.pluginManager.disable(plugin.name);
+        if (res && res.success === false) {
+          plugin.enabled = prevEnabled;
+          plugin.active = prevActive;
+          plugin.error = res.error || prevError;
+          this.showToast(`Failed to ${enable ? "enable" : "disable"} ${plugin.name}: ${res.error}`, "error");
+        } else {
+          this.showToast(`Plugin "${plugin.name}" ${enable ? "enabled" : "disabled"}.`, "success");
+          if (enable) {
+            await this.loadSettings();
+          }
+        }
+      } catch (err) {
+        plugin.enabled = prevEnabled;
+        plugin.active = prevActive;
+        plugin.error = err.message;
+        this.showToast(`Action failed: ${err.message}`, "error");
+      } finally {
+        this.inFlightActions.delete(plugin.name);
+        this._renderListContent();
+      }
+    }
+    /**
+     * Uninstall a plugin with confirmation.
+     * @param {Object} plugin
+     */
+    async uninstallPlugin(plugin) {
+      if (this.inFlightActions.has(plugin.name)) return;
+      const message = `Are you sure you want to uninstall "${plugin.name}"? This will permanently remove its files from disk.`;
+      const confirmed = this.showConfirm ? await this.showConfirm(message, "Uninstall") : confirm(message);
+      if (!confirmed) return;
+      this.inFlightActions.add(plugin.name);
+      this._renderListContent();
+      try {
+        const res = await this.pluginManager.uninstall(plugin.name);
+        if (res && res.success === false) {
+          this.showToast(`Failed to uninstall: ${res.error}`, "error");
+        } else {
+          if (this.selectedPluginId === plugin.name) {
+            this.selectedPluginId = null;
+          }
+          this.showToast(`Uninstalled "${plugin.name}".`, "success");
+          await this.loadData();
+        }
+      } catch (err) {
+        this.showToast(`Uninstall error: ${err.message}`, "error");
+      } finally {
+        this.inFlightActions.delete(plugin.name);
+        this._renderListContent();
+      }
+    }
+    /**
+     * Enable all currently disabled plugins.
+     */
+    async enableAll() {
+      const disabled = this.plugins.filter((p) => !p.enabled);
+      if (disabled.length === 0) return;
+      this.showToast(`Enabling ${disabled.length} plugin(s)...`, "info");
+      for (const p of disabled) {
+        await this.togglePlugin(p, true);
+      }
+    }
+    /**
+     * Disable all currently enabled plugins.
+     */
+    async disableAll() {
+      const enabled = this.plugins.filter((p) => p.enabled);
+      if (enabled.length === 0) return;
+      this.showToast(`Disabling ${enabled.length} plugin(s)...`, "info");
+      for (const p of enabled) {
+        await this.togglePlugin(p, false);
+      }
+    }
+    /**
+     * Reload all plugins in sandbox host.
+     */
+    async reloadPlugins() {
+      try {
+        this.showToast("Reloading plugins...", "info");
+        const res = await this.pluginManager.reload();
+        if (res && res.success === false) {
+          this.showToast(`Reload failed: ${res.error}`, "error");
+        } else {
+          this.showToast("Plugins reloaded successfully.", "success");
+          await this.loadData();
+        }
+      } catch (err) {
+        this.showToast(`Reload error: ${err.message}`, "error");
+      }
+    }
+    /**
+     * Open the plugins directory in native file explorer.
+     */
+    async openPluginsFolder() {
+      try {
+        if (this.pluginManager?.openPluginsFolder) {
+          await this.pluginManager.openPluginsFolder();
+        }
+      } catch (err) {
+        this.showToast(`Could not open folder: ${err.message}`, "error");
+      }
+    }
+    /**
+     * Save a single setting change for a plugin.
+     * @param {string} pluginId
+     * @param {string} key
+     * @param {*} value
+     */
+    async updateSetting(pluginId, key, value) {
+      try {
+        let data2 = this.settingsMap.get(pluginId);
+        if (!data2) {
+          data2 = { values: {}, metadata: {} };
+          this.settingsMap.set(pluginId, data2);
+        }
+        data2.values[key] = value;
+        const res = await this.pluginManager.setSetting(pluginId, key, value);
+        if (res && res.success === false) {
+          this.showToast(`Setting failed: ${res.error}`, "error");
+        }
+      } catch (err) {
+        this.showToast(`Setting error: ${err.message}`, "error");
+      }
+    }
+    /**
+     * Filter and sort plugins according to search query, filter segment, and errors.
+     * Errored plugins sort to the top.
+     * @returns {Array}
+     */
+    getFilteredPlugins() {
+      const q2 = this.searchQuery.trim().toLowerCase();
+      const filtered = this.plugins.filter((plugin) => {
+        if (this.filter === "enabled" && !plugin.enabled) return false;
+        if (this.filter === "disabled" && plugin.enabled) return false;
+        if (this.filter === "errors" && !plugin.error) return false;
+        if (q2) {
+          const name2 = (plugin.name || "").toLowerCase();
+          const desc = (plugin.description || "").toLowerCase();
+          const author = (plugin.author || "").toLowerCase();
+          if (!name2.includes(q2) && !desc.includes(q2) && !author.includes(q2)) {
+            return false;
+          }
+        }
+        return true;
+      });
+      return filtered.sort((a2, b) => {
+        const aErr = !!a2.error;
+        const bErr = !!b.error;
+        if (aErr && !bErr) return -1;
+        if (!aErr && bErr) return 1;
+        return (a2.name || "").localeCompare(b.name || "");
+      });
+    }
+    /**
+     * Count plugins per status for filter dropdown options.
+     */
+    getCounts() {
+      let total = this.plugins.length;
+      let enabled = 0;
+      let disabled = 0;
+      let errors = 0;
+      for (const p of this.plugins) {
+        if (p.enabled) enabled++;
+        else disabled++;
+        if (p.error) errors++;
+      }
+      return { total, enabled, disabled, errors };
+    }
+    /**
+     * Update the drag-and-drop indicator banner if present.
+     * @private
+     */
+    _updateDropBanner() {
+      let banner = this.box.querySelector(".plugins-drop-banner");
+      if (this.isDragging) {
+        if (!banner) {
+          banner = document.createElement("div");
+          banner.className = "plugins-drop-banner";
+          banner.appendChild(createIcon(FolderPlus, { width: 16, height: 16 }));
+          const text6 = document.createElement("span");
+          text6.textContent = "Drop plugin folder to install";
+          banner.appendChild(text6);
+          const toolbar = this.box.querySelector(".plugins-toolbar");
+          if (toolbar && toolbar.nextSibling) {
+            this.box.insertBefore(banner, toolbar.nextSibling);
+          } else {
+            this.box.prepend(banner);
+          }
+        }
+      } else if (banner) {
+        banner.remove();
+      }
+    }
+    /**
+     * Update or remove inline toast message element.
+     * @private
+     */
+    _updateToast() {
+      let toastEl = this.box.querySelector(".plugins-toast");
+      if (!this.toast) {
+        toastEl?.remove();
+        return;
+      }
+      if (!toastEl) {
+        toastEl = document.createElement("div");
+        const content3 = this.box.querySelector(".plugins-content");
+        if (content3) {
+          this.box.insertBefore(toastEl, content3);
+        } else {
+          this.box.appendChild(toastEl);
+        }
+      }
+      toastEl.className = `plugins-toast plugins-toast-${this.toast.type || "info"}`;
+      toastEl.replaceChildren();
+      const msgSpan = document.createElement("span");
+      msgSpan.textContent = this.toast.message;
+      toastEl.appendChild(msgSpan);
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "plugins-toast-close";
+      closeBtn.title = "Dismiss";
+      closeBtn.setAttribute("aria-label", "Dismiss notification");
+      closeBtn.appendChild(createIcon(X, { width: 14, height: 14 }));
+      closeBtn.addEventListener("click", () => {
+        this.toast = null;
+        toastEl.remove();
+      });
+      toastEl.appendChild(closeBtn);
+    }
+    /**
+     * Main render method. Renders either the plugin list or dedicated plugin detail section.
+     */
+    render() {
+      if (this.selectedPluginId) {
+        this._renderDetailView();
+      } else {
+        this._renderListView();
+      }
+    }
+    /**
+     * Render the main plugins list view.
+     * @private
+     */
+    _renderListView() {
+      const contentEl = this.box.querySelector(".plugins-content");
+      const prevScrollTop = contentEl ? contentEl.scrollTop : 0;
+      const isSearchFocused = document.activeElement?.classList?.contains("plugins-search-input");
+      this.box.replaceChildren();
+      const header3 = document.createElement("header");
+      header3.className = "plugins-header";
+      const titleWrap = document.createElement("div");
+      titleWrap.className = "plugins-header-title-wrap";
+      const title = document.createElement("h2");
+      title.id = "plugins-panel-title";
+      title.className = "plugins-title";
+      title.appendChild(createIcon(Puzzle, { width: 18, height: 18 }));
+      const titleText = document.createElement("span");
+      titleText.textContent = "Manage Plugins";
+      title.appendChild(titleText);
+      titleWrap.appendChild(title);
+      const counts = this.getCounts();
+      const countBadge = document.createElement("span");
+      countBadge.className = "plugins-count-badge";
+      countBadge.textContent = `${counts.enabled} of ${counts.total} enabled`;
+      titleWrap.appendChild(countBadge);
+      header3.appendChild(titleWrap);
+      const headerActions = document.createElement("div");
+      headerActions.className = "plugins-header-actions";
+      const installBtn = document.createElement("button");
+      installBtn.className = "plugins-btn-primary";
+      installBtn.appendChild(createIcon(FolderPlus, { width: 15, height: 15 }));
+      const installBtnText = document.createElement("span");
+      installBtnText.textContent = "Install from folder\u2026";
+      installBtn.appendChild(installBtnText);
+      installBtn.addEventListener("click", () => this.installFromFolder());
+      headerActions.appendChild(installBtn);
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "plugins-close-btn";
+      closeBtn.title = "Close (Esc)";
+      closeBtn.setAttribute("aria-label", "Close dialog");
+      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+      closeBtn.addEventListener("click", () => this.close());
+      headerActions.appendChild(closeBtn);
+      header3.appendChild(headerActions);
+      this.box.appendChild(header3);
+      const toolbar = document.createElement("div");
+      toolbar.className = "plugins-toolbar";
+      const searchWrap = document.createElement("div");
+      searchWrap.className = "plugins-search-wrap";
+      const searchIconWrap = document.createElement("span");
+      searchIconWrap.className = "plugins-search-icon";
+      searchIconWrap.appendChild(createIcon(Search, { width: 14, height: 14 }));
+      searchWrap.appendChild(searchIconWrap);
+      const searchInput = document.createElement("input");
+      searchInput.type = "search";
+      searchInput.className = "plugins-search-input";
+      searchInput.placeholder = "Search plugins by name, description, author... (press / to focus)";
+      searchInput.setAttribute("aria-label", "Search plugins");
+      searchInput.value = this.searchQuery;
+      searchInput.addEventListener("input", (e) => {
+        this.searchQuery = e.target.value;
+        this._renderListContent();
+      });
+      searchWrap.appendChild(searchInput);
+      if (this.searchQuery) {
+        const clearBtn = document.createElement("button");
+        clearBtn.className = "plugins-search-clear";
+        clearBtn.setAttribute("aria-label", "Clear search");
+        clearBtn.appendChild(createIcon(X, { width: 12, height: 12 }));
+        clearBtn.addEventListener("click", () => {
+          this.searchQuery = "";
+          searchInput.value = "";
+          searchInput.focus();
+          this._renderListContent();
+        });
+        searchWrap.appendChild(clearBtn);
+      }
+      toolbar.appendChild(searchWrap);
+      const filterSelect = document.createElement("select");
+      filterSelect.className = "plugins-filter-select";
+      filterSelect.setAttribute("aria-label", "Filter plugins");
+      const filterOptions = [
+        { id: "all", label: `All (${counts.total})` },
+        { id: "enabled", label: `Enabled (${counts.enabled})` },
+        { id: "disabled", label: `Disabled (${counts.disabled})` },
+        { id: "errors", label: `Errors (${counts.errors})` }
+      ];
+      filterOptions.forEach((opt) => {
+        const option = document.createElement("option");
+        option.value = opt.id;
+        option.textContent = opt.label;
+        if (this.filter === opt.id) option.selected = true;
+        filterSelect.appendChild(option);
+      });
+      filterSelect.addEventListener("change", (e) => {
+        this.filter = e.target.value;
+        this._renderListContent();
+      });
+      toolbar.appendChild(filterSelect);
+      this.box.appendChild(toolbar);
+      this._updateDropBanner();
+      this._updateToast();
+      const content3 = document.createElement("div");
+      content3.className = "plugins-content";
+      this.box.appendChild(content3);
+      this._renderListContent();
+      const footer = document.createElement("footer");
+      footer.className = "plugins-footer";
+      const leftGroup = document.createElement("div");
+      leftGroup.className = "plugins-footer-group";
+      const enableAllBtn = document.createElement("button");
+      enableAllBtn.className = "plugins-btn-secondary";
+      enableAllBtn.textContent = "Enable all";
+      enableAllBtn.addEventListener("click", () => this.enableAll());
+      leftGroup.appendChild(enableAllBtn);
+      const disableAllBtn = document.createElement("button");
+      disableAllBtn.className = "plugins-btn-secondary";
+      disableAllBtn.textContent = "Disable all";
+      disableAllBtn.addEventListener("click", () => this.disableAll());
+      leftGroup.appendChild(disableAllBtn);
+      footer.appendChild(leftGroup);
+      const rightGroup = document.createElement("div");
+      rightGroup.className = "plugins-footer-group";
+      const reloadBtn = document.createElement("button");
+      reloadBtn.className = "plugins-btn-secondary";
+      reloadBtn.appendChild(createIcon(RefreshCw, { width: 13, height: 13 }));
+      const reloadText = document.createElement("span");
+      reloadText.textContent = "Reload plugins";
+      reloadBtn.appendChild(reloadText);
+      reloadBtn.addEventListener("click", () => this.reloadPlugins());
+      rightGroup.appendChild(reloadBtn);
+      const openFolderBtn = document.createElement("button");
+      openFolderBtn.className = "plugins-btn-secondary";
+      openFolderBtn.appendChild(createIcon(Folder, { width: 13, height: 13 }));
+      const openFolderText = document.createElement("span");
+      openFolderText.textContent = "Open plugins folder";
+      openFolderBtn.appendChild(openFolderText);
+      openFolderBtn.addEventListener("click", () => this.openPluginsFolder());
+      rightGroup.appendChild(openFolderBtn);
+      footer.appendChild(rightGroup);
+      this.box.appendChild(footer);
+      const newContentEl = this.box.querySelector(".plugins-content");
+      if (newContentEl && prevScrollTop) {
+        newContentEl.scrollTop = prevScrollTop;
+      }
+      if (isSearchFocused) {
+        const newSearchInput = this.box.querySelector(".plugins-search-input");
+        newSearchInput?.focus();
+      }
+    }
+    /**
+     * Render the list items inside .plugins-content.
+     * @private
+     */
+    _renderListContent() {
+      const content3 = this.box.querySelector(".plugins-content");
+      if (!content3) return;
+      const prevScrollTop = content3.scrollTop;
+      content3.replaceChildren();
+      if (this.loading) {
+        for (let i = 0; i < 3; i++) {
+          const skeleton = document.createElement("div");
+          skeleton.className = "plugin-row-skeleton";
+          const iconBox = document.createElement("div");
+          iconBox.className = "skeleton-box";
+          iconBox.style.cssText = "width: 32px; height: 32px; border-radius: 6px;";
+          skeleton.appendChild(iconBox);
+          const linesBox = document.createElement("div");
+          linesBox.style.cssText = "flex: 1; display: flex; flex-direction: column; gap: 8px;";
+          const line1 = document.createElement("div");
+          line1.className = "skeleton-box";
+          line1.style.cssText = "width: 40%; height: 16px;";
+          const line2 = document.createElement("div");
+          line2.className = "skeleton-box";
+          line2.style.cssText = "width: 75%; height: 12px;";
+          linesBox.appendChild(line1);
+          linesBox.appendChild(line2);
+          skeleton.appendChild(linesBox);
+          content3.appendChild(skeleton);
+        }
+        return;
+      }
+      if (this.plugins.length === 0) {
+        const empty2 = document.createElement("div");
+        empty2.className = "plugins-empty-state";
+        const emptyIcon = document.createElement("div");
+        emptyIcon.className = "plugins-empty-icon";
+        emptyIcon.appendChild(createIcon(Puzzle, { width: 44, height: 44 }));
+        empty2.appendChild(emptyIcon);
+        const emptyTitle = document.createElement("div");
+        emptyTitle.className = "plugins-empty-title";
+        emptyTitle.textContent = "No plugins installed";
+        empty2.appendChild(emptyTitle);
+        const emptyDesc = document.createElement("div");
+        emptyDesc.className = "plugins-empty-desc";
+        emptyDesc.textContent = "Add custom commands, transforms, and UI views to FlowMark by installing plugins.";
+        empty2.appendChild(emptyDesc);
+        const emptyInstallBtn = document.createElement("button");
+        emptyInstallBtn.className = "plugins-btn-primary";
+        emptyInstallBtn.appendChild(createIcon(FolderPlus, { width: 15, height: 15 }));
+        const emptyInstallText = document.createElement("span");
+        emptyInstallText.textContent = "Install Plugin from Folder\u2026";
+        emptyInstallBtn.appendChild(emptyInstallText);
+        emptyInstallBtn.addEventListener("click", () => this.installFromFolder());
+        empty2.appendChild(emptyInstallBtn);
+        content3.appendChild(empty2);
+        return;
+      }
+      const filtered = this.getFilteredPlugins();
+      if (filtered.length === 0) {
+        const noResults = document.createElement("div");
+        noResults.className = "plugins-empty-state";
+        const noResIcon = document.createElement("div");
+        noResIcon.className = "plugins-empty-icon";
+        noResIcon.appendChild(createIcon(Search, { width: 36, height: 36 }));
+        noResults.appendChild(noResIcon);
+        const noResTitle = document.createElement("div");
+        noResTitle.className = "plugins-empty-title";
+        noResTitle.textContent = "No matching plugins found";
+        noResults.appendChild(noResTitle);
+        const noResDesc = document.createElement("div");
+        noResDesc.className = "plugins-empty-desc";
+        noResDesc.textContent = this.searchQuery ? `No plugins matched "${this.searchQuery}". Try a different search term or clear the filter.` : "No plugins match the selected filter.";
+        noResults.appendChild(noResDesc);
+        const clearBtn = document.createElement("button");
+        clearBtn.className = "plugins-btn-secondary";
+        clearBtn.textContent = "Clear filters";
+        clearBtn.addEventListener("click", () => {
+          this.searchQuery = "";
+          this.filter = "all";
+          this.render();
+        });
+        noResults.appendChild(clearBtn);
+        content3.appendChild(noResults);
+        return;
+      }
+      const listWrap = document.createElement("div");
+      listWrap.className = "plugins-list";
+      let scrollToRow = null;
+      filtered.forEach((plugin) => {
+        const row = this._createPluginRow(plugin);
+        listWrap.appendChild(row);
+        if (this.recentlyInstalled && plugin.name === this.recentlyInstalled) {
+          scrollToRow = row;
+          row.classList.add("plugin-card-highlight");
+        }
+      });
+      content3.appendChild(listWrap);
+      if (scrollToRow) {
+        this.recentlyInstalled = null;
+        setTimeout(() => {
+          scrollToRow.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 50);
+      } else {
+        content3.scrollTop = prevScrollTop;
+      }
+    }
+    /**
+     * Build a single plugin row in the list.
+     * Clicking the row or the navigation arrow opens that plugin's section.
+     * @param {Object} plugin
+     * @returns {HTMLElement}
+     * @private
+     */
+    _createPluginRow(plugin) {
+      const row = document.createElement("div");
+      const hasError = !!plugin.error;
+      const inFlight = this.inFlightActions.has(plugin.name);
+      row.className = `plugin-row${hasError ? " row-error" : ""}`;
+      row.dataset.pluginId = plugin.name;
+      row.setAttribute("tabindex", "0");
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-label", `View details for ${plugin.name}`);
+      const leftCol = document.createElement("div");
+      leftCol.className = "plugin-row-left";
+      const iconWrap = document.createElement("div");
+      iconWrap.className = "plugin-row-icon";
+      iconWrap.appendChild(createIcon(Puzzle, { width: 16, height: 16 }));
+      leftCol.appendChild(iconWrap);
+      const infoCol = document.createElement("div");
+      infoCol.className = "plugin-row-info";
+      const titleRow = document.createElement("div");
+      titleRow.className = "plugin-row-title-row";
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "plugin-row-name";
+      nameSpan.textContent = plugin.name || "Unnamed Plugin";
+      titleRow.appendChild(nameSpan);
+      if (plugin.version) {
+        const versionSpan = document.createElement("span");
+        versionSpan.className = "plugin-row-version";
+        versionSpan.textContent = `v${plugin.version}`;
+        titleRow.appendChild(versionSpan);
+      }
+      if (plugin.error) {
+        const errorBadge = document.createElement("span");
+        errorBadge.className = "plugin-status-badge status-badge-error";
+        errorBadge.textContent = "Error";
+        titleRow.appendChild(errorBadge);
+      }
+      infoCol.appendChild(titleRow);
+      if (plugin.description || plugin.author) {
+        const metaSpan = document.createElement("div");
+        metaSpan.className = "plugin-row-meta";
+        const authorText = plugin.author ? `by ${plugin.author}` : "";
+        const descText = plugin.description || "";
+        metaSpan.textContent = [authorText, descText].filter(Boolean).join(" \u2014 ");
+        infoCol.appendChild(metaSpan);
+      }
+      leftCol.appendChild(infoCol);
+      row.appendChild(leftCol);
+      const rightCol = document.createElement("div");
+      rightCol.className = "plugin-row-right";
+      const toggleBtn = document.createElement("button");
+      toggleBtn.setAttribute("role", "switch");
+      toggleBtn.setAttribute("aria-checked", String(plugin.enabled));
+      toggleBtn.className = "plugin-toggle-switch";
+      toggleBtn.setAttribute("aria-label", `Toggle ${plugin.name} plugin`);
+      toggleBtn.title = plugin.enabled ? "Click to disable" : "Click to enable";
+      if (inFlight) toggleBtn.disabled = true;
+      const toggleThumb = document.createElement("span");
+      toggleThumb.className = "plugin-toggle-thumb";
+      toggleBtn.appendChild(toggleThumb);
+      toggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.togglePlugin(plugin, !plugin.enabled);
+      });
+      rightCol.appendChild(toggleBtn);
+      const arrowBtn = document.createElement("button");
+      arrowBtn.className = "plugin-nav-arrow";
+      arrowBtn.setAttribute("aria-label", `Open ${plugin.name} details`);
+      arrowBtn.title = "View plugin details";
+      arrowBtn.appendChild(createIcon(ChevronRight, { width: 16, height: 16 }));
+      arrowBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.openPluginDetails(plugin.name);
+      });
+      rightCol.appendChild(arrowBtn);
+      row.appendChild(rightCol);
+      row.addEventListener("click", () => {
+        this.openPluginDetails(plugin.name);
+      });
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this.openPluginDetails(plugin.name);
+        }
+      });
+      return row;
+    }
+    /**
+     * Navigate to the dedicated details view for a plugin.
+     * @param {string} pluginId
+     */
+    openPluginDetails(pluginId) {
+      this.selectedPluginId = pluginId;
+      this.render();
+    }
+    /**
+     * Render the dedicated detail section for this.selectedPluginId.
+     * @private
+     */
+    _renderDetailView() {
+      this.box.replaceChildren();
+      const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
+      if (!plugin) {
+        this.selectedPluginId = null;
+        this._renderListView();
+        return;
+      }
+      const inFlight = this.inFlightActions.has(plugin.name);
+      const header3 = document.createElement("header");
+      header3.className = "plugins-header";
+      const leftWrap = document.createElement("div");
+      leftWrap.className = "plugins-header-title-wrap";
+      const backBtn = document.createElement("button");
+      backBtn.className = "plugins-back-btn";
+      backBtn.appendChild(createIcon(ArrowLeft, { width: 15, height: 15 }));
+      const backText = document.createElement("span");
+      backText.textContent = "All Plugins";
+      backBtn.appendChild(backText);
+      backBtn.title = "Back to plugin list (Esc)";
+      backBtn.addEventListener("click", () => {
+        this.selectedPluginId = null;
+        this.render();
+      });
+      leftWrap.appendChild(backBtn);
+      const titleSep = document.createElement("span");
+      titleSep.className = "plugins-breadcrumb-sep";
+      titleSep.textContent = "/";
+      leftWrap.appendChild(titleSep);
+      const title = document.createElement("h2");
+      title.id = "plugins-panel-title";
+      title.className = "plugins-title";
+      title.textContent = plugin.name;
+      leftWrap.appendChild(title);
+      header3.appendChild(leftWrap);
+      const headerActions = document.createElement("div");
+      headerActions.className = "plugins-header-actions";
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "plugins-close-btn";
+      closeBtn.title = "Close (Esc)";
+      closeBtn.setAttribute("aria-label", "Close dialog");
+      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+      closeBtn.addEventListener("click", () => this.close());
+      headerActions.appendChild(closeBtn);
+      header3.appendChild(headerActions);
+      this.box.appendChild(header3);
+      this._updateToast();
+      const content3 = document.createElement("div");
+      content3.className = "plugins-content plugin-detail-view";
+      const heroCard = document.createElement("div");
+      heroCard.className = "plugin-detail-hero";
+      const iconWrap = document.createElement("div");
+      iconWrap.className = "plugin-detail-icon";
+      iconWrap.appendChild(createIcon(Puzzle, { width: 28, height: 28 }));
+      heroCard.appendChild(iconWrap);
+      const heroBody = document.createElement("div");
+      heroBody.className = "plugin-detail-body";
+      const heroTitleRow = document.createElement("div");
+      heroTitleRow.className = "plugin-detail-title-row";
+      const heroName = document.createElement("h3");
+      heroName.className = "plugin-detail-name";
+      heroName.textContent = plugin.name;
+      heroTitleRow.appendChild(heroName);
+      if (plugin.version) {
+        const heroVersion = document.createElement("span");
+        heroVersion.className = "plugin-detail-version";
+        heroVersion.textContent = `v${plugin.version}`;
+        heroTitleRow.appendChild(heroVersion);
+      }
+      if (plugin.error) {
+        const errorBadge = document.createElement("span");
+        errorBadge.className = "plugin-status-badge status-badge-error";
+        errorBadge.textContent = "Error";
+        heroTitleRow.appendChild(errorBadge);
+      }
+      const toggleBtn = document.createElement("button");
+      toggleBtn.setAttribute("role", "switch");
+      toggleBtn.setAttribute("aria-checked", String(plugin.enabled));
+      toggleBtn.className = "plugin-toggle-switch";
+      toggleBtn.setAttribute("aria-label", `Toggle ${plugin.name} plugin`);
+      toggleBtn.title = plugin.enabled ? "Click to disable" : "Click to enable";
+      if (inFlight) toggleBtn.disabled = true;
+      const toggleThumb = document.createElement("span");
+      toggleThumb.className = "plugin-toggle-thumb";
+      toggleBtn.appendChild(toggleThumb);
+      toggleBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.togglePlugin(plugin, !plugin.enabled);
+      });
+      heroTitleRow.appendChild(toggleBtn);
+      heroBody.appendChild(heroTitleRow);
+      if (plugin.author) {
+        const heroAuthor = document.createElement("div");
+        heroAuthor.className = "plugin-detail-author";
+        heroAuthor.textContent = `Author: ${plugin.author}`;
+        heroBody.appendChild(heroAuthor);
+      }
+      if (plugin.description) {
+        const heroDesc = document.createElement("div");
+        heroDesc.className = "plugin-detail-desc";
+        heroDesc.textContent = plugin.description;
+        heroBody.appendChild(heroDesc);
+      }
+      heroCard.appendChild(heroBody);
+      content3.appendChild(heroCard);
+      if (plugin.error) {
+        const errorBlock = document.createElement("div");
+        errorBlock.className = "plugin-card-error-block";
+        const errorText = document.createElement("div");
+        errorText.className = "plugin-error-text";
+        errorText.appendChild(createIcon(TriangleExclamationPoint, { width: 14, height: 14, style: "vertical-align: middle; margin-right: 6px;" }));
+        const errorMsg = document.createElement("span");
+        errorMsg.textContent = String(plugin.error);
+        errorText.appendChild(errorMsg);
+        errorBlock.appendChild(errorText);
+        const retryBtn = document.createElement("button");
+        retryBtn.className = "plugin-retry-btn";
+        retryBtn.appendChild(createIcon(RotateCw, { width: 12, height: 12 }));
+        const retryText = document.createElement("span");
+        retryText.textContent = "Retry";
+        retryBtn.appendChild(retryText);
+        retryBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.togglePlugin(plugin, true);
+        });
+        errorBlock.appendChild(retryBtn);
+        content3.appendChild(errorBlock);
+      }
+      const detailsContainer = document.createElement("div");
+      detailsContainer.className = "plugin-detail-sections";
+      const pluginSettingsData = this.settingsMap.get(plugin.name);
+      const metadata = pluginSettingsData?.metadata || {};
+      const values2 = pluginSettingsData?.values || {};
+      const settingKeys = Object.keys(metadata);
+      if (settingKeys.length > 0) {
+        const settingsSection = document.createElement("div");
+        settingsSection.className = "plugin-detail-section";
+        const settingsTitle = document.createElement("div");
+        settingsTitle.className = "plugin-section-title";
+        settingsTitle.textContent = "Configuration";
+        settingsSection.appendChild(settingsTitle);
+        const group = document.createElement("div");
+        group.className = "plugin-settings-group";
+        settingKeys.forEach((key) => {
+          const meta2 = metadata[key];
+          const row = document.createElement("div");
+          row.className = "plugin-setting-row";
+          const metaCol = document.createElement("div");
+          metaCol.className = "plugin-setting-meta";
+          const label = document.createElement("div");
+          label.className = "plugin-setting-label";
+          label.textContent = meta2.label || key;
+          metaCol.appendChild(label);
+          if (meta2.description) {
+            const desc = document.createElement("div");
+            desc.className = "plugin-setting-desc";
+            desc.textContent = meta2.description;
+            metaCol.appendChild(desc);
+          }
+          row.appendChild(metaCol);
+          const currentValue = values2[key] !== void 0 ? values2[key] : meta2.defaultValue;
+          if (meta2.type === "boolean") {
+            const boolSwitch = document.createElement("button");
+            boolSwitch.setAttribute("role", "switch");
+            boolSwitch.setAttribute("aria-checked", String(!!currentValue));
+            boolSwitch.className = "plugin-toggle-switch";
+            boolSwitch.setAttribute("aria-label", meta2.label || key);
+            const thumb = document.createElement("span");
+            thumb.className = "plugin-toggle-thumb";
+            boolSwitch.appendChild(thumb);
+            boolSwitch.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const nextVal = !JSON.parse(boolSwitch.getAttribute("aria-checked") || "false");
+              boolSwitch.setAttribute("aria-checked", String(nextVal));
+              this.updateSetting(plugin.name, key, nextVal);
+            });
+            row.appendChild(boolSwitch);
+          } else if (meta2.type === "enum" && Array.isArray(meta2.options)) {
+            const select = document.createElement("select");
+            select.className = "plugin-setting-select";
+            meta2.options.forEach((opt) => {
+              const option = document.createElement("option");
+              const optVal = typeof opt === "object" && opt !== null ? opt.value : opt;
+              const optLabel = typeof opt === "object" && opt !== null ? opt.label : opt;
+              option.value = optVal;
+              option.textContent = optLabel;
+              if (optVal === currentValue) option.selected = true;
+              select.appendChild(option);
+            });
+            select.addEventListener("change", (e) => {
+              this.updateSetting(plugin.name, key, e.target.value);
+            });
+            row.appendChild(select);
+          } else if (meta2.type === "number") {
+            const input = document.createElement("input");
+            input.type = "number";
+            input.className = "plugin-setting-input";
+            input.value = currentValue !== void 0 ? currentValue : "";
+            input.addEventListener("change", (e) => {
+              this.updateSetting(plugin.name, key, parseFloat(e.target.value) || 0);
+            });
+            row.appendChild(input);
+          } else {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "plugin-setting-input";
+            input.value = typeof currentValue === "object" ? JSON.stringify(currentValue) : currentValue ?? "";
+            input.addEventListener("change", (e) => {
+              let val = e.target.value;
+              if (meta2.type === "json") {
+                try {
+                  val = JSON.parse(val);
+                } catch {
+                  this.showToast("Invalid JSON for setting", "error");
+                  return;
+                }
+              }
+              this.updateSetting(plugin.name, key, val);
+            });
+            row.appendChild(input);
+          }
+          group.appendChild(row);
+        });
+        settingsSection.appendChild(group);
+        detailsContainer.appendChild(settingsSection);
+      }
+      const hasCommands = Array.isArray(plugin.commands) && plugin.commands.length > 0;
+      const hasMenuItems = Array.isArray(plugin.menuItems) && plugin.menuItems.length > 0;
+      const hasSidebarPanels = Array.isArray(plugin.sidebarPanels) && plugin.sidebarPanels.length > 0;
+      const hasCustomViews = Array.isArray(plugin.customViews) && plugin.customViews.length > 0;
+      const hasSlashCommands = Array.isArray(plugin.slashCommands) && plugin.slashCommands.length > 0;
+      const hasContribs = hasCommands || hasMenuItems || hasSidebarPanels || hasCustomViews || hasSlashCommands;
+      if (hasContribs) {
+        const contribSection = document.createElement("div");
+        contribSection.className = "plugin-detail-section";
+        const contribTitle = document.createElement("div");
+        contribTitle.className = "plugin-section-title";
+        contribTitle.textContent = "Contributed Features";
+        contribSection.appendChild(contribTitle);
+        const contribGrid = document.createElement("div");
+        contribGrid.className = "plugin-contributions-grid";
+        const addContribItem = (type7, name2, shortcut = null) => {
+          const item = document.createElement("div");
+          item.className = "plugin-contribution-item";
+          const left = document.createElement("div");
+          left.className = "plugin-contrib-left";
+          const typeSpan = document.createElement("span");
+          typeSpan.className = "plugin-contrib-type";
+          typeSpan.textContent = type7;
+          left.appendChild(typeSpan);
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "plugin-contrib-name";
+          nameSpan.textContent = name2;
+          left.appendChild(nameSpan);
+          item.appendChild(left);
+          if (shortcut) {
+            const kbd = document.createElement("kbd");
+            kbd.className = "plugin-contribution-shortcut";
+            kbd.textContent = shortcut;
+            item.appendChild(kbd);
+          }
+          contribGrid.appendChild(item);
+        };
+        if (hasCommands) {
+          plugin.commands.forEach((cmd2) => {
+            addContribItem("Command", cmd2.label || cmd2.id, cmd2.shortcut);
+          });
+        }
+        if (hasMenuItems) {
+          plugin.menuItems.forEach((menu) => {
+            addContribItem("Menu Item", `${menu.section} > ${menu.label || menu.id}`);
+          });
+        }
+        if (hasSidebarPanels) {
+          plugin.sidebarPanels.forEach((panelId) => {
+            addContribItem("Sidebar Panel", panelId);
+          });
+        }
+        if (hasCustomViews) {
+          plugin.customViews.forEach((viewId) => {
+            addContribItem("Custom View", viewId);
+          });
+        }
+        if (hasSlashCommands) {
+          plugin.slashCommands.forEach((slashId) => {
+            addContribItem("Slash Command", `/${slashId}`);
+          });
+        }
+        contribSection.appendChild(contribGrid);
+        detailsContainer.appendChild(contribSection);
+      }
+      if (Array.isArray(plugin.permissions) && plugin.permissions.length > 0) {
+        const permSection = document.createElement("div");
+        permSection.className = "plugin-detail-section";
+        const permTitle = document.createElement("div");
+        permTitle.className = "plugin-section-title";
+        permTitle.textContent = "Requested Permissions";
+        permSection.appendChild(permTitle);
+        const permList = document.createElement("div");
+        permList.className = "plugin-tags-list";
+        plugin.permissions.forEach((perm) => {
+          const tag2 = document.createElement("span");
+          tag2.className = "plugin-tag";
+          tag2.textContent = perm;
+          permList.appendChild(tag2);
+        });
+        permSection.appendChild(permList);
+        detailsContainer.appendChild(permSection);
+      }
+      if (plugin.path) {
+        const pathSection = document.createElement("div");
+        pathSection.className = "plugin-detail-section";
+        const pathTitle = document.createElement("div");
+        pathTitle.className = "plugin-section-title";
+        pathTitle.textContent = "Location on Disk";
+        pathSection.appendChild(pathTitle);
+        const pathText = document.createElement("div");
+        pathText.className = "plugin-path-text";
+        pathText.textContent = plugin.path;
+        pathSection.appendChild(pathText);
+        detailsContainer.appendChild(pathSection);
+      }
+      const dangerSection = document.createElement("div");
+      dangerSection.className = "plugin-detail-section";
+      const dangerTitle = document.createElement("div");
+      dangerTitle.className = "plugin-section-title";
+      dangerTitle.textContent = "Manage Plugin";
+      dangerSection.appendChild(dangerTitle);
+      const uninstallBtn = document.createElement("button");
+      uninstallBtn.className = "plugin-btn-danger";
+      uninstallBtn.appendChild(createIcon(Trash, { width: 14, height: 14 }));
+      const uninstallText = document.createElement("span");
+      uninstallText.textContent = "Uninstall Plugin";
+      uninstallBtn.appendChild(uninstallText);
+      uninstallBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.uninstallPlugin(plugin);
+      });
+      dangerSection.appendChild(uninstallBtn);
+      detailsContainer.appendChild(dangerSection);
+      content3.appendChild(detailsContainer);
+      this.box.appendChild(content3);
+      backBtn.focus();
     }
   };
 
@@ -80703,10 +82254,12 @@ Just start writing.
       selection: { anchor: sel.anchor ?? sel.from, head: sel.head ?? sel.to }
     });
   };
-  window.replaceEditorSelection = (text6) => {
+  window.replaceEditorSelection = (text6, from3) => {
     requireActiveMarkdownDocument();
-    const { from: from3, to } = view.state.selection.main;
-    view.dispatch({ changes: { from: from3, to, insert: text6 }, selection: { anchor: from3 + text6.length } });
+    const selection = view.state.selection.main;
+    const replaceFrom = typeof from3 === "number" ? from3 : selection.from;
+    const replaceTo = selection.to;
+    view.dispatch({ changes: { from: replaceFrom, to: replaceTo, insert: text6 }, selection: { anchor: replaceFrom + text6.length } });
     view.focus();
   };
   window.executePluginEditorCommand = (commandId) => {
@@ -81041,6 +82594,24 @@ Just start writing.
     label: "New File",
     shortcut: "Ctrl+N",
     run: () => newFile(),
+    enabled: () => true
+  });
+  registry_default.registerCommand("plugins:install", {
+    label: "Install Plugin from Folder...",
+    section: "plugins",
+    run: async () => {
+      try {
+        const result = await window.pluginManager.installFromFolder();
+        if (result?.canceled) return;
+        if (!result?.success) {
+          alert(`Plugin installation failed: ${result?.error || "Unknown error"}`);
+          return;
+        }
+        alert(`Plugin "${result.pluginId}" installed.`);
+      } catch (error) {
+        alert(`Plugin installation failed: ${error.message}`);
+      }
+    },
     enabled: () => true
   });
   registry_default.registerCommand("file:open", {
@@ -81395,7 +82966,8 @@ Just start writing.
     "insert:property": "insert:property",
     settings: "view:settings",
     zen: "view:zen",
-    "plugins:manage": "plugins:manage"
+    "plugins:manage": "plugins:manage",
+    "plugins:install": "plugins:install"
   };
   var dropdownMenus = [
     { btn: document.getElementById("file-menu-btn"), menu: document.getElementById("file-dropdown") },
@@ -81573,7 +83145,11 @@ Just start writing.
   window.addEventListener("keydown", (e) => {
     if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
     const key = e.key.toLowerCase();
-    if (key === "b" && !e.shiftKey) {
+    if (key === "p" && e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      registry_default.execute("plugins:manage", view, view.state);
+    } else if (key === "b" && !e.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
       registry_default.execute("view:toggleSidebar", view, view.state);
@@ -81632,7 +83208,8 @@ Just start writing.
       console.warn("[editor] Plugin API not available");
       return;
     }
-    const registeredUtilityPanels = /* @__PURE__ */ new Map();
+    const registeredSidebarPanels = /* @__PURE__ */ new Map();
+    const sidebarPanelInstanceId = (pluginId, panelId) => `${pluginId}:${panelId}`;
     async function applyPluginStyles() {
       if (!window.pluginManager) return;
       const css3 = await window.pluginManager.getStylesheets();
@@ -81653,10 +83230,12 @@ Just start writing.
       if (!plugins) return;
       for (const plugin of plugins) {
         const btn = document.createElement("button");
-        btn.textContent = `${plugin.name} v${plugin.version} ${plugin.active ? "\u2713" : "\u2717"}`;
-        btn.style.opacity = plugin.active ? "1" : "0.5";
+        const state = plugin.active ? "enabled" : plugin.enabled ? "loading" : plugin.error ? "error" : "disabled";
+        btn.textContent = `${plugin.name} v${plugin.version} (${state})`;
+        btn.title = plugin.error || `${plugin.name} is ${state}`;
+        btn.style.opacity = plugin.enabled ? "1" : "0.5";
         btn.addEventListener("click", async () => {
-          if (plugin.active) {
+          if (plugin.enabled) {
             await window.pluginManager.disable(plugin.name);
           } else {
             await window.pluginManager.enable(plugin.name);
@@ -81681,14 +83260,24 @@ Just start writing.
       console.log("[editor] Plugins changed:", plugins);
       applyPluginStyles();
       buildPluginsMenu(plugins);
+      setTimeout(() => view.focus(), 0);
     });
     window.uiAPI?.onRegisterSidebarPanel?.((panel) => {
-      registeredUtilityPanels.set(panel.id, panel);
-      utilityPane.registerPanel(panel);
+      const instanceId = sidebarPanelInstanceId(panel.pluginId, panel.id);
+      const registeredPanel = { ...panel, instanceId };
+      const previous = registeredSidebarPanels.get(instanceId);
+      if (previous?.location === "left") fileTreeUI.unregisterPanel(panel.pluginId, [panel.id]);
+      else if (previous) utilityPane.unregisterPanel(panel.pluginId, [panel.id]);
+      registeredSidebarPanels.set(instanceId, registeredPanel);
+      if (panel.location === "left") fileTreeUI.registerPanel(registeredPanel);
+      else utilityPane.registerPanel(registeredPanel);
     });
     window.uiAPI?.onRemoveSidebarPanel?.(({ panelId, pluginId }) => {
-      registeredUtilityPanels.delete(panelId);
-      utilityPane.unregisterPanel(pluginId, [panelId]);
+      const instanceId = sidebarPanelInstanceId(pluginId, panelId);
+      const panel = registeredSidebarPanels.get(instanceId);
+      registeredSidebarPanels.delete(instanceId);
+      if (panel?.location === "left") fileTreeUI.unregisterPanel(pluginId, [panelId]);
+      else utilityPane.unregisterPanel(pluginId, [panelId]);
     });
     window.uiAPI?.onRegisterCustomView?.((view2) => {
       registeredCustomViews.set(customViewKey(view2.pluginId, view2.id), view2);
@@ -81738,9 +83327,11 @@ Just start writing.
       sessionManager.scheduleSave();
     });
     window.uiAPI?.onRegisterSlashCommand?.((pluginId, command3) => {
+      console.log(`[editor] Received slash command: ${command3.id} from ${pluginId}`);
       slashCommands.set(command3.id, { ...command3, pluginId });
     });
     window.uiAPI?.onRemoveSlashCommand?.((_pluginId, commandId) => {
+      console.log(`[editor] Removed slash command: ${commandId}`);
       slashCommands.delete(commandId);
     });
     const originalSave = window.fileAPI.save;
@@ -81854,9 +83445,10 @@ Just start writing.
           registry_default.unregisterCommand(id3);
         }
       }
-      for (const [id3, panel] of registeredUtilityPanels) {
-        if (panel.pluginId === pluginId) registeredUtilityPanels.delete(id3);
+      for (const [id3, panel] of registeredSidebarPanels) {
+        if (panel.pluginId === pluginId) registeredSidebarPanels.delete(id3);
       }
+      fileTreeUI.unregisterPanel(pluginId, Array.isArray(sidebarPanels) ? sidebarPanels : []);
       utilityPane.unregisterPanel(pluginId, Array.isArray(sidebarPanels) ? sidebarPanels : []);
       for (const viewId of Array.isArray(customViews) ? customViews : []) {
         registeredCustomViews.delete(customViewKey(pluginId, viewId));
@@ -81872,13 +83464,21 @@ Just start writing.
       console.log("[editor] Plugin setting changed:", key, value, options);
       window.pluginManager?.emit?.("setting:changed", { key, value, pluginId: options.pluginId });
     });
+    const pluginsPanelEl = document.getElementById("plugins-panel");
+    const pluginManagerPanel = new PluginManagerPanel({
+      container: pluginsPanelEl,
+      pluginManager: window.pluginManager,
+      showConfirm,
+      onClose: () => {
+        view.focus();
+      }
+    });
     registry_default.registerCommand("plugins:manage", {
       label: "Manage Plugins",
       shortcut: "Ctrl+Shift+P",
       section: "plugins",
       run: () => {
-        const btn = document.getElementById("plugins-menu-btn");
-        if (btn) btn.click();
+        pluginManagerPanel.open();
       },
       enabled: () => true
     });
@@ -81906,13 +83506,16 @@ Just start writing.
     }
   }
   var slashMenu = null;
+  var slashTriggerPos = null;
   function hideSlashMenu() {
     slashMenu?.remove();
     slashMenu = null;
+    slashTriggerPos = null;
   }
   function showSlashMenu() {
     hideSlashMenu();
     if (!slashCommands.size) return;
+    slashTriggerPos = view.state.selection.main.head - 1;
     slashMenu = document.createElement("div");
     slashMenu.className = "fm-slash-menu";
     slashMenu.setAttribute("role", "listbox");
@@ -81925,7 +83528,7 @@ Just start writing.
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
         hideSlashMenu();
-        window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id);
+        window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id, slashTriggerPos);
       });
       slashMenu.appendChild(item);
     }
@@ -81980,17 +83583,36 @@ Just start writing.
 
 lucide/dist/esm/defaultAttributes.mjs:
 lucide/dist/esm/createElement.mjs:
+lucide/dist/esm/icons/arrow-left.mjs:
+lucide/dist/esm/icons/book-open.mjs:
+lucide/dist/esm/icons/bot.mjs:
+lucide/dist/esm/icons/brain.mjs:
+lucide/dist/esm/icons/calendar-days.mjs:
 lucide/dist/esm/icons/chevron-down.mjs:
 lucide/dist/esm/icons/chevron-right.mjs:
+lucide/dist/esm/icons/code-xml.mjs:
 lucide/dist/esm/icons/file-plus-corner.mjs:
 lucide/dist/esm/icons/file.mjs:
 lucide/dist/esm/icons/folder-open.mjs:
 lucide/dist/esm/icons/folder-root.mjs:
 lucide/dist/esm/icons/folder-plus.mjs:
 lucide/dist/esm/icons/folder.mjs:
+lucide/dist/esm/icons/git-branch.mjs:
+lucide/dist/esm/icons/layers.mjs:
+lucide/dist/esm/icons/list-tree.mjs:
+lucide/dist/esm/icons/message-square.mjs:
+lucide/dist/esm/icons/network.mjs:
+lucide/dist/esm/icons/panel-left.mjs:
 lucide/dist/esm/icons/panel-right.mjs:
 lucide/dist/esm/icons/pencil.mjs:
+lucide/dist/esm/icons/puzzle.mjs:
+lucide/dist/esm/icons/refresh-cw.mjs:
+lucide/dist/esm/icons/rotate-cw.mjs:
+lucide/dist/esm/icons/search.mjs:
+lucide/dist/esm/icons/settings.mjs:
+lucide/dist/esm/icons/tags.mjs:
 lucide/dist/esm/icons/trash.mjs:
+lucide/dist/esm/icons/triangle-exclamation-point.mjs:
 lucide/dist/esm/icons/x.mjs:
 lucide/dist/esm/lucide.mjs:
   (**

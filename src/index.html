@@ -84,6 +84,7 @@
         <button class="topbar-menu-btn" id="plugins-menu-btn">Plugins</button>
         <div id="plugins-dropdown" class="dropdown-menu hidden">
           <button data-action="plugins:manage">Manage Plugins <span class="shortcut">Ctrl+Shift+P</span></button>
+          <button data-action="plugins:install">Install Plugin from Folder...</button>
           <div class="menu-divider"></div>
           <!-- ADD data-menu-section BELOW: -->
           <div id="plugins-menu-items" data-menu-section="plugins"></div>
@@ -155,6 +156,11 @@
         <button class="accent-opt" data-accent="slate"    style="--c:#a0b8c8" title="Slate"></button>
       </div>
     </div>
+  </div>
+
+  <!-- Manage Plugins modal overlay -->
+  <div id="plugins-panel" class="hidden" role="dialog" aria-modal="true" aria-labelledby="plugins-panel-title" tabindex="-1">
+    <div id="plugins-box"></div>
   </div>
 
   <!-- Quick open / welcome overlay -->

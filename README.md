@@ -37,6 +37,7 @@ default Electron icon. See `docs/release-workflow.md` for the full checklist.
 
 ## Documentation
 
+- `docs/plugins/README.md` — sandboxed plugin authoring guides and API reference
 - `docs/roadmap.md` — phases, backlog and decision log
 - `docs/release-workflow.md` — versioning, packaging, release steps
 - `docs/table-live-preview-spec.md` — table live-preview design

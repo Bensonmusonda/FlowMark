@@ -64,6 +64,46 @@ test('Plugins can open only their registered custom views', () => {
   assert.match(editor, /if \(!active \|\| active\.viewType === 'markdown'/);
 });
 
+test('Plugin installation is exposed as a folder-picking menu action', () => {
+  const html = fs.readFileSync(new URL('./src/index.html', import.meta.url), 'utf8');
+  const main = fs.readFileSync(new URL('./src/main.js', import.meta.url), 'utf8');
+  const preload = fs.readFileSync(new URL('./src/preload.js', import.meta.url), 'utf8');
+  const editor = fs.readFileSync(new URL('./src/editor.js', import.meta.url), 'utf8');
+  const manageIndex = html.indexOf('data-action="plugins:manage"');
+  const installIndex = html.indexOf('data-action="plugins:install"');
+  const listIndex = html.indexOf('id="plugins-menu-items"');
+
+  assert.ok(manageIndex >= 0 && manageIndex < installIndex && installIndex < listIndex);
+  assert.match(main, /ipcMain\.handle\('plugins:installFromFolder'/);
+  assert.match(main, /properties:\s*\['openDirectory'\]/);
+  assert.match(main, /pluginHost\.installPlugin\(filePaths\[0\]\)/);
+  assert.match(preload, /installFromFolder:\s*\(\)\s*=>\s*ipcRenderer\.invoke\('plugins:installFromFolder'\)/);
+  assert.match(editor, /CommandRegistry\.registerCommand\('plugins:install'/);
+  assert.match(editor, /if \(result\?\.canceled\) return/);
+});
+
+await testAsync('Sidebar panels support left placement and default right placement', async () => {
+  const sent = [];
+  const host = Object.create(PluginSandboxHost.prototype);
+  host.mainWindow = { webContents: { send: (channel, payload) => sent.push({ channel, payload }) } };
+  host.requestHandlers = new Map();
+  host._registerCoreHandlers();
+
+  const plugin = {
+    manifest: { name: 'stage4-plugin' },
+    uiSidebarPanels: new Set(),
+  };
+  const registerPanel = host.requestHandlers.get('ui:registerSidebarPanel');
+  await registerPanel({ panel: { id: 'outline', title: 'Outline', icon: 'list-tree', location: 'left' } }, null, plugin);
+  assert.strictEqual(sent.at(-1).payload.location, 'left');
+  await registerPanel({ panel: { id: 'backlinks', title: 'Backlinks' } }, null, plugin);
+  assert.strictEqual(sent.at(-1).payload.location, 'right');
+  await assert.rejects(
+    registerPanel({ panel: { id: 'invalid', title: 'Invalid', location: 'center' } }, null, plugin),
+    /location must be "left" or "right"/
+  );
+});
+
 await testAsync('Custom-view open requests validate ownership and bounded state', async () => {
   const sent = [];
   const host = Object.create(PluginSandboxHost.prototype);
@@ -97,6 +137,18 @@ await testAsync('Custom-view open requests validate ownership and bounded state'
     host.requestHandlers.get('ui:openCustomView')({ viewId: 'board', state: 'x'.repeat(262145) }, null, plugin),
     /at most 256 KB/
   );
+});
+
+await testAsync('Plugin activity icons resolve through the supported Lucide set', async () => {
+  const { resolvePluginPanelIcon } = await import('./src/ui/pluginPanelIcons.js');
+  const fileTree = fs.readFileSync(new URL('./src/ui/fileTree.js', import.meta.url), 'utf8');
+  const editor = fs.readFileSync(new URL('./src/editor.js', import.meta.url), 'utf8');
+  assert.ok(resolvePluginPanelIcon('search'));
+  assert.strictEqual(resolvePluginPanelIcon('unknown-icon'), resolvePluginPanelIcon('panel-right'));
+  assert.match(fileTree, /frame\.sandbox = 'allow-scripts'/);
+  assert.match(fileTree, /dataset\.sidebarPanelId/);
+  assert.match(fileTree, /this\.mountPluginPanel\(activePanel\)/);
+  assert.match(editor, /if \(panel\.location === 'left'\) fileTreeUI\.registerPanel/);
 });
 
 test('Inactive custom-view layer does not cover the markdown editor', () => {

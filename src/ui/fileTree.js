@@ -11,6 +11,7 @@ import {
   Trash2,
   FolderRoot,
 } from 'lucide';
+import { resolvePluginPanelIcon } from './pluginPanelIcons.js';
 
 function normalizedPath(value) {
   return String(value || '').replace(/\\/g, '/').toLowerCase();
@@ -31,6 +32,19 @@ export class FileTreeUI {
     this.selectedDirectory = '';
     this.expanded = new Set(['']);
     this.pendingInput = null;
+    this.panels = new Map();
+    this.panelViews = new Map();
+    this.activeViewId = 'workspace';
+    this.nav = document.createElement('nav');
+    this.nav.className = 'sidebar-nav';
+    this.nav.setAttribute('aria-label', 'Workspace views');
+    this.viewContainer = document.createElement('div');
+    this.viewContainer.className = 'sidebar-view-container';
+    this.workspaceView = document.createElement('div');
+    this.workspaceView.className = 'sidebar-panel sidebar-workspace-view';
+    this.viewContainer.appendChild(this.workspaceView);
+    this.container.replaceChildren(this.nav, this.viewContainer);
+    this.renderNavigation();
     this.render();
   }
 
@@ -72,14 +86,68 @@ export class FileTreeUI {
       rename: Pencil,
       remove: Trash2,
     };
-    const svg = createElement(iconNodes[name] || Folder, {
+    return this.createLucideIcon(iconNodes[name] || Folder);
+  }
+
+  createLucideIcon(icon) {
+    return createElement(icon, {
       width: 20,
       height: 20,
       'aria-hidden': 'true',
       'focusable': 'false',
       class: 'line-icon',
     });
-    return svg;
+  }
+
+  registerPanel(panel) {
+    if (!panel?.id || (panel.location && panel.location !== 'left')) return false;
+    const key = panel.instanceId || panel.id;
+    const wasActive = this.activeViewId === key;
+    this.unregisterPanelByKey(key);
+    this.panels.set(key, panel);
+    if (wasActive) this.activeViewId = key;
+    const panelView = document.createElement('div');
+    panelView.className = 'sidebar-panel sidebar-plugin-view';
+
+    const header = document.createElement('div');
+    header.className = 'sidebar-heading';
+    const title = document.createElement('span');
+    title.className = 'sidebar-title';
+    title.textContent = panel.title || 'Plugin';
+    header.appendChild(title);
+    panelView.appendChild(header);
+
+    const content = document.createElement('div');
+    content.className = 'sidebar-plugin-content';
+    if (!panel.entryUrl) {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'sidebar-plugin-placeholder';
+      placeholder.textContent = 'This plugin panel has no view.';
+      content.appendChild(placeholder);
+    }
+    panelView.appendChild(content);
+    panelView.hidden = true;
+    this.panelViews.set(key, panelView);
+    this.viewContainer.appendChild(panelView);
+    this.renderNavigation();
+    this.updateActiveView();
+    return true;
+  }
+
+  unregisterPanel(pluginId, panelIds = []) {
+    for (const [key, panel] of this.panels) {
+      if (panel.pluginId !== pluginId || (panelIds.length && !panelIds.includes(panel.id))) continue;
+      this.unregisterPanelByKey(key);
+    }
+    this.renderNavigation();
+    this.updateActiveView();
+  }
+
+  unregisterPanelByKey(key) {
+    this.panels.delete(key);
+    this.panelViews.get(key)?.remove();
+    this.panelViews.delete(key);
+    if (this.activeViewId === key) this.activeViewId = 'workspace';
   }
 
   beginCreate(parentPath, type) {
@@ -94,31 +162,10 @@ export class FileTreeUI {
   }
 
   render() {
-    const previousTree = this.container.querySelector('.file-tree');
+    const previousTree = this.workspaceView.querySelector('.file-tree');
     const previousScrollTop = previousTree ? previousTree.scrollTop : 0;
     const previousScrollLeft = previousTree ? previousTree.scrollLeft : 0;
-    this.container.replaceChildren();
-
-    const nav = document.createElement('nav');
-    nav.className = 'sidebar-nav';
-    nav.setAttribute('aria-label', 'Workspace navigation');
-    const workspaceNavButton = document.createElement('button');
-    workspaceNavButton.type = 'button';
-    workspaceNavButton.className = 'sidebar-nav-button active';
-    const collapsed = document.body.classList.contains('sidebar-collapsed');
-    workspaceNavButton.title = collapsed ? 'Expand workspace' : 'Collapse workspace';
-    workspaceNavButton.setAttribute('aria-label', collapsed ? 'Expand workspace' : 'Collapse workspace');
-    workspaceNavButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    workspaceNavButton.appendChild(this.createIcon('workspace'));
-    workspaceNavButton.addEventListener('click', () => {
-      if (this.onToggleSidebar) this.onToggleSidebar();
-    });
-    nav.appendChild(workspaceNavButton);
-
-    this.container.appendChild(nav);
-
-    const panel = document.createElement('div');
-    panel.className = 'sidebar-panel';
+    this.workspaceView.replaceChildren();
 
     const header = document.createElement('div');
     header.className = 'sidebar-heading';
@@ -153,7 +200,7 @@ export class FileTreeUI {
       button.addEventListener('click', () => this.beginCreate(this.selectedDirectory, type));
       header.appendChild(button);
     }
-    panel.appendChild(header);
+    this.workspaceView.appendChild(header);
 
     const treeRoot = document.createElement('ul');
     treeRoot.className = 'file-tree';
@@ -174,16 +221,86 @@ export class FileTreeUI {
         treeRoot.appendChild(empty);
       }
     }
-    panel.appendChild(treeRoot);
-    this.container.appendChild(panel);
+    this.workspaceView.appendChild(treeRoot);
+    this.updateActiveView();
 
     requestAnimationFrame(() => {
-      const nextTree = this.container.querySelector('.file-tree');
+      const nextTree = this.workspaceView.querySelector('.file-tree');
       if (nextTree) {
         nextTree.scrollTop = previousScrollTop;
         nextTree.scrollLeft = previousScrollLeft;
       }
     });
+  }
+
+  renderNavigation() {
+    const focusedId = this.nav.contains(document.activeElement)
+      ? document.activeElement.dataset.sidebarPanelId
+      : null;
+    this.nav.replaceChildren();
+
+    const addButton = (id, icon, title) => {
+      const button = document.createElement('button');
+      const active = this.activeViewId === id;
+      button.type = 'button';
+      button.className = `sidebar-nav-button${active ? ' active' : ''}`;
+      button.dataset.sidebarPanelId = id;
+      button.title = title;
+      button.setAttribute('aria-label', title);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      if (id === 'workspace') {
+        const collapsed = document.body.classList.contains('sidebar-collapsed');
+        button.title = collapsed ? 'Expand workspace' : 'Collapse workspace';
+        button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      }
+      button.appendChild(this.createLucideIcon(icon));
+      button.addEventListener('click', () => this.selectView(id));
+      this.nav.appendChild(button);
+    };
+
+    addButton('workspace', FolderRoot, 'Explorer');
+    for (const [id, panel] of this.panels) {
+      addButton(id, resolvePluginPanelIcon(panel.icon, Folder), panel.title || 'Plugin panel');
+    }
+    if (focusedId) {
+      [...this.nav.querySelectorAll('.sidebar-nav-button')]
+        .find(button => button.dataset.sidebarPanelId === focusedId)
+        ?.focus();
+    }
+  }
+
+  selectView(id) {
+    const collapsed = document.body.classList.contains('sidebar-collapsed');
+    if (this.activeViewId === id && !collapsed) {
+      this.onToggleSidebar?.();
+      return;
+    }
+    this.activeViewId = id;
+    if (collapsed) this.onToggleSidebar?.();
+    this.renderNavigation();
+    this.updateActiveView();
+  }
+
+  updateActiveView() {
+    this.workspaceView.hidden = this.activeViewId !== 'workspace';
+    for (const [id, panelView] of this.panelViews) {
+      panelView.hidden = id !== this.activeViewId;
+    }
+    const activePanel = this.panels.get(this.activeViewId);
+    if (activePanel) this.mountPluginPanel(activePanel);
+  }
+
+  mountPluginPanel(panel) {
+    if (!panel.entryUrl) return;
+    const key = panel.instanceId || panel.id;
+    const content = this.panelViews.get(key)?.querySelector('.sidebar-plugin-content');
+    if (!content || content.querySelector('iframe')) return;
+    const frame = document.createElement('iframe');
+    frame.className = 'sidebar-plugin-frame';
+    frame.title = panel.title || 'Plugin panel';
+    frame.sandbox = 'allow-scripts';
+    frame.src = panel.entryUrl;
+    content.appendChild(frame);
   }
 
   renderEntries(entries, parent) {

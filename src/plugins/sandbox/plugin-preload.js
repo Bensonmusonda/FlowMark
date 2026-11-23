@@ -32,6 +32,7 @@ const PLUGIN_ID = arg('plugin-id');
 const PLUGIN_PERMISSIONS = new Set(arg('plugin-permissions').split(',').filter(Boolean));
 const commandHandlers = new Map();
 const slashCommandHandlers = new Map();
+let currentSlashTriggerPos = null; // Position of '/' trigger for current slash command
 const beforeSaveHandlers = [];
 const smartPasteHandlers = [];
 
@@ -41,10 +42,13 @@ ipcRenderer.on('plugin:command', (_, { id }) => {
   if (fn) { try { fn(); } catch (e) { console.error(e); } }
 });
 
-ipcRenderer.on('plugin:slashCommand', (_, { id }) => {
+ipcRenderer.on('plugin:slashCommand', (_, { id, triggerPos }) => {
   const fn = slashCommandHandlers.get(id);
   if (fn) {
-    try { fn(); } catch (e) { console.error(e); }
+    // Store triggerPos so the run handler can access it via a getter
+    currentSlashTriggerPos = triggerPos;
+    try { fn(triggerPos); } catch (e) { console.error(e); }
+    currentSlashTriggerPos = null;
   }
 });
 
@@ -111,7 +115,7 @@ function sendRequest(channel, payload) {
     const timeout = setTimeout(() => {
       cleanup();
       reject(new Error('Request timeout'));
-    }, 30000);
+    }, 5000);
     ipcRenderer.on('plugin:response', handler);
     ipcRenderer.send('plugin:request', { requestId, channel, payload });
   });
@@ -152,9 +156,11 @@ const pluginAPI = {
       if (!hasPermission('editor.write')) return Promise.reject(new Error('Permission denied: editor.write'));
       return sendRequest('editor:setSelection', { selection });
     },
-    replaceSelection: (text) => {
+    replaceSelection: (text, from) => {
       if (!hasPermission('editor.write')) return Promise.reject(new Error('Permission denied: editor.write'));
-      return sendRequest('editor:replaceSelection', { text });
+      const payload = { text };
+      if (typeof from === 'number') payload.from = from;
+      return sendRequest('editor:replaceSelection', payload);
     },
     executeCommand: (commandId) => {
       if (!hasPermission('editor.commands')) return Promise.reject(new Error('Permission denied: editor.commands'));
