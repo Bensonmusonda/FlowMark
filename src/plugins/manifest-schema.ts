@@ -1,0 +1,42 @@
+import { z } from 'zod'; // add if missing: npm i zod
+
+export const ManifestSchema = z.object({
+  name: z.string().min(1).regex(/^[a-z0-9-]+$/),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  manifest_version: z.literal(1),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  entry_point: z.string().min(1),
+  permissions: z.array(z.string()).default([]),
+  commands: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9-:]+$/),
+    label: z.string().min(1).max(200),
+    shortcut: z.string().optional(),
+    icon: z.string().optional(),
+    section: z.enum(['file', 'edit', 'insert', 'view', 'plugins']).optional(),
+  })).default([]),
+  menu_items: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9-:]+$/),
+    label: z.string().min(1).max(200),
+    section: z.enum(['file', 'edit', 'insert', 'view', 'plugins']),
+    shortcut: z.string().optional(),
+    icon: z.string().optional(),
+    order: z.number().int().default(100),
+  })).default([]),
+  stylesheet: z.string().optional(),
+  settings: z.record(z.object({
+    type: z.enum(['string', 'number', 'boolean', 'select', 'color', 'path']).default('string'),
+    label: z.string().optional(),
+    description: z.string().optional(),
+    default: z.any(),
+    options: z.array(z.string()).optional(),
+  })).default({}),
+});
+
+export type Manifest = z.infer<typeof ManifestSchema>;
+
+export function validateManifest(obj: unknown): { ok: true; data: Manifest } | { ok: false; errors: string[] } {
+  const result = ManifestSchema.safeParse(obj);
+  if (result.success) return { ok: true, data: result.data };
+  return { ok: false, errors: result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`) };
+}

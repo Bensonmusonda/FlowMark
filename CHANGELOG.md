@@ -2,6 +2,31 @@
 
 All notable changes to FlowMark. Format loosely follows Keep a Changelog.
 
+## [1.1.0] — 2026-11-23
+
+Major plugin system enhancement release.
+
+### Plugin System
+- **Settings UI**: Dynamic settings panel per plugin, generated from manifest schema
+- **Manifest validation**: Zod schema validation with friendly error messages
+- **Error boundaries**: Plugin crash auto-recovery (3× retry with 5s delay), error display in plugin panel
+- **Permission management**: Grant/revoke permissions per plugin at runtime
+- **Hot reload**: `npm run plugin:dev` — edit plugin code, click Reload in panel, instant update
+- **Template generator**: `node scripts/create-plugin.js <name>` — creates installable plugin scaffold
+- **Event bus**: Plugin-to-plugin communication via `broadcastToPlugins(channel, data)`
+- **Async markdown transforms**: Non-blocking markdown pipeline for LSP/external processing
+- **Workspace events**: Hooks for file open/save (`workspace:onFileOpen`, `workspace:onFileSave`)
+- **GitHub install**: One-click install from GitHub repo zip
+- **Local registry**: Curated plugin gallery with install buttons
+
+### Core Editor
+- **Slash command trigger removal**: `/snippet` now inserts `snippet` cleanly (trigger char removed)
+- **Focus restoration**: Editor regains focus after plugin changes
+
+### DevEx
+- Comprehensive TypeScript definitions (`src/plugins/plugin-api.d.ts`)
+- Full plugin documentation in `docs/plugins/`
+
 ## [1.0.0] — 2026-10-24
 
 Release one: a stable live-preview markdown editor.

@@ -3,8 +3,8 @@
 Living tracker. Update status here when a phase starts or closes; do not keep
 parallel plans elsewhere.
 
-Last updated: 2026-10-24
-Current release: **v1.0.0** (release one — see `docs/release-workflow.md`)
+Last updated: 2026-11-23
+Current release: **v1.1.0** (release two — see `docs/release-workflow.md`)
 
 ---
 
@@ -116,7 +116,7 @@ Must land before Phase 4 so properties and dirty state are per tab.
 
 ## Phase 5 — Plugin MVP
 
-**Status: deferred (design seams now)**
+**Status: done** — 2026-11-23 (v1.1.0)
 
 - Depends on Phase 1's registry.
 - Plugins live in `userData/plugins/*.js`, loaded by the main process, trusted
