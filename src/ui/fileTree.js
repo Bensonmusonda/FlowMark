@@ -10,6 +10,7 @@ import {
   Pencil,
   Trash2,
   FolderRoot,
+  Settings,
 } from 'lucide';
 import { resolvePluginPanelIcon } from './pluginPanelIcons.js';
 
@@ -262,6 +263,30 @@ export class FileTreeUI {
     for (const [id, panel] of this.panels) {
       addButton(id, resolvePluginPanelIcon(panel.icon, Folder), panel.title || 'Plugin panel');
     }
+
+    // Settings entry at bottom with divider
+    const divider = document.createElement('div');
+    divider.className = 'sidebar-nav-divider';
+    divider.setAttribute('role', 'separator');
+    this.nav.appendChild(divider);
+
+    const settingsButton = document.createElement('button');
+    settingsButton.type = 'button';
+    settingsButton.className = 'sidebar-nav-button sidebar-nav-settings';
+    settingsButton.dataset.sidebarPanelId = 'settings';
+    settingsButton.title = 'Settings';
+    settingsButton.setAttribute('aria-label', 'Settings');
+    settingsButton.appendChild(this.createLucideIcon(Settings));
+    settingsButton.addEventListener('click', () => {
+      // Priority: direct dialog instance > editor.js API > preload API
+      if (window.settingsDialog?.open) {
+        window.settingsDialog.open();
+      } else if (window.settingsAPI?.open) {
+        window.settingsAPI.open();
+      }
+    });
+    this.nav.appendChild(settingsButton);
+
     if (focusedId) {
       [...this.nav.querySelectorAll('.sidebar-nav-button')]
         .find(button => button.dataset.sidebarPanelId === focusedId)

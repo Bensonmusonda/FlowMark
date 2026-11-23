@@ -12,7 +12,9 @@ const PERMISSIONS_ENUM = [
   'ui.panels', 'ui.customViews',
   'editor.slashCommands',
   'clipboard.smartPaste',
-  'network.request', 'network.request:write'
+  'network.request', 'network.request:write',
+  'plugins.communicate',
+  'markdown.transform'
 ];
 
 const MENU_SECTIONS = ['file', 'edit', 'insert', 'view', 'plugins'];

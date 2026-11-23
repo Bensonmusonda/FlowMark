@@ -33,6 +33,11 @@ const REQUEST_PERMISSIONS = Object.freeze({
   'editor:removeSlashCommand': 'editor.slashCommands',
   'clipboard:registerSmartPaste': 'clipboard.smartPaste',
   'network:fetch': 'network.request',
+  'editor:registerMarkdownTransform': 'markdown.transform',
+  'plugins:broadcast': 'plugins.communicate',
+  'plugins:on': 'plugins.communicate',
+  'workspace:onFileOpen': 'file.read',
+  'workspace:onFileSave': 'file.write',
 });
 
 const EVENT_PERMISSIONS = Object.freeze({

@@ -1,0 +1,6 @@
+{
+  "snippet-pack": { "name": "snippet-pack", "version": "1.0.0", "description": "Slash-menu snippets for common patterns", "repo": "https://github.com/flowmark/snippet-pack" },
+  "word-count": { "name": "word-count", "version": "1.0.0", "description": "Word count in status bar", "repo": "https://github.com/flowmark/word-count" },
+  "auto-save": { "name": "auto-save", "version": "1.0.0", "description": "Auto-save documents on change", "repo": "https://github.com/flowmark/auto-save" },
+  "export-pdf": { "name": "export-pdf", "version": "1.0.0", "description": "Enhanced PDF export with themes", "repo": "https://github.com/flowmark/export-pdf" }
+}

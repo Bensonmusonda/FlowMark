@@ -1,13 +1,42 @@
 (() => {
+  var __create = Object.create;
   var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+    get: (a2, b) => (typeof require !== "undefined" ? require : a2)[b]
+  }) : x)(function(x) {
+    if (typeof require !== "undefined") return require.apply(this, arguments);
+    throw Error('Dynamic require of "' + x + '" is not supported');
+  });
   var __esm = (fn2, res) => function __init() {
     return fn2 && (res = (0, fn2[__getOwnPropNames(fn2)[0]])(fn2 = 0)), res;
+  };
+  var __commonJS = (cb, mod) => function __require2() {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
   var __export = (target, all) => {
     for (var name2 in all)
       __defProp(target, name2, { get: all[name2], enumerable: true });
   };
+  var __copyProps = (to, from3, except, desc) => {
+    if (from3 && typeof from3 === "object" || typeof from3 === "function") {
+      for (let key of __getOwnPropNames(from3))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from3[key], enumerable: !(desc = __getOwnPropDesc(from3, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+    // If the importer is in node compatibility mode or this is not an ESM
+    // file that has been converted to a CommonJS file using a Babel-
+    // compatible transform (i.e. "__esModule" has not been set), then set
+    // "default" to the CommonJS "module.exports" for node compatibility.
+    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+    mod
+  ));
 
   // node_modules/@marijn/find-cluster-break/src/index.js
   function isExtendingChar(code2) {
@@ -17601,15 +17630,15 @@
       StreamLanguage = class _StreamLanguage extends Language {
         constructor(parser23) {
           let data2 = defineLanguageFacet(parser23.languageData);
-          let p = fullParser(parser23), self;
+          let p = fullParser(parser23), self2;
           let impl = new class extends Parser {
             createParse(input, fragments, ranges) {
-              return new Parse(self, input, fragments, ranges);
+              return new Parse(self2, input, fragments, ranges);
             }
           }();
           super(data2, impl, [], parser23.name);
           this.topNode = docID(data2, this);
-          self = this;
+          self2 = this;
           this.streamParser = p;
           this.stateAfter = new NodeProp({ perNode: true });
           this.tokenTable = parser23.tokenTable ? new TokenTable(p.tokenTable) : defaultTokenTable;
@@ -18027,12 +18056,12 @@
   }
   function scrollIntoView2(container, element2) {
     let parent = container.getBoundingClientRect();
-    let self = element2.getBoundingClientRect();
+    let self2 = element2.getBoundingClientRect();
     let scaleY = parent.height / container.offsetHeight;
-    if (self.top < parent.top)
-      container.scrollTop -= (parent.top - self.top) / scaleY;
-    else if (self.bottom > parent.bottom)
-      container.scrollTop += (self.bottom - parent.bottom) / scaleY;
+    if (self2.top < parent.top)
+      container.scrollTop -= (parent.top - self2.top) / scaleY;
+    else if (self2.bottom > parent.bottom)
+      container.scrollTop += (self2.bottom - parent.bottom) / scaleY;
   }
   function score(option) {
     return (option.boost || 0) * 100 + (option.apply ? 10 : 0) + (option.info ? 5 : 0) + (option.type ? 1 : 0);
@@ -27434,16 +27463,16 @@
         }
         addNamespaceObject(namespace2) {
           for (let name2 of Object.keys(namespace2)) {
-            let children = namespace2[name2], self = null;
+            let children = namespace2[name2], self2 = null;
             let parts = name2.replace(/\\?\./g, (p) => p == "." ? "\0" : p).split("\0");
             let scope = this;
             if (isSelfTag(children)) {
-              self = children.self;
+              self2 = children.self;
               children = children.children;
             }
             for (let i = 0; i < parts.length; i++) {
-              if (self && i == parts.length - 1)
-                scope.addCompletion(self);
+              if (self2 && i == parts.length - 1)
+                scope.addCompletion(self2);
               scope = scope.child(parts[i].replace(/\\\./g, "."));
             }
             scope.addNamespace(children);
@@ -29186,7 +29215,7 @@
     }
     return 0;
   }
-  var castOpen, HeredocString, interpolatedStringContent, EscapeSequence, afterInterpolation, automaticSemicolon, eof, abstract, and, array, as, Boolean2, _break2, _case, _catch, clone, _const, _continue2, _default, declare, _do, echo, _else, elseif, enddeclare, endfor, endforeach, endif, endswitch, endwhile, _enum, _extends, final, _finally, fn, _for, foreach, from, _function, global, goto, _if, _implements, include, include_once, _instanceof, insteadof, _interface, list, match, namespace, _new, _null, or, print, readonly, _require, require_once, _return2, _switch, _throw, trait, _try, unset, use, _var, Visibility, _while, xor, _yield, keywordMap, castTypes, expression, eofToken, semicolon3, interpolated, phpHighlighting, spec_name, parser13;
+  var castOpen, HeredocString, interpolatedStringContent, EscapeSequence, afterInterpolation, automaticSemicolon, eof, abstract, and, array, as, Boolean2, _break2, _case, _catch, clone, _const, _continue2, _default, declare, _do, echo, _else, elseif, enddeclare, endfor, endforeach, endif, endswitch, endwhile, _enum, _extends, final, _finally, fn, _for, foreach, from, _function, global2, goto, _if, _implements, include, include_once, _instanceof, insteadof, _interface, list, match, namespace, _new, _null, or, print, readonly, _require, require_once, _return2, _switch, _throw, trait, _try, unset, use, _var, Visibility, _while, xor, _yield, keywordMap, castTypes, expression, eofToken, semicolon3, interpolated, phpHighlighting, spec_name, parser13;
   var init_dist29 = __esm({
     "node_modules/@lezer/php/dist/index.js"() {
       init_dist9();
@@ -29230,7 +29259,7 @@
       foreach = 33;
       from = 34;
       _function = 35;
-      global = 36;
+      global2 = 36;
       goto = 37;
       _if = 38;
       _implements = 39;
@@ -29295,7 +29324,7 @@
         foreach,
         from,
         function: _function,
-        global,
+        global: global2,
         goto,
         if: _if,
         implements: _implements,
@@ -50060,7 +50089,7 @@
   __export(puppet_exports, {
     puppet: () => puppet
   });
-  function define(style2, string3) {
+  function define2(style2, string3) {
     var split = string3.split(" ");
     for (var i = 0; i < split.length; i++) {
       words13[split[i]] = style2;
@@ -50178,10 +50207,10 @@
     "node_modules/@codemirror/legacy-modes/mode/puppet.js"() {
       words13 = {};
       variable_regex2 = /({)?([a-z][a-z0-9_]*)?((::[a-z][a-z0-9_]*)*::)?[a-zA-Z0-9_]+(})?/;
-      define("keyword", "class define site node include import inherits");
-      define("keyword", "case if else in and elsif default or");
-      define("atom", "false true running present absent file directory undef");
-      define("builtin", "action augeas burst chain computer cron destination dport exec file filebucket group host icmp iniface interface jump k5login limit log_level log_prefix macauthorization mailalias maillist mcx mount nagios_command nagios_contact nagios_contactgroup nagios_host nagios_hostdependency nagios_hostescalation nagios_hostextinfo nagios_hostgroup nagios_service nagios_servicedependency nagios_serviceescalation nagios_serviceextinfo nagios_servicegroup nagios_timeperiod name notify outiface package proto reject resources router schedule scheduled_task selboolean selmodule service source sport ssh_authorized_key sshkey stage state table tidy todest toports tosource user vlan yumrepo zfs zone zpool");
+      define2("keyword", "class define site node include import inherits");
+      define2("keyword", "case if else in and elsif default or");
+      define2("atom", "false true running present absent file directory undef");
+      define2("builtin", "action augeas burst chain computer cron destination dport exec file filebucket group host icmp iniface interface jump k5login limit log_level log_prefix macauthorization mailalias maillist mcx mount nagios_command nagios_contact nagios_contactgroup nagios_host nagios_hostdependency nagios_hostescalation nagios_hostextinfo nagios_hostgroup nagios_service nagios_servicedependency nagios_serviceescalation nagios_serviceextinfo nagios_servicegroup nagios_timeperiod name notify outiface package proto reject resources router schedule scheduled_task selboolean selmodule service source sport ssh_authorized_key sshkey stage state table tidy todest toports tosource user vlan yumrepo zfs zone zpool");
       puppet = {
         name: "puppet",
         startState: function() {
@@ -50980,7 +51009,7 @@
   __export(sas_exports, {
     sas: () => sas
   });
-  function define2(style2, string3, context) {
+  function define3(style2, string3, context) {
     if (context) {
       var split = string3.split(" ");
       for (var i = 0; i < split.length; i++) {
@@ -51149,24 +51178,24 @@
       };
       isDoubleOperatorChar2 = /(<=|>=|!=|<>)/;
       isSingleOperatorChar2 = /[=\(:\),{}.*<>+\-\/^\[\]]/;
-      define2("def", "stack pgm view source debug nesting nolist", ["inDataStep"]);
-      define2("def", "if while until for do do; end end; then else cancel", ["inDataStep"]);
-      define2("def", "label format _n_ _error_", ["inDataStep"]);
-      define2("def", "ALTER BUFNO BUFSIZE CNTLLEV COMPRESS DLDMGACTION ENCRYPT ENCRYPTKEY EXTENDOBSCOUNTER GENMAX GENNUM INDEX LABEL OBSBUF OUTREP PW PWREQ READ REPEMPTY REPLACE REUSE ROLE SORTEDBY SPILL TOBSNO TYPE WRITE FILECLOSE FIRSTOBS IN OBS POINTOBS WHERE WHEREUP IDXNAME IDXWHERE DROP KEEP RENAME", ["inDataStep"]);
-      define2("def", "filevar finfo finv fipname fipnamel fipstate first firstobs floor", ["inDataStep"]);
-      define2("def", "varfmt varinfmt varlabel varlen varname varnum varray varrayx vartype verify vformat vformatd vformatdx vformatn vformatnx vformatw vformatwx vformatx vinarray vinarrayx vinformat vinformatd vinformatdx vinformatn vinformatnx vinformatw vinformatwx vinformatx vlabel vlabelx vlength vlengthx vname vnamex vnferr vtype vtypex weekday", ["inDataStep"]);
-      define2("def", "zipfips zipname zipnamel zipstate", ["inDataStep"]);
-      define2("def", "put putc putn", ["inDataStep"]);
-      define2("builtin", "data run", ["inDataStep"]);
-      define2("def", "data", ["inProc"]);
-      define2("def", "%if %end %end; %else %else; %do %do; %then", ["inMacro"]);
-      define2("builtin", "proc run; quit; libname filename %macro %mend option options", ["ALL"]);
-      define2("def", "footnote title libname ods", ["ALL"]);
-      define2("def", "%let %put %global %sysfunc %eval ", ["ALL"]);
-      define2("variable", "&sysbuffr &syscc &syscharwidth &syscmd &sysdate &sysdate9 &sysday &sysdevic &sysdmg &sysdsn &sysencoding &sysenv &syserr &syserrortext &sysfilrc &syshostname &sysindex &sysinfo &sysjobid &syslast &syslckrc &syslibrc &syslogapplname &sysmacroname &sysmenv &sysmsg &sysncpu &sysodspath &sysparm &syspbuff &sysprocessid &sysprocessname &sysprocname &sysrc &sysscp &sysscpl &sysscpl &syssite &sysstartid &sysstartname &systcpiphostname &systime &sysuserid &sysver &sysvlong &sysvlong4 &syswarningtext", ["ALL"]);
-      define2("def", "source2 nosource2 page pageno pagesize", ["ALL"]);
-      define2("def", "_all_ _character_ _cmd_ _freq_ _i_ _infile_ _last_ _msg_ _null_ _numeric_ _temporary_ _type_ abort abs addr adjrsq airy alpha alter altlog altprint and arcos array arsin as atan attrc attrib attrn authserver autoexec awscontrol awsdef awsmenu awsmenumerge awstitle backward band base betainv between blocksize blshift bnot bor brshift bufno bufsize bxor by byerr byline byte calculated call cards cards4 catcache cbufno cdf ceil center cexist change chisq cinv class cleanup close cnonct cntllev coalesce codegen col collate collin column comamid comaux1 comaux2 comdef compbl compound compress config continue convert cos cosh cpuid create cross crosstab css curobs cv daccdb daccdbsl daccsl daccsyd dacctab dairy datalines datalines4 datejul datepart datetime day dbcslang dbcstype dclose ddfm ddm delete delimiter depdb depdbsl depsl depsyd deptab dequote descending descript design= device dflang dhms dif digamma dim dinfo display distinct dkricond dkrocond dlm dnum do dopen doptname doptnum dread drop dropnote dsname dsnferr echo else emaildlg emailid emailpw emailserver emailsys encrypt end endsas engine eof eov erf erfc error errorcheck errors exist exp fappend fclose fcol fdelete feedback fetch fetchobs fexist fget file fileclose fileexist filefmt filename fileref  fmterr fmtsearch fnonct fnote font fontalias  fopen foptname foptnum force formatted formchar formdelim formdlim forward fpoint fpos fput fread frewind frlen from fsep fuzz fwrite gaminv gamma getoption getvarc getvarn go goto group gwindow hbar hbound helpenv helploc hms honorappearance hosthelp hostprint hour hpct html hvar ibessel ibr id if index indexc indexw initcmd initstmt inner input inputc inputn inr insert int intck intnx into intrr invaliddata irr is jbessel join juldate keep kentb kurtosis label lag last lbound leave left length levels lgamma lib  library libref line linesize link list log log10 log2 logpdf logpmf logsdf lostcard lowcase lrecl ls macro macrogen maps mautosource max maxdec maxr mdy mean measures median memtype merge merror min minute missing missover mlogic mod mode model modify month mopen mort mprint mrecall msglevel msymtabmax mvarsize myy n nest netpv new news nmiss no nobatch nobs nocaps nocardimage nocenter nocharcode nocmdmac nocol nocum nodate nodbcs nodetails nodmr nodms nodmsbatch nodup nodupkey noduplicates noechoauto noequals noerrorabend noexitwindows nofullstimer noicon noimplmac noint nolist noloadlist nomiss nomlogic nomprint nomrecall nomsgcase nomstored nomultenvappl nonotes nonumber noobs noovp nopad nopercent noprint noprintinit normal norow norsasuser nosetinit  nosplash nosymbolgen note notes notitle notitles notsorted noverbose noxsync noxwait npv null number numkeys nummousekeys nway obs  on open     order ordinal otherwise out outer outp= output over ovp p(1 5 10 25 50 75 90 95 99) pad pad2  paired parm parmcards path pathdll pathname pdf peek peekc pfkey pmf point poisson poke position printer probbeta probbnml probchi probf probgam probhypr probit probnegb probnorm probsig probt procleave prt ps  pw pwreq qtr quote r ranbin rancau random ranexp rangam range ranks rannor ranpoi rantbl rantri ranuni rcorr read recfm register regr remote remove rename repeat repeated replace resolve retain return reuse reverse rewind right round rsquare rtf rtrace rtraceloc s s2 samploc sasautos sascontrol sasfrscr sasmsg sasmstore sasscript sasuser saving scan sdf second select selection separated seq serror set setcomm setot sign simple sin sinh siteinfo skewness skip sle sls sortedby sortpgm sortseq sortsize soundex  spedis splashlocation split spool sqrt start std stderr stdin stfips stimer stname stnamel stop stopover sub subgroup subpopn substr sum sumwgt symbol symbolgen symget symput sysget sysin sysleave sysmsg sysparm sysprint sysprintfont sysprod sysrc system t table tables tan tanh tapeclose tbufsize terminal test then timepart tinv  tnonct to today tol tooldef totper transformout translate trantab tranwrd trigamma trim trimn trunc truncover type unformatted uniform union until upcase update user usericon uss validate value var  weight when where while wincharset window work workinit workterm write wsum xsync xwait yearcutoff yes yyq  min max", ["inDataStep", "inProc"]);
-      define2("operator", "and not ", ["inDataStep", "inProc"]);
+      define3("def", "stack pgm view source debug nesting nolist", ["inDataStep"]);
+      define3("def", "if while until for do do; end end; then else cancel", ["inDataStep"]);
+      define3("def", "label format _n_ _error_", ["inDataStep"]);
+      define3("def", "ALTER BUFNO BUFSIZE CNTLLEV COMPRESS DLDMGACTION ENCRYPT ENCRYPTKEY EXTENDOBSCOUNTER GENMAX GENNUM INDEX LABEL OBSBUF OUTREP PW PWREQ READ REPEMPTY REPLACE REUSE ROLE SORTEDBY SPILL TOBSNO TYPE WRITE FILECLOSE FIRSTOBS IN OBS POINTOBS WHERE WHEREUP IDXNAME IDXWHERE DROP KEEP RENAME", ["inDataStep"]);
+      define3("def", "filevar finfo finv fipname fipnamel fipstate first firstobs floor", ["inDataStep"]);
+      define3("def", "varfmt varinfmt varlabel varlen varname varnum varray varrayx vartype verify vformat vformatd vformatdx vformatn vformatnx vformatw vformatwx vformatx vinarray vinarrayx vinformat vinformatd vinformatdx vinformatn vinformatnx vinformatw vinformatwx vinformatx vlabel vlabelx vlength vlengthx vname vnamex vnferr vtype vtypex weekday", ["inDataStep"]);
+      define3("def", "zipfips zipname zipnamel zipstate", ["inDataStep"]);
+      define3("def", "put putc putn", ["inDataStep"]);
+      define3("builtin", "data run", ["inDataStep"]);
+      define3("def", "data", ["inProc"]);
+      define3("def", "%if %end %end; %else %else; %do %do; %then", ["inMacro"]);
+      define3("builtin", "proc run; quit; libname filename %macro %mend option options", ["ALL"]);
+      define3("def", "footnote title libname ods", ["ALL"]);
+      define3("def", "%let %put %global %sysfunc %eval ", ["ALL"]);
+      define3("variable", "&sysbuffr &syscc &syscharwidth &syscmd &sysdate &sysdate9 &sysday &sysdevic &sysdmg &sysdsn &sysencoding &sysenv &syserr &syserrortext &sysfilrc &syshostname &sysindex &sysinfo &sysjobid &syslast &syslckrc &syslibrc &syslogapplname &sysmacroname &sysmenv &sysmsg &sysncpu &sysodspath &sysparm &syspbuff &sysprocessid &sysprocessname &sysprocname &sysrc &sysscp &sysscpl &sysscpl &syssite &sysstartid &sysstartname &systcpiphostname &systime &sysuserid &sysver &sysvlong &sysvlong4 &syswarningtext", ["ALL"]);
+      define3("def", "source2 nosource2 page pageno pagesize", ["ALL"]);
+      define3("def", "_all_ _character_ _cmd_ _freq_ _i_ _infile_ _last_ _msg_ _null_ _numeric_ _temporary_ _type_ abort abs addr adjrsq airy alpha alter altlog altprint and arcos array arsin as atan attrc attrib attrn authserver autoexec awscontrol awsdef awsmenu awsmenumerge awstitle backward band base betainv between blocksize blshift bnot bor brshift bufno bufsize bxor by byerr byline byte calculated call cards cards4 catcache cbufno cdf ceil center cexist change chisq cinv class cleanup close cnonct cntllev coalesce codegen col collate collin column comamid comaux1 comaux2 comdef compbl compound compress config continue convert cos cosh cpuid create cross crosstab css curobs cv daccdb daccdbsl daccsl daccsyd dacctab dairy datalines datalines4 datejul datepart datetime day dbcslang dbcstype dclose ddfm ddm delete delimiter depdb depdbsl depsl depsyd deptab dequote descending descript design= device dflang dhms dif digamma dim dinfo display distinct dkricond dkrocond dlm dnum do dopen doptname doptnum dread drop dropnote dsname dsnferr echo else emaildlg emailid emailpw emailserver emailsys encrypt end endsas engine eof eov erf erfc error errorcheck errors exist exp fappend fclose fcol fdelete feedback fetch fetchobs fexist fget file fileclose fileexist filefmt filename fileref  fmterr fmtsearch fnonct fnote font fontalias  fopen foptname foptnum force formatted formchar formdelim formdlim forward fpoint fpos fput fread frewind frlen from fsep fuzz fwrite gaminv gamma getoption getvarc getvarn go goto group gwindow hbar hbound helpenv helploc hms honorappearance hosthelp hostprint hour hpct html hvar ibessel ibr id if index indexc indexw initcmd initstmt inner input inputc inputn inr insert int intck intnx into intrr invaliddata irr is jbessel join juldate keep kentb kurtosis label lag last lbound leave left length levels lgamma lib  library libref line linesize link list log log10 log2 logpdf logpmf logsdf lostcard lowcase lrecl ls macro macrogen maps mautosource max maxdec maxr mdy mean measures median memtype merge merror min minute missing missover mlogic mod mode model modify month mopen mort mprint mrecall msglevel msymtabmax mvarsize myy n nest netpv new news nmiss no nobatch nobs nocaps nocardimage nocenter nocharcode nocmdmac nocol nocum nodate nodbcs nodetails nodmr nodms nodmsbatch nodup nodupkey noduplicates noechoauto noequals noerrorabend noexitwindows nofullstimer noicon noimplmac noint nolist noloadlist nomiss nomlogic nomprint nomrecall nomsgcase nomstored nomultenvappl nonotes nonumber noobs noovp nopad nopercent noprint noprintinit normal norow norsasuser nosetinit  nosplash nosymbolgen note notes notitle notitles notsorted noverbose noxsync noxwait npv null number numkeys nummousekeys nway obs  on open     order ordinal otherwise out outer outp= output over ovp p(1 5 10 25 50 75 90 95 99) pad pad2  paired parm parmcards path pathdll pathname pdf peek peekc pfkey pmf point poisson poke position printer probbeta probbnml probchi probf probgam probhypr probit probnegb probnorm probsig probt procleave prt ps  pw pwreq qtr quote r ranbin rancau random ranexp rangam range ranks rannor ranpoi rantbl rantri ranuni rcorr read recfm register regr remote remove rename repeat repeated replace resolve retain return reuse reverse rewind right round rsquare rtf rtrace rtraceloc s s2 samploc sasautos sascontrol sasfrscr sasmsg sasmstore sasscript sasuser saving scan sdf second select selection separated seq serror set setcomm setot sign simple sin sinh siteinfo skewness skip sle sls sortedby sortpgm sortseq sortsize soundex  spedis splashlocation split spool sqrt start std stderr stdin stfips stimer stname stnamel stop stopover sub subgroup subpopn substr sum sumwgt symbol symbolgen symget symput sysget sysin sysleave sysmsg sysparm sysprint sysprintfont sysprod sysrc system t table tables tan tanh tapeclose tbufsize terminal test then timepart tinv  tnonct to today tol tooldef totper transformout translate trantab tranwrd trigamma trim trimn trunc truncover type unformatted uniform union until upcase update user usericon uss validate value var  weight when where while wincharset window work workinit workterm write wsum xsync xwait yearcutoff yes yyq  min max", ["inDataStep", "inProc"]);
+      define3("operator", "and not ", ["inDataStep", "inProc"]);
       sas = {
         name: "sas",
         startState: function() {
@@ -51431,7 +51460,7 @@
   __export(shell_exports, {
     shell: () => shell
   });
-  function define3(style2, dict) {
+  function define4(style2, dict) {
     for (var i = 0; i < dict.length; i++) {
       words15[dict[i]] = style2;
     }
@@ -51625,9 +51654,9 @@
         "yes",
         "zsh"
       ];
-      define3("atom", commonAtoms2);
-      define3("keyword", commonKeywords5);
-      define3("builtin", commonCommands);
+      define4("atom", commonAtoms2);
+      define4("keyword", commonKeywords5);
+      define4("builtin", commonCommands);
       tokenDollar = function(stream, state) {
         if (state.tokens.length > 1) stream.eat("$");
         var ch2 = stream.next();
@@ -58035,6 +58064,2374 @@
       attrMixed2 = { parser: attrParser2 };
       baseHTML4 = /* @__PURE__ */ html({ selfClosingTags: true });
       angularLanguage = /* @__PURE__ */ mkAngular(baseHTML4.language);
+    }
+  });
+
+  // node_modules/jszip/dist/jszip.min.js
+  var require_jszip_min = __commonJS({
+    "node_modules/jszip/dist/jszip.min.js"(exports, module) {
+      !(function(e) {
+        if ("object" == typeof exports && "undefined" != typeof module) module.exports = e();
+        else if ("function" == typeof define && define.amd) define([], e);
+        else {
+          ("undefined" != typeof window ? window : "undefined" != typeof global ? global : "undefined" != typeof self ? self : this).JSZip = e();
+        }
+      })(function() {
+        return (function s(a2, o, h) {
+          function u2(r2, e2) {
+            if (!o[r2]) {
+              if (!a2[r2]) {
+                var t2 = "function" == typeof __require && __require;
+                if (!e2 && t2) return t2(r2, true);
+                if (l) return l(r2, true);
+                var n = new Error("Cannot find module '" + r2 + "'");
+                throw n.code = "MODULE_NOT_FOUND", n;
+              }
+              var i = o[r2] = { exports: {} };
+              a2[r2][0].call(i.exports, function(e3) {
+                var t3 = a2[r2][1][e3];
+                return u2(t3 || e3);
+              }, i, i.exports, s, a2, o, h);
+            }
+            return o[r2].exports;
+          }
+          for (var l = "function" == typeof __require && __require, e = 0; e < h.length; e++) u2(h[e]);
+          return u2;
+        })({ 1: [function(e, t2, r2) {
+          "use strict";
+          var d3 = e("./utils"), c2 = e("./support"), p = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+          r2.encode = function(e2) {
+            for (var t3, r3, n, i, s, a2, o, h = [], u2 = 0, l = e2.length, f = l, c3 = "string" !== d3.getTypeOf(e2); u2 < e2.length; ) f = l - u2, n = c3 ? (t3 = e2[u2++], r3 = u2 < l ? e2[u2++] : 0, u2 < l ? e2[u2++] : 0) : (t3 = e2.charCodeAt(u2++), r3 = u2 < l ? e2.charCodeAt(u2++) : 0, u2 < l ? e2.charCodeAt(u2++) : 0), i = t3 >> 2, s = (3 & t3) << 4 | r3 >> 4, a2 = 1 < f ? (15 & r3) << 2 | n >> 6 : 64, o = 2 < f ? 63 & n : 64, h.push(p.charAt(i) + p.charAt(s) + p.charAt(a2) + p.charAt(o));
+            return h.join("");
+          }, r2.decode = function(e2) {
+            var t3, r3, n, i, s, a2, o = 0, h = 0, u2 = "data:";
+            if (e2.substr(0, u2.length) === u2) throw new Error("Invalid base64 input, it looks like a data url.");
+            var l, f = 3 * (e2 = e2.replace(/[^A-Za-z0-9+/=]/g, "")).length / 4;
+            if (e2.charAt(e2.length - 1) === p.charAt(64) && f--, e2.charAt(e2.length - 2) === p.charAt(64) && f--, f % 1 != 0) throw new Error("Invalid base64 input, bad content length.");
+            for (l = c2.uint8array ? new Uint8Array(0 | f) : new Array(0 | f); o < e2.length; ) t3 = p.indexOf(e2.charAt(o++)) << 2 | (i = p.indexOf(e2.charAt(o++))) >> 4, r3 = (15 & i) << 4 | (s = p.indexOf(e2.charAt(o++))) >> 2, n = (3 & s) << 6 | (a2 = p.indexOf(e2.charAt(o++))), l[h++] = t3, 64 !== s && (l[h++] = r3), 64 !== a2 && (l[h++] = n);
+            return l;
+          };
+        }, { "./support": 30, "./utils": 32 }], 2: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./external"), i = e("./stream/DataWorker"), s = e("./stream/Crc32Probe"), a2 = e("./stream/DataLengthProbe");
+          function o(e2, t3, r3, n2, i2) {
+            this.compressedSize = e2, this.uncompressedSize = t3, this.crc32 = r3, this.compression = n2, this.compressedContent = i2;
+          }
+          o.prototype = { getContentWorker: function() {
+            var e2 = new i(n.Promise.resolve(this.compressedContent)).pipe(this.compression.uncompressWorker()).pipe(new a2("data_length")), t3 = this;
+            return e2.on("end", function() {
+              if (this.streamInfo.data_length !== t3.uncompressedSize) throw new Error("Bug : uncompressed data size mismatch");
+            }), e2;
+          }, getCompressedWorker: function() {
+            return new i(n.Promise.resolve(this.compressedContent)).withStreamInfo("compressedSize", this.compressedSize).withStreamInfo("uncompressedSize", this.uncompressedSize).withStreamInfo("crc32", this.crc32).withStreamInfo("compression", this.compression);
+          } }, o.createWorkerFrom = function(e2, t3, r3) {
+            return e2.pipe(new s()).pipe(new a2("uncompressedSize")).pipe(t3.compressWorker(r3)).pipe(new a2("compressedSize")).withStreamInfo("compression", t3);
+          }, t2.exports = o;
+        }, { "./external": 6, "./stream/Crc32Probe": 25, "./stream/DataLengthProbe": 26, "./stream/DataWorker": 27 }], 3: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./stream/GenericWorker");
+          r2.STORE = { magic: "\0\0", compressWorker: function() {
+            return new n("STORE compression");
+          }, uncompressWorker: function() {
+            return new n("STORE decompression");
+          } }, r2.DEFLATE = e("./flate");
+        }, { "./flate": 7, "./stream/GenericWorker": 28 }], 4: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./utils");
+          var o = (function() {
+            for (var e2, t3 = [], r3 = 0; r3 < 256; r3++) {
+              e2 = r3;
+              for (var n2 = 0; n2 < 8; n2++) e2 = 1 & e2 ? 3988292384 ^ e2 >>> 1 : e2 >>> 1;
+              t3[r3] = e2;
+            }
+            return t3;
+          })();
+          t2.exports = function(e2, t3) {
+            return void 0 !== e2 && e2.length ? "string" !== n.getTypeOf(e2) ? (function(e3, t4, r3, n2) {
+              var i = o, s = n2 + r3;
+              e3 ^= -1;
+              for (var a2 = n2; a2 < s; a2++) e3 = e3 >>> 8 ^ i[255 & (e3 ^ t4[a2])];
+              return -1 ^ e3;
+            })(0 | t3, e2, e2.length, 0) : (function(e3, t4, r3, n2) {
+              var i = o, s = n2 + r3;
+              e3 ^= -1;
+              for (var a2 = n2; a2 < s; a2++) e3 = e3 >>> 8 ^ i[255 & (e3 ^ t4.charCodeAt(a2))];
+              return -1 ^ e3;
+            })(0 | t3, e2, e2.length, 0) : 0;
+          };
+        }, { "./utils": 32 }], 5: [function(e, t2, r2) {
+          "use strict";
+          r2.base64 = false, r2.binary = false, r2.dir = false, r2.createFolders = true, r2.date = null, r2.compression = null, r2.compressionOptions = null, r2.comment = null, r2.unixPermissions = null, r2.dosPermissions = null;
+        }, {}], 6: [function(e, t2, r2) {
+          "use strict";
+          var n = null;
+          n = "undefined" != typeof Promise ? Promise : e("lie"), t2.exports = { Promise: n };
+        }, { lie: 37 }], 7: [function(e, t2, r2) {
+          "use strict";
+          var n = "undefined" != typeof Uint8Array && "undefined" != typeof Uint16Array && "undefined" != typeof Uint32Array, i = e("pako"), s = e("./utils"), a2 = e("./stream/GenericWorker"), o = n ? "uint8array" : "array";
+          function h(e2, t3) {
+            a2.call(this, "FlateWorker/" + e2), this._pako = null, this._pakoAction = e2, this._pakoOptions = t3, this.meta = {};
+          }
+          r2.magic = "\b\0", s.inherits(h, a2), h.prototype.processChunk = function(e2) {
+            this.meta = e2.meta, null === this._pako && this._createPako(), this._pako.push(s.transformTo(o, e2.data), false);
+          }, h.prototype.flush = function() {
+            a2.prototype.flush.call(this), null === this._pako && this._createPako(), this._pako.push([], true);
+          }, h.prototype.cleanUp = function() {
+            a2.prototype.cleanUp.call(this), this._pako = null;
+          }, h.prototype._createPako = function() {
+            this._pako = new i[this._pakoAction]({ raw: true, level: this._pakoOptions.level || -1 });
+            var t3 = this;
+            this._pako.onData = function(e2) {
+              t3.push({ data: e2, meta: t3.meta });
+            };
+          }, r2.compressWorker = function(e2) {
+            return new h("Deflate", e2);
+          }, r2.uncompressWorker = function() {
+            return new h("Inflate", {});
+          };
+        }, { "./stream/GenericWorker": 28, "./utils": 32, pako: 38 }], 8: [function(e, t2, r2) {
+          "use strict";
+          function A3(e2, t3) {
+            var r3, n2 = "";
+            for (r3 = 0; r3 < t3; r3++) n2 += String.fromCharCode(255 & e2), e2 >>>= 8;
+            return n2;
+          }
+          function n(e2, t3, r3, n2, i2, s2) {
+            var a2, o, h = e2.file, u2 = e2.compression, l = s2 !== O.utf8encode, f = I.transformTo("string", s2(h.name)), c2 = I.transformTo("string", O.utf8encode(h.name)), d3 = h.comment, p = I.transformTo("string", s2(d3)), m = I.transformTo("string", O.utf8encode(d3)), _ = c2.length !== h.name.length, g = m.length !== d3.length, b = "", v = "", y = "", w = h.dir, k = h.date, x = { crc32: 0, compressedSize: 0, uncompressedSize: 0 };
+            t3 && !r3 || (x.crc32 = e2.crc32, x.compressedSize = e2.compressedSize, x.uncompressedSize = e2.uncompressedSize);
+            var S3 = 0;
+            t3 && (S3 |= 8), l || !_ && !g || (S3 |= 2048);
+            var z2 = 0, C3 = 0;
+            w && (z2 |= 16), "UNIX" === i2 ? (C3 = 798, z2 |= (function(e3, t4) {
+              var r4 = e3;
+              return e3 || (r4 = t4 ? 16893 : 33204), (65535 & r4) << 16;
+            })(h.unixPermissions, w)) : (C3 = 20, z2 |= (function(e3) {
+              return 63 & (e3 || 0);
+            })(h.dosPermissions)), a2 = k.getUTCHours(), a2 <<= 6, a2 |= k.getUTCMinutes(), a2 <<= 5, a2 |= k.getUTCSeconds() / 2, o = k.getUTCFullYear() - 1980, o <<= 4, o |= k.getUTCMonth() + 1, o <<= 5, o |= k.getUTCDate(), _ && (v = A3(1, 1) + A3(B2(f), 4) + c2, b += "up" + A3(v.length, 2) + v), g && (y = A3(1, 1) + A3(B2(p), 4) + m, b += "uc" + A3(y.length, 2) + y);
+            var E2 = "";
+            return E2 += "\n\0", E2 += A3(S3, 2), E2 += u2.magic, E2 += A3(a2, 2), E2 += A3(o, 2), E2 += A3(x.crc32, 4), E2 += A3(x.compressedSize, 4), E2 += A3(x.uncompressedSize, 4), E2 += A3(f.length, 2), E2 += A3(b.length, 2), { fileRecord: R2.LOCAL_FILE_HEADER + E2 + f + b, dirRecord: R2.CENTRAL_FILE_HEADER + A3(C3, 2) + E2 + A3(p.length, 2) + "\0\0\0\0" + A3(z2, 4) + A3(n2, 4) + f + b + p };
+          }
+          var I = e("../utils"), i = e("../stream/GenericWorker"), O = e("../utf8"), B2 = e("../crc32"), R2 = e("../signature");
+          function s(e2, t3, r3, n2) {
+            i.call(this, "ZipFileWorker"), this.bytesWritten = 0, this.zipComment = t3, this.zipPlatform = r3, this.encodeFileName = n2, this.streamFiles = e2, this.accumulate = false, this.contentBuffer = [], this.dirRecords = [], this.currentSourceOffset = 0, this.entriesCount = 0, this.currentFile = null, this._sources = [];
+          }
+          I.inherits(s, i), s.prototype.push = function(e2) {
+            var t3 = e2.meta.percent || 0, r3 = this.entriesCount, n2 = this._sources.length;
+            this.accumulate ? this.contentBuffer.push(e2) : (this.bytesWritten += e2.data.length, i.prototype.push.call(this, { data: e2.data, meta: { currentFile: this.currentFile, percent: r3 ? (t3 + 100 * (r3 - n2 - 1)) / r3 : 100 } }));
+          }, s.prototype.openedSource = function(e2) {
+            this.currentSourceOffset = this.bytesWritten, this.currentFile = e2.file.name;
+            var t3 = this.streamFiles && !e2.file.dir;
+            if (t3) {
+              var r3 = n(e2, t3, false, this.currentSourceOffset, this.zipPlatform, this.encodeFileName);
+              this.push({ data: r3.fileRecord, meta: { percent: 0 } });
+            } else this.accumulate = true;
+          }, s.prototype.closedSource = function(e2) {
+            this.accumulate = false;
+            var t3 = this.streamFiles && !e2.file.dir, r3 = n(e2, t3, true, this.currentSourceOffset, this.zipPlatform, this.encodeFileName);
+            if (this.dirRecords.push(r3.dirRecord), t3) this.push({ data: (function(e3) {
+              return R2.DATA_DESCRIPTOR + A3(e3.crc32, 4) + A3(e3.compressedSize, 4) + A3(e3.uncompressedSize, 4);
+            })(e2), meta: { percent: 100 } });
+            else for (this.push({ data: r3.fileRecord, meta: { percent: 0 } }); this.contentBuffer.length; ) this.push(this.contentBuffer.shift());
+            this.currentFile = null;
+          }, s.prototype.flush = function() {
+            for (var e2 = this.bytesWritten, t3 = 0; t3 < this.dirRecords.length; t3++) this.push({ data: this.dirRecords[t3], meta: { percent: 100 } });
+            var r3 = this.bytesWritten - e2, n2 = (function(e3, t4, r4, n3, i2) {
+              var s2 = I.transformTo("string", i2(n3));
+              return R2.CENTRAL_DIRECTORY_END + "\0\0\0\0" + A3(e3, 2) + A3(e3, 2) + A3(t4, 4) + A3(r4, 4) + A3(s2.length, 2) + s2;
+            })(this.dirRecords.length, r3, e2, this.zipComment, this.encodeFileName);
+            this.push({ data: n2, meta: { percent: 100 } });
+          }, s.prototype.prepareNextSource = function() {
+            this.previous = this._sources.shift(), this.openedSource(this.previous.streamInfo), this.isPaused ? this.previous.pause() : this.previous.resume();
+          }, s.prototype.registerPrevious = function(e2) {
+            this._sources.push(e2);
+            var t3 = this;
+            return e2.on("data", function(e3) {
+              t3.processChunk(e3);
+            }), e2.on("end", function() {
+              t3.closedSource(t3.previous.streamInfo), t3._sources.length ? t3.prepareNextSource() : t3.end();
+            }), e2.on("error", function(e3) {
+              t3.error(e3);
+            }), this;
+          }, s.prototype.resume = function() {
+            return !!i.prototype.resume.call(this) && (!this.previous && this._sources.length ? (this.prepareNextSource(), true) : this.previous || this._sources.length || this.generatedError ? void 0 : (this.end(), true));
+          }, s.prototype.error = function(e2) {
+            var t3 = this._sources;
+            if (!i.prototype.error.call(this, e2)) return false;
+            for (var r3 = 0; r3 < t3.length; r3++) try {
+              t3[r3].error(e2);
+            } catch (e3) {
+            }
+            return true;
+          }, s.prototype.lock = function() {
+            i.prototype.lock.call(this);
+            for (var e2 = this._sources, t3 = 0; t3 < e2.length; t3++) e2[t3].lock();
+          }, t2.exports = s;
+        }, { "../crc32": 4, "../signature": 23, "../stream/GenericWorker": 28, "../utf8": 31, "../utils": 32 }], 9: [function(e, t2, r2) {
+          "use strict";
+          var u2 = e("../compressions"), n = e("./ZipFileWorker");
+          r2.generateWorker = function(e2, a2, t3) {
+            var o = new n(a2.streamFiles, t3, a2.platform, a2.encodeFileName), h = 0;
+            try {
+              e2.forEach(function(e3, t4) {
+                h++;
+                var r3 = (function(e4, t5) {
+                  var r4 = e4 || t5, n3 = u2[r4];
+                  if (!n3) throw new Error(r4 + " is not a valid compression method !");
+                  return n3;
+                })(t4.options.compression, a2.compression), n2 = t4.options.compressionOptions || a2.compressionOptions || {}, i = t4.dir, s = t4.date;
+                t4._compressWorker(r3, n2).withStreamInfo("file", { name: e3, dir: i, date: s, comment: t4.comment || "", unixPermissions: t4.unixPermissions, dosPermissions: t4.dosPermissions }).pipe(o);
+              }), o.entriesCount = h;
+            } catch (e3) {
+              o.error(e3);
+            }
+            return o;
+          };
+        }, { "../compressions": 3, "./ZipFileWorker": 8 }], 10: [function(e, t2, r2) {
+          "use strict";
+          function n() {
+            if (!(this instanceof n)) return new n();
+            if (arguments.length) throw new Error("The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.");
+            this.files = /* @__PURE__ */ Object.create(null), this.comment = null, this.root = "", this.clone = function() {
+              var e2 = new n();
+              for (var t3 in this) "function" != typeof this[t3] && (e2[t3] = this[t3]);
+              return e2;
+            };
+          }
+          (n.prototype = e("./object")).loadAsync = e("./load"), n.support = e("./support"), n.defaults = e("./defaults"), n.version = "3.10.2", n.loadAsync = function(e2, t3) {
+            return new n().loadAsync(e2, t3);
+          }, n.external = e("./external"), t2.exports = n;
+        }, { "./defaults": 5, "./external": 6, "./load": 11, "./object": 15, "./support": 30 }], 11: [function(e, t2, r2) {
+          "use strict";
+          var u2 = e("./utils"), i = e("./external"), n = e("./utf8"), s = e("./zipEntries"), a2 = e("./stream/Crc32Probe"), l = e("./nodejsUtils");
+          function f(n2) {
+            return new i.Promise(function(e2, t3) {
+              var r3 = n2.decompressed.getContentWorker().pipe(new a2());
+              r3.on("error", function(e3) {
+                t3(e3);
+              }).on("end", function() {
+                r3.streamInfo.crc32 !== n2.decompressed.crc32 ? t3(new Error("Corrupted zip : CRC32 mismatch")) : e2();
+              }).resume();
+            });
+          }
+          t2.exports = function(e2, o) {
+            var h = this;
+            return o = u2.extend(o || {}, { base64: false, checkCRC32: false, optimizedBinaryString: false, createFolders: false, decodeFileName: n.utf8decode }), l.isNode && l.isStream(e2) ? i.Promise.reject(new Error("JSZip can't accept a stream when loading a zip file.")) : u2.prepareContent("the loaded zip file", e2, true, o.optimizedBinaryString, o.base64).then(function(e3) {
+              var t3 = new s(o);
+              return t3.load(e3), t3;
+            }).then(function(e3) {
+              var t3 = [i.Promise.resolve(e3)], r3 = e3.files;
+              if (o.checkCRC32) for (var n2 = 0; n2 < r3.length; n2++) t3.push(f(r3[n2]));
+              return i.Promise.all(t3);
+            }).then(function(e3) {
+              for (var t3 = e3.shift(), r3 = t3.files, n2 = 0; n2 < r3.length; n2++) {
+                var i2 = r3[n2], s2 = i2.fileNameStr, a3 = u2.resolve(i2.fileNameStr);
+                h.file(a3, i2.decompressed, { binary: true, optimizedBinaryString: true, date: i2.date, dir: i2.dir, comment: i2.fileCommentStr.length ? i2.fileCommentStr : null, unixPermissions: i2.unixPermissions, dosPermissions: i2.dosPermissions, createFolders: o.createFolders }), i2.dir || (h.file(a3).unsafeOriginalName = s2);
+              }
+              return t3.zipComment.length && (h.comment = t3.zipComment), h;
+            });
+          };
+        }, { "./external": 6, "./nodejsUtils": 14, "./stream/Crc32Probe": 25, "./utf8": 31, "./utils": 32, "./zipEntries": 33 }], 12: [function(e, t2, r2) {
+          "use strict";
+          var n = e("../utils"), i = e("../stream/GenericWorker");
+          function s(e2, t3) {
+            i.call(this, "Nodejs stream input adapter for " + e2), this._upstreamEnded = false, this._bindStream(t3);
+          }
+          n.inherits(s, i), s.prototype._bindStream = function(e2) {
+            var t3 = this;
+            (this._stream = e2).pause(), e2.on("data", function(e3) {
+              t3.push({ data: e3, meta: { percent: 0 } });
+            }).on("error", function(e3) {
+              t3.isPaused ? this.generatedError = e3 : t3.error(e3);
+            }).on("end", function() {
+              t3.isPaused ? t3._upstreamEnded = true : t3.end();
+            });
+          }, s.prototype.pause = function() {
+            return !!i.prototype.pause.call(this) && (this._stream.pause(), true);
+          }, s.prototype.resume = function() {
+            return !!i.prototype.resume.call(this) && (this._upstreamEnded ? this.end() : this._stream.resume(), true);
+          }, t2.exports = s;
+        }, { "../stream/GenericWorker": 28, "../utils": 32 }], 13: [function(e, t2, r2) {
+          "use strict";
+          var i = e("readable-stream").Readable;
+          function n(e2, t3, r3) {
+            i.call(this, t3), this._helper = e2;
+            var n2 = this;
+            e2.on("data", function(e3, t4) {
+              n2.push(e3) || n2._helper.pause(), r3 && r3(t4);
+            }).on("error", function(e3) {
+              n2.emit("error", e3);
+            }).on("end", function() {
+              n2.push(null);
+            });
+          }
+          e("../utils").inherits(n, i), n.prototype._read = function() {
+            this._helper.resume();
+          }, t2.exports = n;
+        }, { "../utils": 32, "readable-stream": 16 }], 14: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = { isNode: "undefined" != typeof Buffer, newBufferFrom: function(e2, t3) {
+            if (Buffer.from && Buffer.from !== Uint8Array.from) return Buffer.from(e2, t3);
+            if ("number" == typeof e2) throw new Error('The "data" argument must not be a number');
+            return new Buffer(e2, t3);
+          }, allocBuffer: function(e2) {
+            if (Buffer.alloc) return Buffer.alloc(e2);
+            var t3 = new Buffer(e2);
+            return t3.fill(0), t3;
+          }, isBuffer: function(e2) {
+            return Buffer.isBuffer(e2);
+          }, isStream: function(e2) {
+            return e2 && "function" == typeof e2.on && "function" == typeof e2.pause && "function" == typeof e2.resume;
+          } };
+        }, {}], 15: [function(e, t2, r2) {
+          "use strict";
+          function s(e2, t3, r3) {
+            var n2, i2 = u2.getTypeOf(t3), s2 = u2.extend(r3 || {}, f);
+            s2.date = s2.date || /* @__PURE__ */ new Date(), null !== s2.compression && (s2.compression = s2.compression.toUpperCase()), "string" == typeof s2.unixPermissions && (s2.unixPermissions = parseInt(s2.unixPermissions, 8)), s2.unixPermissions && 16384 & s2.unixPermissions && (s2.dir = true), s2.dosPermissions && 16 & s2.dosPermissions && (s2.dir = true), s2.dir && (e2 = g(e2)), s2.createFolders && (n2 = _(e2)) && b.call(this, n2, true);
+            var a3 = "string" === i2 && false === s2.binary && false === s2.base64;
+            r3 && void 0 !== r3.binary || (s2.binary = !a3), (t3 instanceof c2 && 0 === t3.uncompressedSize || s2.dir || !t3 || 0 === t3.length) && (s2.base64 = false, s2.binary = true, t3 = "", s2.compression = "STORE", i2 = "string");
+            var o2 = null;
+            o2 = t3 instanceof c2 || t3 instanceof l ? t3 : p.isNode && p.isStream(t3) ? new m(e2, t3) : u2.prepareContent(e2, t3, s2.binary, s2.optimizedBinaryString, s2.base64);
+            var h2 = new d3(e2, o2, s2);
+            this.files[e2] = h2;
+          }
+          var i = e("./utf8"), u2 = e("./utils"), l = e("./stream/GenericWorker"), a2 = e("./stream/StreamHelper"), f = e("./defaults"), c2 = e("./compressedObject"), d3 = e("./zipObject"), o = e("./generate"), p = e("./nodejsUtils"), m = e("./nodejs/NodejsStreamInputAdapter"), _ = function(e2) {
+            "/" === e2.slice(-1) && (e2 = e2.substring(0, e2.length - 1));
+            var t3 = e2.lastIndexOf("/");
+            return 0 < t3 ? e2.substring(0, t3) : "";
+          }, g = function(e2) {
+            return "/" !== e2.slice(-1) && (e2 += "/"), e2;
+          }, b = function(e2, t3) {
+            return t3 = void 0 !== t3 ? t3 : f.createFolders, e2 = g(e2), this.files[e2] || s.call(this, e2, null, { dir: true, createFolders: t3 }), this.files[e2];
+          };
+          function h(e2) {
+            return "[object RegExp]" === Object.prototype.toString.call(e2);
+          }
+          var n = { load: function() {
+            throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.");
+          }, forEach: function(e2) {
+            var t3, r3, n2;
+            for (t3 in this.files) n2 = this.files[t3], (r3 = t3.slice(this.root.length, t3.length)) && t3.slice(0, this.root.length) === this.root && e2(r3, n2);
+          }, filter: function(r3) {
+            var n2 = [];
+            return this.forEach(function(e2, t3) {
+              r3(e2, t3) && n2.push(t3);
+            }), n2;
+          }, file: function(e2, t3, r3) {
+            if (1 !== arguments.length) return e2 = this.root + e2, s.call(this, e2, t3, r3), this;
+            if (h(e2)) {
+              var n2 = e2;
+              return this.filter(function(e3, t4) {
+                return !t4.dir && n2.test(e3);
+              });
+            }
+            var i2 = this.files[this.root + e2];
+            return i2 && !i2.dir ? i2 : null;
+          }, folder: function(r3) {
+            if (!r3) return this;
+            if (h(r3)) return this.filter(function(e3, t4) {
+              return t4.dir && r3.test(e3);
+            });
+            var e2 = this.root + r3, t3 = b.call(this, e2), n2 = this.clone();
+            return n2.root = t3.name, n2;
+          }, remove: function(r3) {
+            r3 = this.root + r3;
+            var e2 = this.files[r3];
+            if (e2 || ("/" !== r3.slice(-1) && (r3 += "/"), e2 = this.files[r3]), e2 && !e2.dir) delete this.files[r3];
+            else for (var t3 = this.filter(function(e3, t4) {
+              return t4.name.slice(0, r3.length) === r3;
+            }), n2 = 0; n2 < t3.length; n2++) delete this.files[t3[n2].name];
+            return this;
+          }, generate: function() {
+            throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.");
+          }, generateInternalStream: function(e2) {
+            var t3, r3 = {};
+            try {
+              if ((r3 = u2.extend(e2 || {}, { streamFiles: false, compression: "STORE", compressionOptions: null, type: "", platform: "DOS", comment: null, mimeType: "application/zip", encodeFileName: i.utf8encode })).type = r3.type.toLowerCase(), r3.compression = r3.compression.toUpperCase(), "binarystring" === r3.type && (r3.type = "string"), !r3.type) throw new Error("No output type specified.");
+              u2.checkSupport(r3.type), "darwin" !== r3.platform && "freebsd" !== r3.platform && "linux" !== r3.platform && "sunos" !== r3.platform || (r3.platform = "UNIX"), "win32" === r3.platform && (r3.platform = "DOS");
+              var n2 = r3.comment || this.comment || "";
+              t3 = o.generateWorker(this, r3, n2);
+            } catch (e3) {
+              (t3 = new l("error")).error(e3);
+            }
+            return new a2(t3, r3.type || "string", r3.mimeType);
+          }, generateAsync: function(e2, t3) {
+            return this.generateInternalStream(e2).accumulate(t3);
+          }, generateNodeStream: function(e2, t3) {
+            return (e2 = e2 || {}).type || (e2.type = "nodebuffer"), this.generateInternalStream(e2).toNodejsStream(t3);
+          } };
+          t2.exports = n;
+        }, { "./compressedObject": 2, "./defaults": 5, "./generate": 9, "./nodejs/NodejsStreamInputAdapter": 12, "./nodejsUtils": 14, "./stream/GenericWorker": 28, "./stream/StreamHelper": 29, "./utf8": 31, "./utils": 32, "./zipObject": 35 }], 16: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = e("stream");
+        }, { stream: void 0 }], 17: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./DataReader");
+          function i(e2) {
+            n.call(this, e2);
+            for (var t3 = 0; t3 < this.data.length; t3++) e2[t3] = 255 & e2[t3];
+          }
+          e("../utils").inherits(i, n), i.prototype.byteAt = function(e2) {
+            return this.data[this.zero + e2];
+          }, i.prototype.lastIndexOfSignature = function(e2) {
+            for (var t3 = e2.charCodeAt(0), r3 = e2.charCodeAt(1), n2 = e2.charCodeAt(2), i2 = e2.charCodeAt(3), s = this.length - 4; 0 <= s; --s) if (this.data[s] === t3 && this.data[s + 1] === r3 && this.data[s + 2] === n2 && this.data[s + 3] === i2) return s - this.zero;
+            return -1;
+          }, i.prototype.readAndCheckSignature = function(e2) {
+            var t3 = e2.charCodeAt(0), r3 = e2.charCodeAt(1), n2 = e2.charCodeAt(2), i2 = e2.charCodeAt(3), s = this.readData(4);
+            return t3 === s[0] && r3 === s[1] && n2 === s[2] && i2 === s[3];
+          }, i.prototype.readData = function(e2) {
+            if (this.checkOffset(e2), 0 === e2) return [];
+            var t3 = this.data.slice(this.zero + this.index, this.zero + this.index + e2);
+            return this.index += e2, t3;
+          }, t2.exports = i;
+        }, { "../utils": 32, "./DataReader": 18 }], 18: [function(e, t2, r2) {
+          "use strict";
+          var n = e("../utils");
+          function i(e2) {
+            this.data = e2, this.length = e2.length, this.index = 0, this.zero = 0;
+          }
+          i.prototype = { checkOffset: function(e2) {
+            this.checkIndex(this.index + e2);
+          }, checkIndex: function(e2) {
+            if (this.length < this.zero + e2 || e2 < 0) throw new Error("End of data reached (data length = " + this.length + ", asked index = " + e2 + "). Corrupted zip ?");
+          }, setIndex: function(e2) {
+            this.checkIndex(e2), this.index = e2;
+          }, skip: function(e2) {
+            this.setIndex(this.index + e2);
+          }, byteAt: function() {
+          }, readInt: function(e2) {
+            var t3, r3 = 0;
+            for (this.checkOffset(e2), t3 = this.index + e2 - 1; t3 >= this.index; t3--) r3 = (r3 << 8) + this.byteAt(t3);
+            return this.index += e2, r3;
+          }, readString: function(e2) {
+            return n.transformTo("string", this.readData(e2));
+          }, readData: function() {
+          }, lastIndexOfSignature: function() {
+          }, readAndCheckSignature: function() {
+          }, readDate: function() {
+            var e2 = this.readInt(4);
+            return new Date(Date.UTC(1980 + (e2 >> 25 & 127), (e2 >> 21 & 15) - 1, e2 >> 16 & 31, e2 >> 11 & 31, e2 >> 5 & 63, (31 & e2) << 1));
+          } }, t2.exports = i;
+        }, { "../utils": 32 }], 19: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./Uint8ArrayReader");
+          function i(e2) {
+            n.call(this, e2);
+          }
+          e("../utils").inherits(i, n), i.prototype.readData = function(e2) {
+            this.checkOffset(e2);
+            var t3 = this.data.slice(this.zero + this.index, this.zero + this.index + e2);
+            return this.index += e2, t3;
+          }, t2.exports = i;
+        }, { "../utils": 32, "./Uint8ArrayReader": 21 }], 20: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./DataReader");
+          function i(e2) {
+            n.call(this, e2);
+          }
+          e("../utils").inherits(i, n), i.prototype.byteAt = function(e2) {
+            return this.data.charCodeAt(this.zero + e2);
+          }, i.prototype.lastIndexOfSignature = function(e2) {
+            return this.data.lastIndexOf(e2) - this.zero;
+          }, i.prototype.readAndCheckSignature = function(e2) {
+            return e2 === this.readData(4);
+          }, i.prototype.readData = function(e2) {
+            this.checkOffset(e2);
+            var t3 = this.data.slice(this.zero + this.index, this.zero + this.index + e2);
+            return this.index += e2, t3;
+          }, t2.exports = i;
+        }, { "../utils": 32, "./DataReader": 18 }], 21: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./ArrayReader");
+          function i(e2) {
+            n.call(this, e2);
+          }
+          e("../utils").inherits(i, n), i.prototype.readData = function(e2) {
+            if (this.checkOffset(e2), 0 === e2) return new Uint8Array(0);
+            var t3 = this.data.subarray(this.zero + this.index, this.zero + this.index + e2);
+            return this.index += e2, t3;
+          }, t2.exports = i;
+        }, { "../utils": 32, "./ArrayReader": 17 }], 22: [function(e, t2, r2) {
+          "use strict";
+          var n = e("../utils"), i = e("../support"), s = e("./ArrayReader"), a2 = e("./StringReader"), o = e("./NodeBufferReader"), h = e("./Uint8ArrayReader");
+          t2.exports = function(e2) {
+            var t3 = n.getTypeOf(e2);
+            return n.checkSupport(t3), "string" !== t3 || i.uint8array ? "nodebuffer" === t3 ? new o(e2) : i.uint8array ? new h(n.transformTo("uint8array", e2)) : new s(n.transformTo("array", e2)) : new a2(e2);
+          };
+        }, { "../support": 30, "../utils": 32, "./ArrayReader": 17, "./NodeBufferReader": 19, "./StringReader": 20, "./Uint8ArrayReader": 21 }], 23: [function(e, t2, r2) {
+          "use strict";
+          r2.LOCAL_FILE_HEADER = "PK", r2.CENTRAL_FILE_HEADER = "PK", r2.CENTRAL_DIRECTORY_END = "PK", r2.ZIP64_CENTRAL_DIRECTORY_LOCATOR = "PK\x07", r2.ZIP64_CENTRAL_DIRECTORY_END = "PK", r2.DATA_DESCRIPTOR = "PK\x07\b";
+        }, {}], 24: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./GenericWorker"), i = e("../utils");
+          function s(e2) {
+            n.call(this, "ConvertWorker to " + e2), this.destType = e2;
+          }
+          i.inherits(s, n), s.prototype.processChunk = function(e2) {
+            this.push({ data: i.transformTo(this.destType, e2.data), meta: e2.meta });
+          }, t2.exports = s;
+        }, { "../utils": 32, "./GenericWorker": 28 }], 25: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./GenericWorker"), i = e("../crc32");
+          function s() {
+            n.call(this, "Crc32Probe"), this.withStreamInfo("crc32", 0);
+          }
+          e("../utils").inherits(s, n), s.prototype.processChunk = function(e2) {
+            this.streamInfo.crc32 = i(e2.data, this.streamInfo.crc32 || 0), this.push(e2);
+          }, t2.exports = s;
+        }, { "../crc32": 4, "../utils": 32, "./GenericWorker": 28 }], 26: [function(e, t2, r2) {
+          "use strict";
+          var n = e("../utils"), i = e("./GenericWorker");
+          function s(e2) {
+            i.call(this, "DataLengthProbe for " + e2), this.propName = e2, this.withStreamInfo(e2, 0);
+          }
+          n.inherits(s, i), s.prototype.processChunk = function(e2) {
+            if (e2) {
+              var t3 = this.streamInfo[this.propName] || 0;
+              this.streamInfo[this.propName] = t3 + e2.data.length;
+            }
+            i.prototype.processChunk.call(this, e2);
+          }, t2.exports = s;
+        }, { "../utils": 32, "./GenericWorker": 28 }], 27: [function(e, t2, r2) {
+          "use strict";
+          var n = e("../utils"), i = e("./GenericWorker");
+          function s(e2) {
+            i.call(this, "DataWorker");
+            var t3 = this;
+            this.dataIsReady = false, this.index = 0, this.max = 0, this.data = null, this.type = "", this._tickScheduled = false, e2.then(function(e3) {
+              t3.dataIsReady = true, t3.data = e3, t3.max = e3 && e3.length || 0, t3.type = n.getTypeOf(e3), t3.isPaused || t3._tickAndRepeat();
+            }, function(e3) {
+              t3.error(e3);
+            });
+          }
+          n.inherits(s, i), s.prototype.cleanUp = function() {
+            i.prototype.cleanUp.call(this), this.data = null;
+          }, s.prototype.resume = function() {
+            return !!i.prototype.resume.call(this) && (!this._tickScheduled && this.dataIsReady && (this._tickScheduled = true, n.delay(this._tickAndRepeat, [], this)), true);
+          }, s.prototype._tickAndRepeat = function() {
+            this._tickScheduled = false, this.isPaused || this.isFinished || (this._tick(), this.isFinished || (n.delay(this._tickAndRepeat, [], this), this._tickScheduled = true));
+          }, s.prototype._tick = function() {
+            if (this.isPaused || this.isFinished) return false;
+            var e2 = null, t3 = Math.min(this.max, this.index + 16384);
+            if (this.index >= this.max) return this.end();
+            switch (this.type) {
+              case "string":
+                e2 = this.data.substring(this.index, t3);
+                break;
+              case "uint8array":
+                e2 = this.data.subarray(this.index, t3);
+                break;
+              case "array":
+              case "nodebuffer":
+                e2 = this.data.slice(this.index, t3);
+            }
+            return this.index = t3, this.push({ data: e2, meta: { percent: this.max ? this.index / this.max * 100 : 0 } });
+          }, t2.exports = s;
+        }, { "../utils": 32, "./GenericWorker": 28 }], 28: [function(e, t2, r2) {
+          "use strict";
+          function n(e2) {
+            this.name = e2 || "default", this.streamInfo = {}, this.generatedError = null, this.extraStreamInfo = {}, this.isPaused = true, this.isFinished = false, this.isLocked = false, this._listeners = { data: [], end: [], error: [] }, this.previous = null;
+          }
+          n.prototype = { push: function(e2) {
+            this.emit("data", e2);
+          }, end: function() {
+            if (this.isFinished) return false;
+            this.flush();
+            try {
+              this.emit("end"), this.cleanUp(), this.isFinished = true;
+            } catch (e2) {
+              this.emit("error", e2);
+            }
+            return true;
+          }, error: function(e2) {
+            return !this.isFinished && (this.isPaused ? this.generatedError = e2 : (this.isFinished = true, this.emit("error", e2), this.previous && this.previous.error(e2), this.cleanUp()), true);
+          }, on: function(e2, t3) {
+            return this._listeners[e2].push(t3), this;
+          }, cleanUp: function() {
+            this.streamInfo = this.generatedError = this.extraStreamInfo = null, this._listeners = [];
+          }, emit: function(e2, t3) {
+            if (this._listeners[e2]) for (var r3 = 0; r3 < this._listeners[e2].length; r3++) this._listeners[e2][r3].call(this, t3);
+          }, pipe: function(e2) {
+            return e2.registerPrevious(this);
+          }, registerPrevious: function(e2) {
+            if (this.isLocked) throw new Error("The stream '" + this + "' has already been used.");
+            this.streamInfo = e2.streamInfo, this.mergeStreamInfo(), this.previous = e2;
+            var t3 = this;
+            return e2.on("data", function(e3) {
+              t3.processChunk(e3);
+            }), e2.on("end", function() {
+              t3.end();
+            }), e2.on("error", function(e3) {
+              t3.error(e3);
+            }), this;
+          }, pause: function() {
+            return !this.isPaused && !this.isFinished && (this.isPaused = true, this.previous && this.previous.pause(), true);
+          }, resume: function() {
+            if (!this.isPaused || this.isFinished) return false;
+            var e2 = this.isPaused = false;
+            return this.generatedError && (this.error(this.generatedError), e2 = true), this.previous && this.previous.resume(), !e2;
+          }, flush: function() {
+          }, processChunk: function(e2) {
+            this.push(e2);
+          }, withStreamInfo: function(e2, t3) {
+            return this.extraStreamInfo[e2] = t3, this.mergeStreamInfo(), this;
+          }, mergeStreamInfo: function() {
+            for (var e2 in this.extraStreamInfo) Object.prototype.hasOwnProperty.call(this.extraStreamInfo, e2) && (this.streamInfo[e2] = this.extraStreamInfo[e2]);
+          }, lock: function() {
+            if (this.isLocked) throw new Error("The stream '" + this + "' has already been used.");
+            this.isLocked = true, this.previous && this.previous.lock();
+          }, toString: function() {
+            var e2 = "Worker " + this.name;
+            return this.previous ? this.previous + " -> " + e2 : e2;
+          } }, t2.exports = n;
+        }, {}], 29: [function(e, t2, r2) {
+          "use strict";
+          var h = e("../utils"), i = e("./ConvertWorker"), s = e("./GenericWorker"), u2 = e("../base64"), n = e("../support"), a2 = e("../external"), o = null;
+          if (n.nodestream) try {
+            o = e("../nodejs/NodejsStreamOutputAdapter");
+          } catch (e2) {
+          }
+          function l(e2, o2) {
+            return new a2.Promise(function(t3, r3) {
+              var n2 = [], i2 = e2._internalType, s2 = e2._outputType, a3 = e2._mimeType;
+              e2.on("data", function(e3, t4) {
+                n2.push(e3), o2 && o2(t4);
+              }).on("error", function(e3) {
+                n2 = [], r3(e3);
+              }).on("end", function() {
+                try {
+                  var e3 = (function(e4, t4, r4) {
+                    switch (e4) {
+                      case "blob":
+                        return h.newBlob(h.transformTo("arraybuffer", t4), r4);
+                      case "base64":
+                        return u2.encode(t4);
+                      default:
+                        return h.transformTo(e4, t4);
+                    }
+                  })(s2, (function(e4, t4) {
+                    var r4, n3 = 0, i3 = null, s3 = 0;
+                    for (r4 = 0; r4 < t4.length; r4++) s3 += t4[r4].length;
+                    switch (e4) {
+                      case "string":
+                        return t4.join("");
+                      case "array":
+                        return Array.prototype.concat.apply([], t4);
+                      case "uint8array":
+                        for (i3 = new Uint8Array(s3), r4 = 0; r4 < t4.length; r4++) i3.set(t4[r4], n3), n3 += t4[r4].length;
+                        return i3;
+                      case "nodebuffer":
+                        return Buffer.concat(t4);
+                      default:
+                        throw new Error("concat : unsupported type '" + e4 + "'");
+                    }
+                  })(i2, n2), a3);
+                  t3(e3);
+                } catch (e4) {
+                  r3(e4);
+                }
+                n2 = [];
+              }).resume();
+            });
+          }
+          function f(e2, t3, r3) {
+            var n2 = t3;
+            switch (t3) {
+              case "blob":
+              case "arraybuffer":
+                n2 = "uint8array";
+                break;
+              case "base64":
+                n2 = "string";
+            }
+            try {
+              this._internalType = n2, this._outputType = t3, this._mimeType = r3, h.checkSupport(n2), this._worker = e2.pipe(new i(n2)), e2.lock();
+            } catch (e3) {
+              this._worker = new s("error"), this._worker.error(e3);
+            }
+          }
+          f.prototype = { accumulate: function(e2) {
+            return l(this, e2);
+          }, on: function(e2, t3) {
+            var r3 = this;
+            return "data" === e2 ? this._worker.on(e2, function(e3) {
+              t3.call(r3, e3.data, e3.meta);
+            }) : this._worker.on(e2, function() {
+              h.delay(t3, arguments, r3);
+            }), this;
+          }, resume: function() {
+            return h.delay(this._worker.resume, [], this._worker), this;
+          }, pause: function() {
+            return this._worker.pause(), this;
+          }, toNodejsStream: function(e2) {
+            if (h.checkSupport("nodestream"), "nodebuffer" !== this._outputType) throw new Error(this._outputType + " is not supported by this method");
+            return new o(this, { objectMode: "nodebuffer" !== this._outputType }, e2);
+          } }, t2.exports = f;
+        }, { "../base64": 1, "../external": 6, "../nodejs/NodejsStreamOutputAdapter": 13, "../support": 30, "../utils": 32, "./ConvertWorker": 24, "./GenericWorker": 28 }], 30: [function(e, t2, r2) {
+          "use strict";
+          if (r2.base64 = true, r2.array = true, r2.string = true, r2.arraybuffer = "undefined" != typeof ArrayBuffer && "undefined" != typeof Uint8Array, r2.nodebuffer = "undefined" != typeof Buffer, r2.uint8array = "undefined" != typeof Uint8Array, "undefined" == typeof ArrayBuffer) r2.blob = false;
+          else {
+            var n = new ArrayBuffer(0);
+            try {
+              r2.blob = 0 === new Blob([n], { type: "application/zip" }).size;
+            } catch (e2) {
+              try {
+                var i = new (self.BlobBuilder || self.WebKitBlobBuilder || self.MozBlobBuilder || self.MSBlobBuilder)();
+                i.append(n), r2.blob = 0 === i.getBlob("application/zip").size;
+              } catch (e3) {
+                r2.blob = false;
+              }
+            }
+          }
+          try {
+            r2.nodestream = !!e("readable-stream").Readable;
+          } catch (e2) {
+            r2.nodestream = false;
+          }
+        }, { "readable-stream": 16 }], 31: [function(e, t2, s) {
+          "use strict";
+          for (var o = e("./utils"), h = e("./support"), r2 = e("./nodejsUtils"), n = e("./stream/GenericWorker"), u2 = new Array(256), i = 0; i < 256; i++) u2[i] = 252 <= i ? 6 : 248 <= i ? 5 : 240 <= i ? 4 : 224 <= i ? 3 : 192 <= i ? 2 : 1;
+          u2[254] = u2[254] = 1;
+          function a2() {
+            n.call(this, "utf-8 decode"), this.leftOver = null;
+          }
+          function l() {
+            n.call(this, "utf-8 encode");
+          }
+          s.utf8encode = function(e2) {
+            return h.nodebuffer ? r2.newBufferFrom(e2, "utf-8") : (function(e3) {
+              var t3, r3, n2, i2, s2, a3 = e3.length, o2 = 0;
+              for (i2 = 0; i2 < a3; i2++) 55296 == (64512 & (r3 = e3.charCodeAt(i2))) && i2 + 1 < a3 && 56320 == (64512 & (n2 = e3.charCodeAt(i2 + 1))) && (r3 = 65536 + (r3 - 55296 << 10) + (n2 - 56320), i2++), o2 += r3 < 128 ? 1 : r3 < 2048 ? 2 : r3 < 65536 ? 3 : 4;
+              for (t3 = h.uint8array ? new Uint8Array(o2) : new Array(o2), i2 = s2 = 0; s2 < o2; i2++) 55296 == (64512 & (r3 = e3.charCodeAt(i2))) && i2 + 1 < a3 && 56320 == (64512 & (n2 = e3.charCodeAt(i2 + 1))) && (r3 = 65536 + (r3 - 55296 << 10) + (n2 - 56320), i2++), r3 < 128 ? t3[s2++] = r3 : (r3 < 2048 ? t3[s2++] = 192 | r3 >>> 6 : (r3 < 65536 ? t3[s2++] = 224 | r3 >>> 12 : (t3[s2++] = 240 | r3 >>> 18, t3[s2++] = 128 | r3 >>> 12 & 63), t3[s2++] = 128 | r3 >>> 6 & 63), t3[s2++] = 128 | 63 & r3);
+              return t3;
+            })(e2);
+          }, s.utf8decode = function(e2) {
+            return h.nodebuffer ? o.transformTo("nodebuffer", e2).toString("utf-8") : (function(e3) {
+              var t3, r3, n2, i2, s2 = e3.length, a3 = new Array(2 * s2);
+              for (t3 = r3 = 0; t3 < s2; ) if ((n2 = e3[t3++]) < 128) a3[r3++] = n2;
+              else if (4 < (i2 = u2[n2])) a3[r3++] = 65533, t3 += i2 - 1;
+              else {
+                for (n2 &= 2 === i2 ? 31 : 3 === i2 ? 15 : 7; 1 < i2 && t3 < s2; ) n2 = n2 << 6 | 63 & e3[t3++], i2--;
+                1 < i2 ? a3[r3++] = 65533 : n2 < 65536 ? a3[r3++] = n2 : (n2 -= 65536, a3[r3++] = 55296 | n2 >> 10 & 1023, a3[r3++] = 56320 | 1023 & n2);
+              }
+              return a3.length !== r3 && (a3.subarray ? a3 = a3.subarray(0, r3) : a3.length = r3), o.applyFromCharCode(a3);
+            })(e2 = o.transformTo(h.uint8array ? "uint8array" : "array", e2));
+          }, o.inherits(a2, n), a2.prototype.processChunk = function(e2) {
+            var t3 = o.transformTo(h.uint8array ? "uint8array" : "array", e2.data);
+            if (this.leftOver && this.leftOver.length) {
+              if (h.uint8array) {
+                var r3 = t3;
+                (t3 = new Uint8Array(r3.length + this.leftOver.length)).set(this.leftOver, 0), t3.set(r3, this.leftOver.length);
+              } else t3 = this.leftOver.concat(t3);
+              this.leftOver = null;
+            }
+            var n2 = (function(e3, t4) {
+              var r4;
+              for ((t4 = t4 || e3.length) > e3.length && (t4 = e3.length), r4 = t4 - 1; 0 <= r4 && 128 == (192 & e3[r4]); ) r4--;
+              return r4 < 0 ? t4 : 0 === r4 ? t4 : r4 + u2[e3[r4]] > t4 ? r4 : t4;
+            })(t3), i2 = t3;
+            n2 !== t3.length && (h.uint8array ? (i2 = t3.subarray(0, n2), this.leftOver = t3.subarray(n2, t3.length)) : (i2 = t3.slice(0, n2), this.leftOver = t3.slice(n2, t3.length))), this.push({ data: s.utf8decode(i2), meta: e2.meta });
+          }, a2.prototype.flush = function() {
+            this.leftOver && this.leftOver.length && (this.push({ data: s.utf8decode(this.leftOver), meta: {} }), this.leftOver = null);
+          }, s.Utf8DecodeWorker = a2, o.inherits(l, n), l.prototype.processChunk = function(e2) {
+            this.push({ data: s.utf8encode(e2.data), meta: e2.meta });
+          }, s.Utf8EncodeWorker = l;
+        }, { "./nodejsUtils": 14, "./stream/GenericWorker": 28, "./support": 30, "./utils": 32 }], 32: [function(e, t2, a2) {
+          "use strict";
+          var o = e("./support"), h = e("./base64"), r2 = e("./nodejsUtils"), u2 = e("./external");
+          function n(e2) {
+            return e2;
+          }
+          function l(e2, t3) {
+            for (var r3 = 0; r3 < e2.length; ++r3) t3[r3] = 255 & e2.charCodeAt(r3);
+            return t3;
+          }
+          e("setimmediate"), a2.newBlob = function(t3, r3) {
+            a2.checkSupport("blob");
+            try {
+              return new Blob([t3], { type: r3 });
+            } catch (e2) {
+              try {
+                var n2 = new (self.BlobBuilder || self.WebKitBlobBuilder || self.MozBlobBuilder || self.MSBlobBuilder)();
+                return n2.append(t3), n2.getBlob(r3);
+              } catch (e3) {
+                throw new Error("Bug : can't construct the Blob.");
+              }
+            }
+          };
+          var i = { stringifyByChunk: function(e2, t3, r3) {
+            var n2 = [], i2 = 0, s2 = e2.length;
+            if (s2 <= r3) return String.fromCharCode.apply(null, e2);
+            for (; i2 < s2; ) "array" === t3 || "nodebuffer" === t3 ? n2.push(String.fromCharCode.apply(null, e2.slice(i2, Math.min(i2 + r3, s2)))) : n2.push(String.fromCharCode.apply(null, e2.subarray(i2, Math.min(i2 + r3, s2)))), i2 += r3;
+            return n2.join("");
+          }, stringifyByChar: function(e2) {
+            for (var t3 = "", r3 = 0; r3 < e2.length; r3++) t3 += String.fromCharCode(e2[r3]);
+            return t3;
+          }, applyCanBeUsed: { uint8array: (function() {
+            try {
+              return o.uint8array && 1 === String.fromCharCode.apply(null, new Uint8Array(1)).length;
+            } catch (e2) {
+              return false;
+            }
+          })(), nodebuffer: (function() {
+            try {
+              return o.nodebuffer && 1 === String.fromCharCode.apply(null, r2.allocBuffer(1)).length;
+            } catch (e2) {
+              return false;
+            }
+          })() } };
+          function s(e2) {
+            var t3 = 65536, r3 = a2.getTypeOf(e2), n2 = true;
+            if ("uint8array" === r3 ? n2 = i.applyCanBeUsed.uint8array : "nodebuffer" === r3 && (n2 = i.applyCanBeUsed.nodebuffer), n2) for (; 1 < t3; ) try {
+              return i.stringifyByChunk(e2, r3, t3);
+            } catch (e3) {
+              t3 = Math.floor(t3 / 2);
+            }
+            return i.stringifyByChar(e2);
+          }
+          function f(e2, t3) {
+            for (var r3 = 0; r3 < e2.length; r3++) t3[r3] = e2[r3];
+            return t3;
+          }
+          a2.applyFromCharCode = s;
+          var c2 = {};
+          c2.string = { string: n, array: function(e2) {
+            return l(e2, new Array(e2.length));
+          }, arraybuffer: function(e2) {
+            return c2.string.uint8array(e2).buffer;
+          }, uint8array: function(e2) {
+            return l(e2, new Uint8Array(e2.length));
+          }, nodebuffer: function(e2) {
+            return l(e2, r2.allocBuffer(e2.length));
+          } }, c2.array = { string: s, array: n, arraybuffer: function(e2) {
+            return new Uint8Array(e2).buffer;
+          }, uint8array: function(e2) {
+            return new Uint8Array(e2);
+          }, nodebuffer: function(e2) {
+            return r2.newBufferFrom(e2);
+          } }, c2.arraybuffer = { string: function(e2) {
+            return s(new Uint8Array(e2));
+          }, array: function(e2) {
+            return f(new Uint8Array(e2), new Array(e2.byteLength));
+          }, arraybuffer: n, uint8array: function(e2) {
+            return new Uint8Array(e2);
+          }, nodebuffer: function(e2) {
+            return r2.newBufferFrom(new Uint8Array(e2));
+          } }, c2.uint8array = { string: s, array: function(e2) {
+            return f(e2, new Array(e2.length));
+          }, arraybuffer: function(e2) {
+            return e2.buffer;
+          }, uint8array: n, nodebuffer: function(e2) {
+            return r2.newBufferFrom(e2);
+          } }, c2.nodebuffer = { string: s, array: function(e2) {
+            return f(e2, new Array(e2.length));
+          }, arraybuffer: function(e2) {
+            return c2.nodebuffer.uint8array(e2).buffer;
+          }, uint8array: function(e2) {
+            return f(e2, new Uint8Array(e2.length));
+          }, nodebuffer: n }, a2.transformTo = function(e2, t3) {
+            if (t3 = t3 || "", !e2) return t3;
+            a2.checkSupport(e2);
+            var r3 = a2.getTypeOf(t3);
+            return c2[r3][e2](t3);
+          }, a2.resolve = function(e2) {
+            for (var t3 = e2.split("/"), r3 = [], n2 = 0; n2 < t3.length; n2++) {
+              var i2 = t3[n2];
+              "." === i2 || "" === i2 && 0 !== n2 && n2 !== t3.length - 1 || (".." === i2 ? r3.pop() : r3.push(i2));
+            }
+            return r3.join("/");
+          }, a2.getTypeOf = function(e2) {
+            if ("string" == typeof e2) return "string";
+            var t3 = Object.prototype.toString.call(e2);
+            return "[object Array]" === t3 ? "array" : o.nodebuffer && r2.isBuffer(e2) ? "nodebuffer" : o.uint8array && "[object Uint8Array]" === t3 ? "uint8array" : o.arraybuffer && "[object ArrayBuffer]" === t3 ? "arraybuffer" : void 0;
+          }, a2.checkSupport = function(e2) {
+            if (!o[e2.toLowerCase()]) throw new Error(e2 + " is not supported by this platform");
+          }, a2.MAX_VALUE_16BITS = 65535, a2.MAX_VALUE_32BITS = -1, a2.pretty = function(e2) {
+            var t3, r3, n2 = "";
+            for (r3 = 0; r3 < (e2 || "").length; r3++) n2 += "\\x" + ((t3 = e2.charCodeAt(r3)) < 16 ? "0" : "") + t3.toString(16).toUpperCase();
+            return n2;
+          }, a2.delay = function(e2, t3, r3) {
+            setImmediate(function() {
+              e2.apply(r3 || null, t3 || []);
+            });
+          }, a2.inherits = function(e2, t3) {
+            function r3() {
+            }
+            r3.prototype = t3.prototype, e2.prototype = new r3();
+          }, a2.extend = function() {
+            var e2, t3, r3 = {};
+            for (e2 = 0; e2 < arguments.length; e2++) for (t3 in arguments[e2]) Object.prototype.hasOwnProperty.call(arguments[e2], t3) && void 0 === r3[t3] && (r3[t3] = arguments[e2][t3]);
+            return r3;
+          }, a2.prepareContent = function(r3, e2, n2, i2, s2) {
+            return u2.Promise.resolve(e2).then(function(n3) {
+              return o.blob && (n3 instanceof Blob || -1 !== ["[object File]", "[object Blob]"].indexOf(Object.prototype.toString.call(n3))) ? void 0 !== Blob.prototype.arrayBuffer ? n3.arrayBuffer() : "undefined" != typeof FileReader ? new u2.Promise(function(t3, r4) {
+                var e3 = new FileReader();
+                e3.onload = function(e4) {
+                  t3(e4.target.result);
+                }, e3.onerror = function(e4) {
+                  r4(e4.target.error);
+                }, e3.readAsArrayBuffer(n3);
+              }) : u2.Promise.reject(new Error(r3 + " is a Blob, but we have no way of reading it.")) : n3;
+            }).then(function(e3) {
+              var t3 = a2.getTypeOf(e3);
+              return t3 ? ("arraybuffer" === t3 ? e3 = a2.transformTo("uint8array", e3) : "string" === t3 && (s2 ? e3 = h.decode(e3) : n2 && true !== i2 && (e3 = (function(e4) {
+                return l(e4, o.uint8array ? new Uint8Array(e4.length) : new Array(e4.length));
+              })(e3))), e3) : u2.Promise.reject(new Error("Can't read the data of '" + r3 + "'. Is it in a supported JavaScript type (String, Blob, ArrayBuffer, etc) ?"));
+            });
+          };
+        }, { "./base64": 1, "./external": 6, "./nodejsUtils": 14, "./support": 30, setimmediate: 54 }], 33: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./reader/readerFor"), i = e("./utils"), s = e("./signature"), a2 = e("./zipEntry"), o = e("./support");
+          function h(e2) {
+            this.files = [], this.loadOptions = e2;
+          }
+          h.prototype = { checkSignature: function(e2) {
+            if (!this.reader.readAndCheckSignature(e2)) {
+              this.reader.index -= 4;
+              var t3 = this.reader.readString(4);
+              throw new Error("Corrupted zip or bug: unexpected signature (" + i.pretty(t3) + ", expected " + i.pretty(e2) + ")");
+            }
+          }, isSignature: function(e2, t3) {
+            var r3 = this.reader.index;
+            this.reader.setIndex(e2);
+            var n2 = this.reader.readString(4) === t3;
+            return this.reader.setIndex(r3), n2;
+          }, readBlockEndOfCentral: function() {
+            this.diskNumber = this.reader.readInt(2), this.diskWithCentralDirStart = this.reader.readInt(2), this.centralDirRecordsOnThisDisk = this.reader.readInt(2), this.centralDirRecords = this.reader.readInt(2), this.centralDirSize = this.reader.readInt(4), this.centralDirOffset = this.reader.readInt(4), this.zipCommentLength = this.reader.readInt(2);
+            var e2 = this.reader.readData(this.zipCommentLength), t3 = o.uint8array ? "uint8array" : "array", r3 = i.transformTo(t3, e2);
+            this.zipComment = this.loadOptions.decodeFileName(r3);
+          }, readBlockZip64EndOfCentral: function() {
+            this.zip64EndOfCentralSize = this.reader.readInt(8), this.reader.skip(4), this.diskNumber = this.reader.readInt(4), this.diskWithCentralDirStart = this.reader.readInt(4), this.centralDirRecordsOnThisDisk = this.reader.readInt(8), this.centralDirRecords = this.reader.readInt(8), this.centralDirSize = this.reader.readInt(8), this.centralDirOffset = this.reader.readInt(8), this.zip64ExtensibleData = {};
+            for (var e2, t3, r3, n2 = this.zip64EndOfCentralSize - 44; 0 < n2; ) e2 = this.reader.readInt(2), t3 = this.reader.readInt(4), r3 = this.reader.readData(t3), this.zip64ExtensibleData[e2] = { id: e2, length: t3, value: r3 };
+          }, readBlockZip64EndOfCentralLocator: function() {
+            if (this.diskWithZip64CentralDirStart = this.reader.readInt(4), this.relativeOffsetEndOfZip64CentralDir = this.reader.readInt(8), this.disksCount = this.reader.readInt(4), 1 < this.disksCount) throw new Error("Multi-volumes zip are not supported");
+          }, readLocalFiles: function() {
+            var e2, t3;
+            for (e2 = 0; e2 < this.files.length; e2++) t3 = this.files[e2], this.reader.setIndex(t3.localHeaderOffset), this.checkSignature(s.LOCAL_FILE_HEADER), t3.readLocalPart(this.reader), t3.handleUTF8(), t3.processAttributes();
+          }, readCentralDir: function() {
+            var e2;
+            for (this.reader.setIndex(this.centralDirOffset); this.reader.readAndCheckSignature(s.CENTRAL_FILE_HEADER); ) (e2 = new a2({ zip64: this.zip64 }, this.loadOptions)).readCentralPart(this.reader), this.files.push(e2);
+            if (this.centralDirRecords !== this.files.length && 0 !== this.centralDirRecords && 0 === this.files.length) throw new Error("Corrupted zip or bug: expected " + this.centralDirRecords + " records in central dir, got " + this.files.length);
+          }, readEndOfCentral: function() {
+            var e2 = this.reader.lastIndexOfSignature(s.CENTRAL_DIRECTORY_END);
+            if (e2 < 0) throw !this.isSignature(0, s.LOCAL_FILE_HEADER) ? new Error("Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html") : new Error("Corrupted zip: can't find end of central directory");
+            this.reader.setIndex(e2);
+            var t3 = e2;
+            if (this.checkSignature(s.CENTRAL_DIRECTORY_END), this.readBlockEndOfCentral(), this.diskNumber === i.MAX_VALUE_16BITS || this.diskWithCentralDirStart === i.MAX_VALUE_16BITS || this.centralDirRecordsOnThisDisk === i.MAX_VALUE_16BITS || this.centralDirRecords === i.MAX_VALUE_16BITS || this.centralDirSize === i.MAX_VALUE_32BITS || this.centralDirOffset === i.MAX_VALUE_32BITS) {
+              if (this.zip64 = true, (e2 = this.reader.lastIndexOfSignature(s.ZIP64_CENTRAL_DIRECTORY_LOCATOR)) < 0) throw new Error("Corrupted zip: can't find the ZIP64 end of central directory locator");
+              if (this.reader.setIndex(e2), this.checkSignature(s.ZIP64_CENTRAL_DIRECTORY_LOCATOR), this.readBlockZip64EndOfCentralLocator(), !this.isSignature(this.relativeOffsetEndOfZip64CentralDir, s.ZIP64_CENTRAL_DIRECTORY_END) && (this.relativeOffsetEndOfZip64CentralDir = this.reader.lastIndexOfSignature(s.ZIP64_CENTRAL_DIRECTORY_END), this.relativeOffsetEndOfZip64CentralDir < 0)) throw new Error("Corrupted zip: can't find the ZIP64 end of central directory");
+              this.reader.setIndex(this.relativeOffsetEndOfZip64CentralDir), this.checkSignature(s.ZIP64_CENTRAL_DIRECTORY_END), this.readBlockZip64EndOfCentral();
+            }
+            var r3 = this.centralDirOffset + this.centralDirSize;
+            this.zip64 && (r3 += 20, r3 += 12 + this.zip64EndOfCentralSize);
+            var n2 = t3 - r3;
+            if (0 < n2) this.isSignature(t3, s.CENTRAL_FILE_HEADER) || (this.reader.zero = n2);
+            else if (n2 < 0) throw new Error("Corrupted zip: missing " + Math.abs(n2) + " bytes.");
+          }, prepareReader: function(e2) {
+            this.reader = n(e2);
+          }, load: function(e2) {
+            this.prepareReader(e2), this.readEndOfCentral(), this.readCentralDir(), this.readLocalFiles();
+          } }, t2.exports = h;
+        }, { "./reader/readerFor": 22, "./signature": 23, "./support": 30, "./utils": 32, "./zipEntry": 34 }], 34: [function(e, t2, r2) {
+          "use strict";
+          var n = e("./reader/readerFor"), s = e("./utils"), i = e("./compressedObject"), a2 = e("./crc32"), o = e("./utf8"), h = e("./compressions"), u2 = e("./support");
+          function l(e2, t3) {
+            this.options = e2, this.loadOptions = t3;
+          }
+          l.prototype = { isEncrypted: function() {
+            return 1 == (1 & this.bitFlag);
+          }, useUTF8: function() {
+            return 2048 == (2048 & this.bitFlag);
+          }, readLocalPart: function(e2) {
+            var t3, r3;
+            if (e2.skip(22), this.fileNameLength = e2.readInt(2), r3 = e2.readInt(2), this.fileName = e2.readData(this.fileNameLength), e2.skip(r3), -1 === this.compressedSize || -1 === this.uncompressedSize) throw new Error("Bug or corrupted zip : didn't get enough information from the central directory (compressedSize === -1 || uncompressedSize === -1)");
+            if (null === (t3 = (function(e3) {
+              for (var t4 in h) if (Object.prototype.hasOwnProperty.call(h, t4) && h[t4].magic === e3) return h[t4];
+              return null;
+            })(this.compressionMethod))) throw new Error("Corrupted zip : compression " + s.pretty(this.compressionMethod) + " unknown (inner file : " + s.transformTo("string", this.fileName) + ")");
+            this.decompressed = new i(this.compressedSize, this.uncompressedSize, this.crc32, t3, e2.readData(this.compressedSize));
+          }, readCentralPart: function(e2) {
+            this.versionMadeBy = e2.readInt(2), e2.skip(2), this.bitFlag = e2.readInt(2), this.compressionMethod = e2.readString(2), this.date = e2.readDate(), this.crc32 = e2.readInt(4), this.compressedSize = e2.readInt(4), this.uncompressedSize = e2.readInt(4);
+            var t3 = e2.readInt(2);
+            if (this.extraFieldsLength = e2.readInt(2), this.fileCommentLength = e2.readInt(2), this.diskNumberStart = e2.readInt(2), this.internalFileAttributes = e2.readInt(2), this.externalFileAttributes = e2.readInt(4), this.localHeaderOffset = e2.readInt(4), this.isEncrypted()) throw new Error("Encrypted zip are not supported");
+            e2.skip(t3), this.readExtraFields(e2), this.parseZIP64ExtraField(e2), this.fileComment = e2.readData(this.fileCommentLength);
+          }, processAttributes: function() {
+            this.unixPermissions = null, this.dosPermissions = null;
+            var e2 = this.versionMadeBy >> 8;
+            this.dir = !!(16 & this.externalFileAttributes), 0 == e2 && (this.dosPermissions = 63 & this.externalFileAttributes), 3 == e2 && (this.unixPermissions = this.externalFileAttributes >> 16 & 65535), this.dir || "/" !== this.fileNameStr.slice(-1) || (this.dir = true);
+          }, parseZIP64ExtraField: function() {
+            if (this.extraFields[1]) {
+              var e2 = n(this.extraFields[1].value);
+              this.uncompressedSize === s.MAX_VALUE_32BITS && (this.uncompressedSize = e2.readInt(8)), this.compressedSize === s.MAX_VALUE_32BITS && (this.compressedSize = e2.readInt(8)), this.localHeaderOffset === s.MAX_VALUE_32BITS && (this.localHeaderOffset = e2.readInt(8)), this.diskNumberStart === s.MAX_VALUE_32BITS && (this.diskNumberStart = e2.readInt(4));
+            }
+          }, readExtraFields: function(e2) {
+            var t3, r3, n2, i2 = e2.index + this.extraFieldsLength;
+            for (this.extraFields || (this.extraFields = {}); e2.index + 4 < i2; ) t3 = e2.readInt(2), r3 = e2.readInt(2), n2 = e2.readData(r3), this.extraFields[t3] = { id: t3, length: r3, value: n2 };
+            e2.setIndex(i2);
+          }, handleUTF8: function() {
+            var e2 = u2.uint8array ? "uint8array" : "array";
+            if (this.useUTF8()) this.fileNameStr = o.utf8decode(this.fileName), this.fileCommentStr = o.utf8decode(this.fileComment);
+            else {
+              var t3 = this.findExtraFieldUnicodePath();
+              if (null !== t3) this.fileNameStr = t3;
+              else {
+                var r3 = s.transformTo(e2, this.fileName);
+                this.fileNameStr = this.loadOptions.decodeFileName(r3);
+              }
+              var n2 = this.findExtraFieldUnicodeComment();
+              if (null !== n2) this.fileCommentStr = n2;
+              else {
+                var i2 = s.transformTo(e2, this.fileComment);
+                this.fileCommentStr = this.loadOptions.decodeFileName(i2);
+              }
+            }
+          }, findExtraFieldUnicodePath: function() {
+            var e2 = this.extraFields[28789];
+            if (e2) {
+              var t3 = n(e2.value);
+              return 1 !== t3.readInt(1) ? null : a2(this.fileName) !== t3.readInt(4) ? null : o.utf8decode(t3.readData(e2.length - 5));
+            }
+            return null;
+          }, findExtraFieldUnicodeComment: function() {
+            var e2 = this.extraFields[25461];
+            if (e2) {
+              var t3 = n(e2.value);
+              return 1 !== t3.readInt(1) ? null : a2(this.fileComment) !== t3.readInt(4) ? null : o.utf8decode(t3.readData(e2.length - 5));
+            }
+            return null;
+          } }, t2.exports = l;
+        }, { "./compressedObject": 2, "./compressions": 3, "./crc32": 4, "./reader/readerFor": 22, "./support": 30, "./utf8": 31, "./utils": 32 }], 35: [function(e, t2, r2) {
+          "use strict";
+          function n(e2, t3, r3) {
+            this.name = e2, this.dir = r3.dir, this.date = r3.date, this.comment = r3.comment, this.unixPermissions = r3.unixPermissions, this.dosPermissions = r3.dosPermissions, this._data = t3, this._dataBinary = r3.binary, this.options = { compression: r3.compression, compressionOptions: r3.compressionOptions };
+          }
+          var s = e("./stream/StreamHelper"), i = e("./stream/DataWorker"), a2 = e("./utf8"), o = e("./compressedObject"), h = e("./stream/GenericWorker");
+          n.prototype = { internalStream: function(e2) {
+            var t3 = null, r3 = "string";
+            try {
+              if (!e2) throw new Error("No output type specified.");
+              var n2 = "string" === (r3 = e2.toLowerCase()) || "text" === r3;
+              "binarystring" !== r3 && "text" !== r3 || (r3 = "string"), t3 = this._decompressWorker();
+              var i2 = !this._dataBinary;
+              i2 && !n2 && (t3 = t3.pipe(new a2.Utf8EncodeWorker())), !i2 && n2 && (t3 = t3.pipe(new a2.Utf8DecodeWorker()));
+            } catch (e3) {
+              (t3 = new h("error")).error(e3);
+            }
+            return new s(t3, r3, "");
+          }, async: function(e2, t3) {
+            return this.internalStream(e2).accumulate(t3);
+          }, nodeStream: function(e2, t3) {
+            return this.internalStream(e2 || "nodebuffer").toNodejsStream(t3);
+          }, _compressWorker: function(e2, t3) {
+            if (this._data instanceof o && this._data.compression.magic === e2.magic) return this._data.getCompressedWorker();
+            var r3 = this._decompressWorker();
+            return this._dataBinary || (r3 = r3.pipe(new a2.Utf8EncodeWorker())), o.createWorkerFrom(r3, e2, t3);
+          }, _decompressWorker: function() {
+            return this._data instanceof o ? this._data.getContentWorker() : this._data instanceof h ? this._data : new i(this._data);
+          } };
+          for (var u2 = ["asText", "asBinary", "asNodeBuffer", "asUint8Array", "asArrayBuffer"], l = function() {
+            throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.");
+          }, f = 0; f < u2.length; f++) n.prototype[u2[f]] = l;
+          t2.exports = n;
+        }, { "./compressedObject": 2, "./stream/DataWorker": 27, "./stream/GenericWorker": 28, "./stream/StreamHelper": 29, "./utf8": 31 }], 36: [function(e, l, t2) {
+          (function(t3) {
+            "use strict";
+            var r2, n, e2 = t3.MutationObserver || t3.WebKitMutationObserver;
+            if (e2) {
+              var i = 0, s = new e2(u2), a2 = t3.document.createTextNode("");
+              s.observe(a2, { characterData: true }), r2 = function() {
+                a2.data = i = ++i % 2;
+              };
+            } else if (t3.setImmediate || void 0 === t3.MessageChannel) r2 = "document" in t3 && "onreadystatechange" in t3.document.createElement("script") ? function() {
+              var e3 = t3.document.createElement("script");
+              e3.onreadystatechange = function() {
+                u2(), e3.onreadystatechange = null, e3.parentNode.removeChild(e3), e3 = null;
+              }, t3.document.documentElement.appendChild(e3);
+            } : function() {
+              setTimeout(u2, 0);
+            };
+            else {
+              var o = new t3.MessageChannel();
+              o.port1.onmessage = u2, r2 = function() {
+                o.port2.postMessage(0);
+              };
+            }
+            var h = [];
+            function u2() {
+              var e3, t4;
+              n = true;
+              for (var r3 = h.length; r3; ) {
+                for (t4 = h, h = [], e3 = -1; ++e3 < r3; ) t4[e3]();
+                r3 = h.length;
+              }
+              n = false;
+            }
+            l.exports = function(e3) {
+              1 !== h.push(e3) || n || r2();
+            };
+          }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
+        }, {}], 37: [function(e, t2, r2) {
+          "use strict";
+          var i = e("immediate");
+          function u2() {
+          }
+          var l = {}, s = ["REJECTED"], a2 = ["FULFILLED"], n = ["PENDING"];
+          function o(e2) {
+            if ("function" != typeof e2) throw new TypeError("resolver must be a function");
+            this.state = n, this.queue = [], this.outcome = void 0, e2 !== u2 && d3(this, e2);
+          }
+          function h(e2, t3, r3) {
+            this.promise = e2, "function" == typeof t3 && (this.onFulfilled = t3, this.callFulfilled = this.otherCallFulfilled), "function" == typeof r3 && (this.onRejected = r3, this.callRejected = this.otherCallRejected);
+          }
+          function f(t3, r3, n2) {
+            i(function() {
+              var e2;
+              try {
+                e2 = r3(n2);
+              } catch (e3) {
+                return l.reject(t3, e3);
+              }
+              e2 === t3 ? l.reject(t3, new TypeError("Cannot resolve promise with itself")) : l.resolve(t3, e2);
+            });
+          }
+          function c2(e2) {
+            var t3 = e2 && e2.then;
+            if (e2 && ("object" == typeof e2 || "function" == typeof e2) && "function" == typeof t3) return function() {
+              t3.apply(e2, arguments);
+            };
+          }
+          function d3(t3, e2) {
+            var r3 = false;
+            function n2(e3) {
+              r3 || (r3 = true, l.reject(t3, e3));
+            }
+            function i2(e3) {
+              r3 || (r3 = true, l.resolve(t3, e3));
+            }
+            var s2 = p(function() {
+              e2(i2, n2);
+            });
+            "error" === s2.status && n2(s2.value);
+          }
+          function p(e2, t3) {
+            var r3 = {};
+            try {
+              r3.value = e2(t3), r3.status = "success";
+            } catch (e3) {
+              r3.status = "error", r3.value = e3;
+            }
+            return r3;
+          }
+          (t2.exports = o).prototype.finally = function(t3) {
+            if ("function" != typeof t3) return this;
+            var r3 = this.constructor;
+            return this.then(function(e2) {
+              return r3.resolve(t3()).then(function() {
+                return e2;
+              });
+            }, function(e2) {
+              return r3.resolve(t3()).then(function() {
+                throw e2;
+              });
+            });
+          }, o.prototype.catch = function(e2) {
+            return this.then(null, e2);
+          }, o.prototype.then = function(e2, t3) {
+            if ("function" != typeof e2 && this.state === a2 || "function" != typeof t3 && this.state === s) return this;
+            var r3 = new this.constructor(u2);
+            this.state !== n ? f(r3, this.state === a2 ? e2 : t3, this.outcome) : this.queue.push(new h(r3, e2, t3));
+            return r3;
+          }, h.prototype.callFulfilled = function(e2) {
+            l.resolve(this.promise, e2);
+          }, h.prototype.otherCallFulfilled = function(e2) {
+            f(this.promise, this.onFulfilled, e2);
+          }, h.prototype.callRejected = function(e2) {
+            l.reject(this.promise, e2);
+          }, h.prototype.otherCallRejected = function(e2) {
+            f(this.promise, this.onRejected, e2);
+          }, l.resolve = function(e2, t3) {
+            var r3 = p(c2, t3);
+            if ("error" === r3.status) return l.reject(e2, r3.value);
+            var n2 = r3.value;
+            if (n2) d3(e2, n2);
+            else {
+              e2.state = a2, e2.outcome = t3;
+              for (var i2 = -1, s2 = e2.queue.length; ++i2 < s2; ) e2.queue[i2].callFulfilled(t3);
+            }
+            return e2;
+          }, l.reject = function(e2, t3) {
+            e2.state = s, e2.outcome = t3;
+            for (var r3 = -1, n2 = e2.queue.length; ++r3 < n2; ) e2.queue[r3].callRejected(t3);
+            return e2;
+          }, o.resolve = function(e2) {
+            if (e2 instanceof this) return e2;
+            return l.resolve(new this(u2), e2);
+          }, o.reject = function(e2) {
+            var t3 = new this(u2);
+            return l.reject(t3, e2);
+          }, o.all = function(e2) {
+            var r3 = this;
+            if ("[object Array]" !== Object.prototype.toString.call(e2)) return this.reject(new TypeError("must be an array"));
+            var n2 = e2.length, i2 = false;
+            if (!n2) return this.resolve([]);
+            var s2 = new Array(n2), a3 = 0, t3 = -1, o2 = new this(u2);
+            for (; ++t3 < n2; ) h2(e2[t3], t3);
+            return o2;
+            function h2(e3, t4) {
+              r3.resolve(e3).then(function(e4) {
+                s2[t4] = e4, ++a3 !== n2 || i2 || (i2 = true, l.resolve(o2, s2));
+              }, function(e4) {
+                i2 || (i2 = true, l.reject(o2, e4));
+              });
+            }
+          }, o.race = function(e2) {
+            var t3 = this;
+            if ("[object Array]" !== Object.prototype.toString.call(e2)) return this.reject(new TypeError("must be an array"));
+            var r3 = e2.length, n2 = false;
+            if (!r3) return this.resolve([]);
+            var i2 = -1, s2 = new this(u2);
+            for (; ++i2 < r3; ) a3 = e2[i2], t3.resolve(a3).then(function(e3) {
+              n2 || (n2 = true, l.resolve(s2, e3));
+            }, function(e3) {
+              n2 || (n2 = true, l.reject(s2, e3));
+            });
+            var a3;
+            return s2;
+          };
+        }, { immediate: 36 }], 38: [function(e, t2, r2) {
+          "use strict";
+          var n = {};
+          (0, e("./lib/utils/common").assign)(n, e("./lib/deflate"), e("./lib/inflate"), e("./lib/zlib/constants")), t2.exports = n;
+        }, { "./lib/deflate": 39, "./lib/inflate": 40, "./lib/utils/common": 41, "./lib/zlib/constants": 44 }], 39: [function(e, t2, r2) {
+          "use strict";
+          var a2 = e("./zlib/deflate"), o = e("./utils/common"), h = e("./utils/strings"), i = e("./zlib/messages"), s = e("./zlib/zstream"), u2 = Object.prototype.toString, l = 0, f = -1, c2 = 0, d3 = 8;
+          function p(e2) {
+            if (!(this instanceof p)) return new p(e2);
+            this.options = o.assign({ level: f, method: d3, chunkSize: 16384, windowBits: 15, memLevel: 8, strategy: c2, to: "" }, e2 || {});
+            var t3 = this.options;
+            t3.raw && 0 < t3.windowBits ? t3.windowBits = -t3.windowBits : t3.gzip && 0 < t3.windowBits && t3.windowBits < 16 && (t3.windowBits += 16), this.err = 0, this.msg = "", this.ended = false, this.chunks = [], this.strm = new s(), this.strm.avail_out = 0;
+            var r3 = a2.deflateInit2(this.strm, t3.level, t3.method, t3.windowBits, t3.memLevel, t3.strategy);
+            if (r3 !== l) throw new Error(i[r3]);
+            if (t3.header && a2.deflateSetHeader(this.strm, t3.header), t3.dictionary) {
+              var n2;
+              if (n2 = "string" == typeof t3.dictionary ? h.string2buf(t3.dictionary) : "[object ArrayBuffer]" === u2.call(t3.dictionary) ? new Uint8Array(t3.dictionary) : t3.dictionary, (r3 = a2.deflateSetDictionary(this.strm, n2)) !== l) throw new Error(i[r3]);
+              this._dict_set = true;
+            }
+          }
+          function n(e2, t3) {
+            var r3 = new p(t3);
+            if (r3.push(e2, true), r3.err) throw r3.msg || i[r3.err];
+            return r3.result;
+          }
+          p.prototype.push = function(e2, t3) {
+            var r3, n2, i2 = this.strm, s2 = this.options.chunkSize;
+            if (this.ended) return false;
+            n2 = t3 === ~~t3 ? t3 : true === t3 ? 4 : 0, "string" == typeof e2 ? i2.input = h.string2buf(e2) : "[object ArrayBuffer]" === u2.call(e2) ? i2.input = new Uint8Array(e2) : i2.input = e2, i2.next_in = 0, i2.avail_in = i2.input.length;
+            do {
+              if (0 === i2.avail_out && (i2.output = new o.Buf8(s2), i2.next_out = 0, i2.avail_out = s2), 1 !== (r3 = a2.deflate(i2, n2)) && r3 !== l) return this.onEnd(r3), !(this.ended = true);
+              0 !== i2.avail_out && (0 !== i2.avail_in || 4 !== n2 && 2 !== n2) || ("string" === this.options.to ? this.onData(h.buf2binstring(o.shrinkBuf(i2.output, i2.next_out))) : this.onData(o.shrinkBuf(i2.output, i2.next_out)));
+            } while ((0 < i2.avail_in || 0 === i2.avail_out) && 1 !== r3);
+            return 4 === n2 ? (r3 = a2.deflateEnd(this.strm), this.onEnd(r3), this.ended = true, r3 === l) : 2 !== n2 || (this.onEnd(l), !(i2.avail_out = 0));
+          }, p.prototype.onData = function(e2) {
+            this.chunks.push(e2);
+          }, p.prototype.onEnd = function(e2) {
+            e2 === l && ("string" === this.options.to ? this.result = this.chunks.join("") : this.result = o.flattenChunks(this.chunks)), this.chunks = [], this.err = e2, this.msg = this.strm.msg;
+          }, r2.Deflate = p, r2.deflate = n, r2.deflateRaw = function(e2, t3) {
+            return (t3 = t3 || {}).raw = true, n(e2, t3);
+          }, r2.gzip = function(e2, t3) {
+            return (t3 = t3 || {}).gzip = true, n(e2, t3);
+          };
+        }, { "./utils/common": 41, "./utils/strings": 42, "./zlib/deflate": 46, "./zlib/messages": 51, "./zlib/zstream": 53 }], 40: [function(e, t2, r2) {
+          "use strict";
+          var c2 = e("./zlib/inflate"), d3 = e("./utils/common"), p = e("./utils/strings"), m = e("./zlib/constants"), n = e("./zlib/messages"), i = e("./zlib/zstream"), s = e("./zlib/gzheader"), _ = Object.prototype.toString;
+          function a2(e2) {
+            if (!(this instanceof a2)) return new a2(e2);
+            this.options = d3.assign({ chunkSize: 16384, windowBits: 0, to: "" }, e2 || {});
+            var t3 = this.options;
+            t3.raw && 0 <= t3.windowBits && t3.windowBits < 16 && (t3.windowBits = -t3.windowBits, 0 === t3.windowBits && (t3.windowBits = -15)), !(0 <= t3.windowBits && t3.windowBits < 16) || e2 && e2.windowBits || (t3.windowBits += 32), 15 < t3.windowBits && t3.windowBits < 48 && 0 == (15 & t3.windowBits) && (t3.windowBits |= 15), this.err = 0, this.msg = "", this.ended = false, this.chunks = [], this.strm = new i(), this.strm.avail_out = 0;
+            var r3 = c2.inflateInit2(this.strm, t3.windowBits);
+            if (r3 !== m.Z_OK) throw new Error(n[r3]);
+            this.header = new s(), c2.inflateGetHeader(this.strm, this.header);
+          }
+          function o(e2, t3) {
+            var r3 = new a2(t3);
+            if (r3.push(e2, true), r3.err) throw r3.msg || n[r3.err];
+            return r3.result;
+          }
+          a2.prototype.push = function(e2, t3) {
+            var r3, n2, i2, s2, a3, o2, h = this.strm, u2 = this.options.chunkSize, l = this.options.dictionary, f = false;
+            if (this.ended) return false;
+            n2 = t3 === ~~t3 ? t3 : true === t3 ? m.Z_FINISH : m.Z_NO_FLUSH, "string" == typeof e2 ? h.input = p.binstring2buf(e2) : "[object ArrayBuffer]" === _.call(e2) ? h.input = new Uint8Array(e2) : h.input = e2, h.next_in = 0, h.avail_in = h.input.length;
+            do {
+              if (0 === h.avail_out && (h.output = new d3.Buf8(u2), h.next_out = 0, h.avail_out = u2), (r3 = c2.inflate(h, m.Z_NO_FLUSH)) === m.Z_NEED_DICT && l && (o2 = "string" == typeof l ? p.string2buf(l) : "[object ArrayBuffer]" === _.call(l) ? new Uint8Array(l) : l, r3 = c2.inflateSetDictionary(this.strm, o2)), r3 === m.Z_BUF_ERROR && true === f && (r3 = m.Z_OK, f = false), r3 !== m.Z_STREAM_END && r3 !== m.Z_OK) return this.onEnd(r3), !(this.ended = true);
+              h.next_out && (0 !== h.avail_out && r3 !== m.Z_STREAM_END && (0 !== h.avail_in || n2 !== m.Z_FINISH && n2 !== m.Z_SYNC_FLUSH) || ("string" === this.options.to ? (i2 = p.utf8border(h.output, h.next_out), s2 = h.next_out - i2, a3 = p.buf2string(h.output, i2), h.next_out = s2, h.avail_out = u2 - s2, s2 && d3.arraySet(h.output, h.output, i2, s2, 0), this.onData(a3)) : this.onData(d3.shrinkBuf(h.output, h.next_out)))), 0 === h.avail_in && 0 === h.avail_out && (f = true);
+            } while ((0 < h.avail_in || 0 === h.avail_out) && r3 !== m.Z_STREAM_END);
+            return r3 === m.Z_STREAM_END && (n2 = m.Z_FINISH), n2 === m.Z_FINISH ? (r3 = c2.inflateEnd(this.strm), this.onEnd(r3), this.ended = true, r3 === m.Z_OK) : n2 !== m.Z_SYNC_FLUSH || (this.onEnd(m.Z_OK), !(h.avail_out = 0));
+          }, a2.prototype.onData = function(e2) {
+            this.chunks.push(e2);
+          }, a2.prototype.onEnd = function(e2) {
+            e2 === m.Z_OK && ("string" === this.options.to ? this.result = this.chunks.join("") : this.result = d3.flattenChunks(this.chunks)), this.chunks = [], this.err = e2, this.msg = this.strm.msg;
+          }, r2.Inflate = a2, r2.inflate = o, r2.inflateRaw = function(e2, t3) {
+            return (t3 = t3 || {}).raw = true, o(e2, t3);
+          }, r2.ungzip = o;
+        }, { "./utils/common": 41, "./utils/strings": 42, "./zlib/constants": 44, "./zlib/gzheader": 47, "./zlib/inflate": 49, "./zlib/messages": 51, "./zlib/zstream": 53 }], 41: [function(e, t2, r2) {
+          "use strict";
+          var n = "undefined" != typeof Uint8Array && "undefined" != typeof Uint16Array && "undefined" != typeof Int32Array;
+          r2.assign = function(e2) {
+            for (var t3 = Array.prototype.slice.call(arguments, 1); t3.length; ) {
+              var r3 = t3.shift();
+              if (r3) {
+                if ("object" != typeof r3) throw new TypeError(r3 + "must be non-object");
+                for (var n2 in r3) r3.hasOwnProperty(n2) && (e2[n2] = r3[n2]);
+              }
+            }
+            return e2;
+          }, r2.shrinkBuf = function(e2, t3) {
+            return e2.length === t3 ? e2 : e2.subarray ? e2.subarray(0, t3) : (e2.length = t3, e2);
+          };
+          var i = { arraySet: function(e2, t3, r3, n2, i2) {
+            if (t3.subarray && e2.subarray) e2.set(t3.subarray(r3, r3 + n2), i2);
+            else for (var s2 = 0; s2 < n2; s2++) e2[i2 + s2] = t3[r3 + s2];
+          }, flattenChunks: function(e2) {
+            var t3, r3, n2, i2, s2, a2;
+            for (t3 = n2 = 0, r3 = e2.length; t3 < r3; t3++) n2 += e2[t3].length;
+            for (a2 = new Uint8Array(n2), t3 = i2 = 0, r3 = e2.length; t3 < r3; t3++) s2 = e2[t3], a2.set(s2, i2), i2 += s2.length;
+            return a2;
+          } }, s = { arraySet: function(e2, t3, r3, n2, i2) {
+            for (var s2 = 0; s2 < n2; s2++) e2[i2 + s2] = t3[r3 + s2];
+          }, flattenChunks: function(e2) {
+            return [].concat.apply([], e2);
+          } };
+          r2.setTyped = function(e2) {
+            e2 ? (r2.Buf8 = Uint8Array, r2.Buf16 = Uint16Array, r2.Buf32 = Int32Array, r2.assign(r2, i)) : (r2.Buf8 = Array, r2.Buf16 = Array, r2.Buf32 = Array, r2.assign(r2, s));
+          }, r2.setTyped(n);
+        }, {}], 42: [function(e, t2, r2) {
+          "use strict";
+          var h = e("./common"), i = true, s = true;
+          try {
+            String.fromCharCode.apply(null, [0]);
+          } catch (e2) {
+            i = false;
+          }
+          try {
+            String.fromCharCode.apply(null, new Uint8Array(1));
+          } catch (e2) {
+            s = false;
+          }
+          for (var u2 = new h.Buf8(256), n = 0; n < 256; n++) u2[n] = 252 <= n ? 6 : 248 <= n ? 5 : 240 <= n ? 4 : 224 <= n ? 3 : 192 <= n ? 2 : 1;
+          function l(e2, t3) {
+            if (t3 < 65537 && (e2.subarray && s || !e2.subarray && i)) return String.fromCharCode.apply(null, h.shrinkBuf(e2, t3));
+            for (var r3 = "", n2 = 0; n2 < t3; n2++) r3 += String.fromCharCode(e2[n2]);
+            return r3;
+          }
+          u2[254] = u2[254] = 1, r2.string2buf = function(e2) {
+            var t3, r3, n2, i2, s2, a2 = e2.length, o = 0;
+            for (i2 = 0; i2 < a2; i2++) 55296 == (64512 & (r3 = e2.charCodeAt(i2))) && i2 + 1 < a2 && 56320 == (64512 & (n2 = e2.charCodeAt(i2 + 1))) && (r3 = 65536 + (r3 - 55296 << 10) + (n2 - 56320), i2++), o += r3 < 128 ? 1 : r3 < 2048 ? 2 : r3 < 65536 ? 3 : 4;
+            for (t3 = new h.Buf8(o), i2 = s2 = 0; s2 < o; i2++) 55296 == (64512 & (r3 = e2.charCodeAt(i2))) && i2 + 1 < a2 && 56320 == (64512 & (n2 = e2.charCodeAt(i2 + 1))) && (r3 = 65536 + (r3 - 55296 << 10) + (n2 - 56320), i2++), r3 < 128 ? t3[s2++] = r3 : (r3 < 2048 ? t3[s2++] = 192 | r3 >>> 6 : (r3 < 65536 ? t3[s2++] = 224 | r3 >>> 12 : (t3[s2++] = 240 | r3 >>> 18, t3[s2++] = 128 | r3 >>> 12 & 63), t3[s2++] = 128 | r3 >>> 6 & 63), t3[s2++] = 128 | 63 & r3);
+            return t3;
+          }, r2.buf2binstring = function(e2) {
+            return l(e2, e2.length);
+          }, r2.binstring2buf = function(e2) {
+            for (var t3 = new h.Buf8(e2.length), r3 = 0, n2 = t3.length; r3 < n2; r3++) t3[r3] = e2.charCodeAt(r3);
+            return t3;
+          }, r2.buf2string = function(e2, t3) {
+            var r3, n2, i2, s2, a2 = t3 || e2.length, o = new Array(2 * a2);
+            for (r3 = n2 = 0; r3 < a2; ) if ((i2 = e2[r3++]) < 128) o[n2++] = i2;
+            else if (4 < (s2 = u2[i2])) o[n2++] = 65533, r3 += s2 - 1;
+            else {
+              for (i2 &= 2 === s2 ? 31 : 3 === s2 ? 15 : 7; 1 < s2 && r3 < a2; ) i2 = i2 << 6 | 63 & e2[r3++], s2--;
+              1 < s2 ? o[n2++] = 65533 : i2 < 65536 ? o[n2++] = i2 : (i2 -= 65536, o[n2++] = 55296 | i2 >> 10 & 1023, o[n2++] = 56320 | 1023 & i2);
+            }
+            return l(o, n2);
+          }, r2.utf8border = function(e2, t3) {
+            var r3;
+            for ((t3 = t3 || e2.length) > e2.length && (t3 = e2.length), r3 = t3 - 1; 0 <= r3 && 128 == (192 & e2[r3]); ) r3--;
+            return r3 < 0 ? t3 : 0 === r3 ? t3 : r3 + u2[e2[r3]] > t3 ? r3 : t3;
+          };
+        }, { "./common": 41 }], 43: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = function(e2, t3, r3, n) {
+            for (var i = 65535 & e2 | 0, s = e2 >>> 16 & 65535 | 0, a2 = 0; 0 !== r3; ) {
+              for (r3 -= a2 = 2e3 < r3 ? 2e3 : r3; s = s + (i = i + t3[n++] | 0) | 0, --a2; ) ;
+              i %= 65521, s %= 65521;
+            }
+            return i | s << 16 | 0;
+          };
+        }, {}], 44: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = { Z_NO_FLUSH: 0, Z_PARTIAL_FLUSH: 1, Z_SYNC_FLUSH: 2, Z_FULL_FLUSH: 3, Z_FINISH: 4, Z_BLOCK: 5, Z_TREES: 6, Z_OK: 0, Z_STREAM_END: 1, Z_NEED_DICT: 2, Z_ERRNO: -1, Z_STREAM_ERROR: -2, Z_DATA_ERROR: -3, Z_BUF_ERROR: -5, Z_NO_COMPRESSION: 0, Z_BEST_SPEED: 1, Z_BEST_COMPRESSION: 9, Z_DEFAULT_COMPRESSION: -1, Z_FILTERED: 1, Z_HUFFMAN_ONLY: 2, Z_RLE: 3, Z_FIXED: 4, Z_DEFAULT_STRATEGY: 0, Z_BINARY: 0, Z_TEXT: 1, Z_UNKNOWN: 2, Z_DEFLATED: 8 };
+        }, {}], 45: [function(e, t2, r2) {
+          "use strict";
+          var o = (function() {
+            for (var e2, t3 = [], r3 = 0; r3 < 256; r3++) {
+              e2 = r3;
+              for (var n = 0; n < 8; n++) e2 = 1 & e2 ? 3988292384 ^ e2 >>> 1 : e2 >>> 1;
+              t3[r3] = e2;
+            }
+            return t3;
+          })();
+          t2.exports = function(e2, t3, r3, n) {
+            var i = o, s = n + r3;
+            e2 ^= -1;
+            for (var a2 = n; a2 < s; a2++) e2 = e2 >>> 8 ^ i[255 & (e2 ^ t3[a2])];
+            return -1 ^ e2;
+          };
+        }, {}], 46: [function(e, t2, r2) {
+          "use strict";
+          var h, c2 = e("../utils/common"), u2 = e("./trees"), d3 = e("./adler32"), p = e("./crc32"), n = e("./messages"), l = 0, f = 4, m = 0, _ = -2, g = -1, b = 4, i = 2, v = 8, y = 9, s = 286, a2 = 30, o = 19, w = 2 * s + 1, k = 15, x = 3, S3 = 258, z2 = S3 + x + 1, C3 = 42, E2 = 113, A3 = 1, I = 2, O = 3, B2 = 4;
+          function R2(e2, t3) {
+            return e2.msg = n[t3], t3;
+          }
+          function T2(e2) {
+            return (e2 << 1) - (4 < e2 ? 9 : 0);
+          }
+          function D2(e2) {
+            for (var t3 = e2.length; 0 <= --t3; ) e2[t3] = 0;
+          }
+          function F(e2) {
+            var t3 = e2.state, r3 = t3.pending;
+            r3 > e2.avail_out && (r3 = e2.avail_out), 0 !== r3 && (c2.arraySet(e2.output, t3.pending_buf, t3.pending_out, r3, e2.next_out), e2.next_out += r3, t3.pending_out += r3, e2.total_out += r3, e2.avail_out -= r3, t3.pending -= r3, 0 === t3.pending && (t3.pending_out = 0));
+          }
+          function N(e2, t3) {
+            u2._tr_flush_block(e2, 0 <= e2.block_start ? e2.block_start : -1, e2.strstart - e2.block_start, t3), e2.block_start = e2.strstart, F(e2.strm);
+          }
+          function U2(e2, t3) {
+            e2.pending_buf[e2.pending++] = t3;
+          }
+          function P(e2, t3) {
+            e2.pending_buf[e2.pending++] = t3 >>> 8 & 255, e2.pending_buf[e2.pending++] = 255 & t3;
+          }
+          function L2(e2, t3) {
+            var r3, n2, i2 = e2.max_chain_length, s2 = e2.strstart, a3 = e2.prev_length, o2 = e2.nice_match, h2 = e2.strstart > e2.w_size - z2 ? e2.strstart - (e2.w_size - z2) : 0, u3 = e2.window, l2 = e2.w_mask, f2 = e2.prev, c3 = e2.strstart + S3, d4 = u3[s2 + a3 - 1], p2 = u3[s2 + a3];
+            e2.prev_length >= e2.good_match && (i2 >>= 2), o2 > e2.lookahead && (o2 = e2.lookahead);
+            do {
+              if (u3[(r3 = t3) + a3] === p2 && u3[r3 + a3 - 1] === d4 && u3[r3] === u3[s2] && u3[++r3] === u3[s2 + 1]) {
+                s2 += 2, r3++;
+                do {
+                } while (u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && u3[++s2] === u3[++r3] && s2 < c3);
+                if (n2 = S3 - (c3 - s2), s2 = c3 - S3, a3 < n2) {
+                  if (e2.match_start = t3, o2 <= (a3 = n2)) break;
+                  d4 = u3[s2 + a3 - 1], p2 = u3[s2 + a3];
+                }
+              }
+            } while ((t3 = f2[t3 & l2]) > h2 && 0 != --i2);
+            return a3 <= e2.lookahead ? a3 : e2.lookahead;
+          }
+          function j(e2) {
+            var t3, r3, n2, i2, s2, a3, o2, h2, u3, l2, f2 = e2.w_size;
+            do {
+              if (i2 = e2.window_size - e2.lookahead - e2.strstart, e2.strstart >= f2 + (f2 - z2)) {
+                for (c2.arraySet(e2.window, e2.window, f2, f2, 0), e2.match_start -= f2, e2.strstart -= f2, e2.block_start -= f2, t3 = r3 = e2.hash_size; n2 = e2.head[--t3], e2.head[t3] = f2 <= n2 ? n2 - f2 : 0, --r3; ) ;
+                for (t3 = r3 = f2; n2 = e2.prev[--t3], e2.prev[t3] = f2 <= n2 ? n2 - f2 : 0, --r3; ) ;
+                i2 += f2;
+              }
+              if (0 === e2.strm.avail_in) break;
+              if (a3 = e2.strm, o2 = e2.window, h2 = e2.strstart + e2.lookahead, u3 = i2, l2 = void 0, l2 = a3.avail_in, u3 < l2 && (l2 = u3), r3 = 0 === l2 ? 0 : (a3.avail_in -= l2, c2.arraySet(o2, a3.input, a3.next_in, l2, h2), 1 === a3.state.wrap ? a3.adler = d3(a3.adler, o2, l2, h2) : 2 === a3.state.wrap && (a3.adler = p(a3.adler, o2, l2, h2)), a3.next_in += l2, a3.total_in += l2, l2), e2.lookahead += r3, e2.lookahead + e2.insert >= x) for (s2 = e2.strstart - e2.insert, e2.ins_h = e2.window[s2], e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[s2 + 1]) & e2.hash_mask; e2.insert && (e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[s2 + x - 1]) & e2.hash_mask, e2.prev[s2 & e2.w_mask] = e2.head[e2.ins_h], e2.head[e2.ins_h] = s2, s2++, e2.insert--, !(e2.lookahead + e2.insert < x)); ) ;
+            } while (e2.lookahead < z2 && 0 !== e2.strm.avail_in);
+          }
+          function Z2(e2, t3) {
+            for (var r3, n2; ; ) {
+              if (e2.lookahead < z2) {
+                if (j(e2), e2.lookahead < z2 && t3 === l) return A3;
+                if (0 === e2.lookahead) break;
+              }
+              if (r3 = 0, e2.lookahead >= x && (e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[e2.strstart + x - 1]) & e2.hash_mask, r3 = e2.prev[e2.strstart & e2.w_mask] = e2.head[e2.ins_h], e2.head[e2.ins_h] = e2.strstart), 0 !== r3 && e2.strstart - r3 <= e2.w_size - z2 && (e2.match_length = L2(e2, r3)), e2.match_length >= x) if (n2 = u2._tr_tally(e2, e2.strstart - e2.match_start, e2.match_length - x), e2.lookahead -= e2.match_length, e2.match_length <= e2.max_lazy_match && e2.lookahead >= x) {
+                for (e2.match_length--; e2.strstart++, e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[e2.strstart + x - 1]) & e2.hash_mask, r3 = e2.prev[e2.strstart & e2.w_mask] = e2.head[e2.ins_h], e2.head[e2.ins_h] = e2.strstart, 0 != --e2.match_length; ) ;
+                e2.strstart++;
+              } else e2.strstart += e2.match_length, e2.match_length = 0, e2.ins_h = e2.window[e2.strstart], e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[e2.strstart + 1]) & e2.hash_mask;
+              else n2 = u2._tr_tally(e2, 0, e2.window[e2.strstart]), e2.lookahead--, e2.strstart++;
+              if (n2 && (N(e2, false), 0 === e2.strm.avail_out)) return A3;
+            }
+            return e2.insert = e2.strstart < x - 1 ? e2.strstart : x - 1, t3 === f ? (N(e2, true), 0 === e2.strm.avail_out ? O : B2) : e2.last_lit && (N(e2, false), 0 === e2.strm.avail_out) ? A3 : I;
+          }
+          function W(e2, t3) {
+            for (var r3, n2, i2; ; ) {
+              if (e2.lookahead < z2) {
+                if (j(e2), e2.lookahead < z2 && t3 === l) return A3;
+                if (0 === e2.lookahead) break;
+              }
+              if (r3 = 0, e2.lookahead >= x && (e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[e2.strstart + x - 1]) & e2.hash_mask, r3 = e2.prev[e2.strstart & e2.w_mask] = e2.head[e2.ins_h], e2.head[e2.ins_h] = e2.strstart), e2.prev_length = e2.match_length, e2.prev_match = e2.match_start, e2.match_length = x - 1, 0 !== r3 && e2.prev_length < e2.max_lazy_match && e2.strstart - r3 <= e2.w_size - z2 && (e2.match_length = L2(e2, r3), e2.match_length <= 5 && (1 === e2.strategy || e2.match_length === x && 4096 < e2.strstart - e2.match_start) && (e2.match_length = x - 1)), e2.prev_length >= x && e2.match_length <= e2.prev_length) {
+                for (i2 = e2.strstart + e2.lookahead - x, n2 = u2._tr_tally(e2, e2.strstart - 1 - e2.prev_match, e2.prev_length - x), e2.lookahead -= e2.prev_length - 1, e2.prev_length -= 2; ++e2.strstart <= i2 && (e2.ins_h = (e2.ins_h << e2.hash_shift ^ e2.window[e2.strstart + x - 1]) & e2.hash_mask, r3 = e2.prev[e2.strstart & e2.w_mask] = e2.head[e2.ins_h], e2.head[e2.ins_h] = e2.strstart), 0 != --e2.prev_length; ) ;
+                if (e2.match_available = 0, e2.match_length = x - 1, e2.strstart++, n2 && (N(e2, false), 0 === e2.strm.avail_out)) return A3;
+              } else if (e2.match_available) {
+                if ((n2 = u2._tr_tally(e2, 0, e2.window[e2.strstart - 1])) && N(e2, false), e2.strstart++, e2.lookahead--, 0 === e2.strm.avail_out) return A3;
+              } else e2.match_available = 1, e2.strstart++, e2.lookahead--;
+            }
+            return e2.match_available && (n2 = u2._tr_tally(e2, 0, e2.window[e2.strstart - 1]), e2.match_available = 0), e2.insert = e2.strstart < x - 1 ? e2.strstart : x - 1, t3 === f ? (N(e2, true), 0 === e2.strm.avail_out ? O : B2) : e2.last_lit && (N(e2, false), 0 === e2.strm.avail_out) ? A3 : I;
+          }
+          function M(e2, t3, r3, n2, i2) {
+            this.good_length = e2, this.max_lazy = t3, this.nice_length = r3, this.max_chain = n2, this.func = i2;
+          }
+          function H() {
+            this.strm = null, this.status = 0, this.pending_buf = null, this.pending_buf_size = 0, this.pending_out = 0, this.pending = 0, this.wrap = 0, this.gzhead = null, this.gzindex = 0, this.method = v, this.last_flush = -1, this.w_size = 0, this.w_bits = 0, this.w_mask = 0, this.window = null, this.window_size = 0, this.prev = null, this.head = null, this.ins_h = 0, this.hash_size = 0, this.hash_bits = 0, this.hash_mask = 0, this.hash_shift = 0, this.block_start = 0, this.match_length = 0, this.prev_match = 0, this.match_available = 0, this.strstart = 0, this.match_start = 0, this.lookahead = 0, this.prev_length = 0, this.max_chain_length = 0, this.max_lazy_match = 0, this.level = 0, this.strategy = 0, this.good_match = 0, this.nice_match = 0, this.dyn_ltree = new c2.Buf16(2 * w), this.dyn_dtree = new c2.Buf16(2 * (2 * a2 + 1)), this.bl_tree = new c2.Buf16(2 * (2 * o + 1)), D2(this.dyn_ltree), D2(this.dyn_dtree), D2(this.bl_tree), this.l_desc = null, this.d_desc = null, this.bl_desc = null, this.bl_count = new c2.Buf16(k + 1), this.heap = new c2.Buf16(2 * s + 1), D2(this.heap), this.heap_len = 0, this.heap_max = 0, this.depth = new c2.Buf16(2 * s + 1), D2(this.depth), this.l_buf = 0, this.lit_bufsize = 0, this.last_lit = 0, this.d_buf = 0, this.opt_len = 0, this.static_len = 0, this.matches = 0, this.insert = 0, this.bi_buf = 0, this.bi_valid = 0;
+          }
+          function G(e2) {
+            var t3;
+            return e2 && e2.state ? (e2.total_in = e2.total_out = 0, e2.data_type = i, (t3 = e2.state).pending = 0, t3.pending_out = 0, t3.wrap < 0 && (t3.wrap = -t3.wrap), t3.status = t3.wrap ? C3 : E2, e2.adler = 2 === t3.wrap ? 0 : 1, t3.last_flush = l, u2._tr_init(t3), m) : R2(e2, _);
+          }
+          function K(e2) {
+            var t3 = G(e2);
+            return t3 === m && (function(e3) {
+              e3.window_size = 2 * e3.w_size, D2(e3.head), e3.max_lazy_match = h[e3.level].max_lazy, e3.good_match = h[e3.level].good_length, e3.nice_match = h[e3.level].nice_length, e3.max_chain_length = h[e3.level].max_chain, e3.strstart = 0, e3.block_start = 0, e3.lookahead = 0, e3.insert = 0, e3.match_length = e3.prev_length = x - 1, e3.match_available = 0, e3.ins_h = 0;
+            })(e2.state), t3;
+          }
+          function Y(e2, t3, r3, n2, i2, s2) {
+            if (!e2) return _;
+            var a3 = 1;
+            if (t3 === g && (t3 = 6), n2 < 0 ? (a3 = 0, n2 = -n2) : 15 < n2 && (a3 = 2, n2 -= 16), i2 < 1 || y < i2 || r3 !== v || n2 < 8 || 15 < n2 || t3 < 0 || 9 < t3 || s2 < 0 || b < s2) return R2(e2, _);
+            8 === n2 && (n2 = 9);
+            var o2 = new H();
+            return (e2.state = o2).strm = e2, o2.wrap = a3, o2.gzhead = null, o2.w_bits = n2, o2.w_size = 1 << o2.w_bits, o2.w_mask = o2.w_size - 1, o2.hash_bits = i2 + 7, o2.hash_size = 1 << o2.hash_bits, o2.hash_mask = o2.hash_size - 1, o2.hash_shift = ~~((o2.hash_bits + x - 1) / x), o2.window = new c2.Buf8(2 * o2.w_size), o2.head = new c2.Buf16(o2.hash_size), o2.prev = new c2.Buf16(o2.w_size), o2.lit_bufsize = 1 << i2 + 6, o2.pending_buf_size = 4 * o2.lit_bufsize, o2.pending_buf = new c2.Buf8(o2.pending_buf_size), o2.d_buf = 1 * o2.lit_bufsize, o2.l_buf = 3 * o2.lit_bufsize, o2.level = t3, o2.strategy = s2, o2.method = r3, K(e2);
+          }
+          h = [new M(0, 0, 0, 0, function(e2, t3) {
+            var r3 = 65535;
+            for (r3 > e2.pending_buf_size - 5 && (r3 = e2.pending_buf_size - 5); ; ) {
+              if (e2.lookahead <= 1) {
+                if (j(e2), 0 === e2.lookahead && t3 === l) return A3;
+                if (0 === e2.lookahead) break;
+              }
+              e2.strstart += e2.lookahead, e2.lookahead = 0;
+              var n2 = e2.block_start + r3;
+              if ((0 === e2.strstart || e2.strstart >= n2) && (e2.lookahead = e2.strstart - n2, e2.strstart = n2, N(e2, false), 0 === e2.strm.avail_out)) return A3;
+              if (e2.strstart - e2.block_start >= e2.w_size - z2 && (N(e2, false), 0 === e2.strm.avail_out)) return A3;
+            }
+            return e2.insert = 0, t3 === f ? (N(e2, true), 0 === e2.strm.avail_out ? O : B2) : (e2.strstart > e2.block_start && (N(e2, false), e2.strm.avail_out), A3);
+          }), new M(4, 4, 8, 4, Z2), new M(4, 5, 16, 8, Z2), new M(4, 6, 32, 32, Z2), new M(4, 4, 16, 16, W), new M(8, 16, 32, 32, W), new M(8, 16, 128, 128, W), new M(8, 32, 128, 256, W), new M(32, 128, 258, 1024, W), new M(32, 258, 258, 4096, W)], r2.deflateInit = function(e2, t3) {
+            return Y(e2, t3, v, 15, 8, 0);
+          }, r2.deflateInit2 = Y, r2.deflateReset = K, r2.deflateResetKeep = G, r2.deflateSetHeader = function(e2, t3) {
+            return e2 && e2.state ? 2 !== e2.state.wrap ? _ : (e2.state.gzhead = t3, m) : _;
+          }, r2.deflate = function(e2, t3) {
+            var r3, n2, i2, s2;
+            if (!e2 || !e2.state || 5 < t3 || t3 < 0) return e2 ? R2(e2, _) : _;
+            if (n2 = e2.state, !e2.output || !e2.input && 0 !== e2.avail_in || 666 === n2.status && t3 !== f) return R2(e2, 0 === e2.avail_out ? -5 : _);
+            if (n2.strm = e2, r3 = n2.last_flush, n2.last_flush = t3, n2.status === C3) if (2 === n2.wrap) e2.adler = 0, U2(n2, 31), U2(n2, 139), U2(n2, 8), n2.gzhead ? (U2(n2, (n2.gzhead.text ? 1 : 0) + (n2.gzhead.hcrc ? 2 : 0) + (n2.gzhead.extra ? 4 : 0) + (n2.gzhead.name ? 8 : 0) + (n2.gzhead.comment ? 16 : 0)), U2(n2, 255 & n2.gzhead.time), U2(n2, n2.gzhead.time >> 8 & 255), U2(n2, n2.gzhead.time >> 16 & 255), U2(n2, n2.gzhead.time >> 24 & 255), U2(n2, 9 === n2.level ? 2 : 2 <= n2.strategy || n2.level < 2 ? 4 : 0), U2(n2, 255 & n2.gzhead.os), n2.gzhead.extra && n2.gzhead.extra.length && (U2(n2, 255 & n2.gzhead.extra.length), U2(n2, n2.gzhead.extra.length >> 8 & 255)), n2.gzhead.hcrc && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending, 0)), n2.gzindex = 0, n2.status = 69) : (U2(n2, 0), U2(n2, 0), U2(n2, 0), U2(n2, 0), U2(n2, 0), U2(n2, 9 === n2.level ? 2 : 2 <= n2.strategy || n2.level < 2 ? 4 : 0), U2(n2, 3), n2.status = E2);
+            else {
+              var a3 = v + (n2.w_bits - 8 << 4) << 8;
+              a3 |= (2 <= n2.strategy || n2.level < 2 ? 0 : n2.level < 6 ? 1 : 6 === n2.level ? 2 : 3) << 6, 0 !== n2.strstart && (a3 |= 32), a3 += 31 - a3 % 31, n2.status = E2, P(n2, a3), 0 !== n2.strstart && (P(n2, e2.adler >>> 16), P(n2, 65535 & e2.adler)), e2.adler = 1;
+            }
+            if (69 === n2.status) if (n2.gzhead.extra) {
+              for (i2 = n2.pending; n2.gzindex < (65535 & n2.gzhead.extra.length) && (n2.pending !== n2.pending_buf_size || (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F(e2), i2 = n2.pending, n2.pending !== n2.pending_buf_size)); ) U2(n2, 255 & n2.gzhead.extra[n2.gzindex]), n2.gzindex++;
+              n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending - i2, i2)), n2.gzindex === n2.gzhead.extra.length && (n2.gzindex = 0, n2.status = 73);
+            } else n2.status = 73;
+            if (73 === n2.status) if (n2.gzhead.name) {
+              i2 = n2.pending;
+              do {
+                if (n2.pending === n2.pending_buf_size && (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F(e2), i2 = n2.pending, n2.pending === n2.pending_buf_size)) {
+                  s2 = 1;
+                  break;
+                }
+                s2 = n2.gzindex < n2.gzhead.name.length ? 255 & n2.gzhead.name.charCodeAt(n2.gzindex++) : 0, U2(n2, s2);
+              } while (0 !== s2);
+              n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending - i2, i2)), 0 === s2 && (n2.gzindex = 0, n2.status = 91);
+            } else n2.status = 91;
+            if (91 === n2.status) if (n2.gzhead.comment) {
+              i2 = n2.pending;
+              do {
+                if (n2.pending === n2.pending_buf_size && (n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending - i2, i2)), F(e2), i2 = n2.pending, n2.pending === n2.pending_buf_size)) {
+                  s2 = 1;
+                  break;
+                }
+                s2 = n2.gzindex < n2.gzhead.comment.length ? 255 & n2.gzhead.comment.charCodeAt(n2.gzindex++) : 0, U2(n2, s2);
+              } while (0 !== s2);
+              n2.gzhead.hcrc && n2.pending > i2 && (e2.adler = p(e2.adler, n2.pending_buf, n2.pending - i2, i2)), 0 === s2 && (n2.status = 103);
+            } else n2.status = 103;
+            if (103 === n2.status && (n2.gzhead.hcrc ? (n2.pending + 2 > n2.pending_buf_size && F(e2), n2.pending + 2 <= n2.pending_buf_size && (U2(n2, 255 & e2.adler), U2(n2, e2.adler >> 8 & 255), e2.adler = 0, n2.status = E2)) : n2.status = E2), 0 !== n2.pending) {
+              if (F(e2), 0 === e2.avail_out) return n2.last_flush = -1, m;
+            } else if (0 === e2.avail_in && T2(t3) <= T2(r3) && t3 !== f) return R2(e2, -5);
+            if (666 === n2.status && 0 !== e2.avail_in) return R2(e2, -5);
+            if (0 !== e2.avail_in || 0 !== n2.lookahead || t3 !== l && 666 !== n2.status) {
+              var o2 = 2 === n2.strategy ? (function(e3, t4) {
+                for (var r4; ; ) {
+                  if (0 === e3.lookahead && (j(e3), 0 === e3.lookahead)) {
+                    if (t4 === l) return A3;
+                    break;
+                  }
+                  if (e3.match_length = 0, r4 = u2._tr_tally(e3, 0, e3.window[e3.strstart]), e3.lookahead--, e3.strstart++, r4 && (N(e3, false), 0 === e3.strm.avail_out)) return A3;
+                }
+                return e3.insert = 0, t4 === f ? (N(e3, true), 0 === e3.strm.avail_out ? O : B2) : e3.last_lit && (N(e3, false), 0 === e3.strm.avail_out) ? A3 : I;
+              })(n2, t3) : 3 === n2.strategy ? (function(e3, t4) {
+                for (var r4, n3, i3, s3, a4 = e3.window; ; ) {
+                  if (e3.lookahead <= S3) {
+                    if (j(e3), e3.lookahead <= S3 && t4 === l) return A3;
+                    if (0 === e3.lookahead) break;
+                  }
+                  if (e3.match_length = 0, e3.lookahead >= x && 0 < e3.strstart && (n3 = a4[i3 = e3.strstart - 1]) === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3]) {
+                    s3 = e3.strstart + S3;
+                    do {
+                    } while (n3 === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3] && n3 === a4[++i3] && i3 < s3);
+                    e3.match_length = S3 - (s3 - i3), e3.match_length > e3.lookahead && (e3.match_length = e3.lookahead);
+                  }
+                  if (e3.match_length >= x ? (r4 = u2._tr_tally(e3, 1, e3.match_length - x), e3.lookahead -= e3.match_length, e3.strstart += e3.match_length, e3.match_length = 0) : (r4 = u2._tr_tally(e3, 0, e3.window[e3.strstart]), e3.lookahead--, e3.strstart++), r4 && (N(e3, false), 0 === e3.strm.avail_out)) return A3;
+                }
+                return e3.insert = 0, t4 === f ? (N(e3, true), 0 === e3.strm.avail_out ? O : B2) : e3.last_lit && (N(e3, false), 0 === e3.strm.avail_out) ? A3 : I;
+              })(n2, t3) : h[n2.level].func(n2, t3);
+              if (o2 !== O && o2 !== B2 || (n2.status = 666), o2 === A3 || o2 === O) return 0 === e2.avail_out && (n2.last_flush = -1), m;
+              if (o2 === I && (1 === t3 ? u2._tr_align(n2) : 5 !== t3 && (u2._tr_stored_block(n2, 0, 0, false), 3 === t3 && (D2(n2.head), 0 === n2.lookahead && (n2.strstart = 0, n2.block_start = 0, n2.insert = 0))), F(e2), 0 === e2.avail_out)) return n2.last_flush = -1, m;
+            }
+            return t3 !== f ? m : n2.wrap <= 0 ? 1 : (2 === n2.wrap ? (U2(n2, 255 & e2.adler), U2(n2, e2.adler >> 8 & 255), U2(n2, e2.adler >> 16 & 255), U2(n2, e2.adler >> 24 & 255), U2(n2, 255 & e2.total_in), U2(n2, e2.total_in >> 8 & 255), U2(n2, e2.total_in >> 16 & 255), U2(n2, e2.total_in >> 24 & 255)) : (P(n2, e2.adler >>> 16), P(n2, 65535 & e2.adler)), F(e2), 0 < n2.wrap && (n2.wrap = -n2.wrap), 0 !== n2.pending ? m : 1);
+          }, r2.deflateEnd = function(e2) {
+            var t3;
+            return e2 && e2.state ? (t3 = e2.state.status) !== C3 && 69 !== t3 && 73 !== t3 && 91 !== t3 && 103 !== t3 && t3 !== E2 && 666 !== t3 ? R2(e2, _) : (e2.state = null, t3 === E2 ? R2(e2, -3) : m) : _;
+          }, r2.deflateSetDictionary = function(e2, t3) {
+            var r3, n2, i2, s2, a3, o2, h2, u3, l2 = t3.length;
+            if (!e2 || !e2.state) return _;
+            if (2 === (s2 = (r3 = e2.state).wrap) || 1 === s2 && r3.status !== C3 || r3.lookahead) return _;
+            for (1 === s2 && (e2.adler = d3(e2.adler, t3, l2, 0)), r3.wrap = 0, l2 >= r3.w_size && (0 === s2 && (D2(r3.head), r3.strstart = 0, r3.block_start = 0, r3.insert = 0), u3 = new c2.Buf8(r3.w_size), c2.arraySet(u3, t3, l2 - r3.w_size, r3.w_size, 0), t3 = u3, l2 = r3.w_size), a3 = e2.avail_in, o2 = e2.next_in, h2 = e2.input, e2.avail_in = l2, e2.next_in = 0, e2.input = t3, j(r3); r3.lookahead >= x; ) {
+              for (n2 = r3.strstart, i2 = r3.lookahead - (x - 1); r3.ins_h = (r3.ins_h << r3.hash_shift ^ r3.window[n2 + x - 1]) & r3.hash_mask, r3.prev[n2 & r3.w_mask] = r3.head[r3.ins_h], r3.head[r3.ins_h] = n2, n2++, --i2; ) ;
+              r3.strstart = n2, r3.lookahead = x - 1, j(r3);
+            }
+            return r3.strstart += r3.lookahead, r3.block_start = r3.strstart, r3.insert = r3.lookahead, r3.lookahead = 0, r3.match_length = r3.prev_length = x - 1, r3.match_available = 0, e2.next_in = o2, e2.input = h2, e2.avail_in = a3, r3.wrap = s2, m;
+          }, r2.deflateInfo = "pako deflate (from Nodeca project)";
+        }, { "../utils/common": 41, "./adler32": 43, "./crc32": 45, "./messages": 51, "./trees": 52 }], 47: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = function() {
+            this.text = 0, this.time = 0, this.xflags = 0, this.os = 0, this.extra = null, this.extra_len = 0, this.name = "", this.comment = "", this.hcrc = 0, this.done = false;
+          };
+        }, {}], 48: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = function(e2, t3) {
+            var r3, n, i, s, a2, o, h, u2, l, f, c2, d3, p, m, _, g, b, v, y, w, k, x, S3, z2, C3;
+            r3 = e2.state, n = e2.next_in, z2 = e2.input, i = n + (e2.avail_in - 5), s = e2.next_out, C3 = e2.output, a2 = s - (t3 - e2.avail_out), o = s + (e2.avail_out - 257), h = r3.dmax, u2 = r3.wsize, l = r3.whave, f = r3.wnext, c2 = r3.window, d3 = r3.hold, p = r3.bits, m = r3.lencode, _ = r3.distcode, g = (1 << r3.lenbits) - 1, b = (1 << r3.distbits) - 1;
+            e: do {
+              p < 15 && (d3 += z2[n++] << p, p += 8, d3 += z2[n++] << p, p += 8), v = m[d3 & g];
+              t: for (; ; ) {
+                if (d3 >>>= y = v >>> 24, p -= y, 0 === (y = v >>> 16 & 255)) C3[s++] = 65535 & v;
+                else {
+                  if (!(16 & y)) {
+                    if (0 == (64 & y)) {
+                      v = m[(65535 & v) + (d3 & (1 << y) - 1)];
+                      continue t;
+                    }
+                    if (32 & y) {
+                      r3.mode = 12;
+                      break e;
+                    }
+                    e2.msg = "invalid literal/length code", r3.mode = 30;
+                    break e;
+                  }
+                  w = 65535 & v, (y &= 15) && (p < y && (d3 += z2[n++] << p, p += 8), w += d3 & (1 << y) - 1, d3 >>>= y, p -= y), p < 15 && (d3 += z2[n++] << p, p += 8, d3 += z2[n++] << p, p += 8), v = _[d3 & b];
+                  r: for (; ; ) {
+                    if (d3 >>>= y = v >>> 24, p -= y, !(16 & (y = v >>> 16 & 255))) {
+                      if (0 == (64 & y)) {
+                        v = _[(65535 & v) + (d3 & (1 << y) - 1)];
+                        continue r;
+                      }
+                      e2.msg = "invalid distance code", r3.mode = 30;
+                      break e;
+                    }
+                    if (k = 65535 & v, p < (y &= 15) && (d3 += z2[n++] << p, (p += 8) < y && (d3 += z2[n++] << p, p += 8)), h < (k += d3 & (1 << y) - 1)) {
+                      e2.msg = "invalid distance too far back", r3.mode = 30;
+                      break e;
+                    }
+                    if (d3 >>>= y, p -= y, (y = s - a2) < k) {
+                      if (l < (y = k - y) && r3.sane) {
+                        e2.msg = "invalid distance too far back", r3.mode = 30;
+                        break e;
+                      }
+                      if (S3 = c2, (x = 0) === f) {
+                        if (x += u2 - y, y < w) {
+                          for (w -= y; C3[s++] = c2[x++], --y; ) ;
+                          x = s - k, S3 = C3;
+                        }
+                      } else if (f < y) {
+                        if (x += u2 + f - y, (y -= f) < w) {
+                          for (w -= y; C3[s++] = c2[x++], --y; ) ;
+                          if (x = 0, f < w) {
+                            for (w -= y = f; C3[s++] = c2[x++], --y; ) ;
+                            x = s - k, S3 = C3;
+                          }
+                        }
+                      } else if (x += f - y, y < w) {
+                        for (w -= y; C3[s++] = c2[x++], --y; ) ;
+                        x = s - k, S3 = C3;
+                      }
+                      for (; 2 < w; ) C3[s++] = S3[x++], C3[s++] = S3[x++], C3[s++] = S3[x++], w -= 3;
+                      w && (C3[s++] = S3[x++], 1 < w && (C3[s++] = S3[x++]));
+                    } else {
+                      for (x = s - k; C3[s++] = C3[x++], C3[s++] = C3[x++], C3[s++] = C3[x++], 2 < (w -= 3); ) ;
+                      w && (C3[s++] = C3[x++], 1 < w && (C3[s++] = C3[x++]));
+                    }
+                    break;
+                  }
+                }
+                break;
+              }
+            } while (n < i && s < o);
+            n -= w = p >> 3, d3 &= (1 << (p -= w << 3)) - 1, e2.next_in = n, e2.next_out = s, e2.avail_in = n < i ? i - n + 5 : 5 - (n - i), e2.avail_out = s < o ? o - s + 257 : 257 - (s - o), r3.hold = d3, r3.bits = p;
+          };
+        }, {}], 49: [function(e, t2, r2) {
+          "use strict";
+          var I = e("../utils/common"), O = e("./adler32"), B2 = e("./crc32"), R2 = e("./inffast"), T2 = e("./inftrees"), D2 = 1, F = 2, N = 0, U2 = -2, P = 1, n = 852, i = 592;
+          function L2(e2) {
+            return (e2 >>> 24 & 255) + (e2 >>> 8 & 65280) + ((65280 & e2) << 8) + ((255 & e2) << 24);
+          }
+          function s() {
+            this.mode = 0, this.last = false, this.wrap = 0, this.havedict = false, this.flags = 0, this.dmax = 0, this.check = 0, this.total = 0, this.head = null, this.wbits = 0, this.wsize = 0, this.whave = 0, this.wnext = 0, this.window = null, this.hold = 0, this.bits = 0, this.length = 0, this.offset = 0, this.extra = 0, this.lencode = null, this.distcode = null, this.lenbits = 0, this.distbits = 0, this.ncode = 0, this.nlen = 0, this.ndist = 0, this.have = 0, this.next = null, this.lens = new I.Buf16(320), this.work = new I.Buf16(288), this.lendyn = null, this.distdyn = null, this.sane = 0, this.back = 0, this.was = 0;
+          }
+          function a2(e2) {
+            var t3;
+            return e2 && e2.state ? (t3 = e2.state, e2.total_in = e2.total_out = t3.total = 0, e2.msg = "", t3.wrap && (e2.adler = 1 & t3.wrap), t3.mode = P, t3.last = 0, t3.havedict = 0, t3.dmax = 32768, t3.head = null, t3.hold = 0, t3.bits = 0, t3.lencode = t3.lendyn = new I.Buf32(n), t3.distcode = t3.distdyn = new I.Buf32(i), t3.sane = 1, t3.back = -1, N) : U2;
+          }
+          function o(e2) {
+            var t3;
+            return e2 && e2.state ? ((t3 = e2.state).wsize = 0, t3.whave = 0, t3.wnext = 0, a2(e2)) : U2;
+          }
+          function h(e2, t3) {
+            var r3, n2;
+            return e2 && e2.state ? (n2 = e2.state, t3 < 0 ? (r3 = 0, t3 = -t3) : (r3 = 1 + (t3 >> 4), t3 < 48 && (t3 &= 15)), t3 && (t3 < 8 || 15 < t3) ? U2 : (null !== n2.window && n2.wbits !== t3 && (n2.window = null), n2.wrap = r3, n2.wbits = t3, o(e2))) : U2;
+          }
+          function u2(e2, t3) {
+            var r3, n2;
+            return e2 ? (n2 = new s(), (e2.state = n2).window = null, (r3 = h(e2, t3)) !== N && (e2.state = null), r3) : U2;
+          }
+          var l, f, c2 = true;
+          function j(e2) {
+            if (c2) {
+              var t3;
+              for (l = new I.Buf32(512), f = new I.Buf32(32), t3 = 0; t3 < 144; ) e2.lens[t3++] = 8;
+              for (; t3 < 256; ) e2.lens[t3++] = 9;
+              for (; t3 < 280; ) e2.lens[t3++] = 7;
+              for (; t3 < 288; ) e2.lens[t3++] = 8;
+              for (T2(D2, e2.lens, 0, 288, l, 0, e2.work, { bits: 9 }), t3 = 0; t3 < 32; ) e2.lens[t3++] = 5;
+              T2(F, e2.lens, 0, 32, f, 0, e2.work, { bits: 5 }), c2 = false;
+            }
+            e2.lencode = l, e2.lenbits = 9, e2.distcode = f, e2.distbits = 5;
+          }
+          function Z2(e2, t3, r3, n2) {
+            var i2, s2 = e2.state;
+            return null === s2.window && (s2.wsize = 1 << s2.wbits, s2.wnext = 0, s2.whave = 0, s2.window = new I.Buf8(s2.wsize)), n2 >= s2.wsize ? (I.arraySet(s2.window, t3, r3 - s2.wsize, s2.wsize, 0), s2.wnext = 0, s2.whave = s2.wsize) : (n2 < (i2 = s2.wsize - s2.wnext) && (i2 = n2), I.arraySet(s2.window, t3, r3 - n2, i2, s2.wnext), (n2 -= i2) ? (I.arraySet(s2.window, t3, r3 - n2, n2, 0), s2.wnext = n2, s2.whave = s2.wsize) : (s2.wnext += i2, s2.wnext === s2.wsize && (s2.wnext = 0), s2.whave < s2.wsize && (s2.whave += i2))), 0;
+          }
+          r2.inflateReset = o, r2.inflateReset2 = h, r2.inflateResetKeep = a2, r2.inflateInit = function(e2) {
+            return u2(e2, 15);
+          }, r2.inflateInit2 = u2, r2.inflate = function(e2, t3) {
+            var r3, n2, i2, s2, a3, o2, h2, u3, l2, f2, c3, d3, p, m, _, g, b, v, y, w, k, x, S3, z2, C3 = 0, E2 = new I.Buf8(4), A3 = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+            if (!e2 || !e2.state || !e2.output || !e2.input && 0 !== e2.avail_in) return U2;
+            12 === (r3 = e2.state).mode && (r3.mode = 13), a3 = e2.next_out, i2 = e2.output, h2 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u3 = r3.hold, l2 = r3.bits, f2 = o2, c3 = h2, x = N;
+            e: for (; ; ) switch (r3.mode) {
+              case P:
+                if (0 === r3.wrap) {
+                  r3.mode = 13;
+                  break;
+                }
+                for (; l2 < 16; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                if (2 & r3.wrap && 35615 === u3) {
+                  E2[r3.check = 0] = 255 & u3, E2[1] = u3 >>> 8 & 255, r3.check = B2(r3.check, E2, 2, 0), l2 = u3 = 0, r3.mode = 2;
+                  break;
+                }
+                if (r3.flags = 0, r3.head && (r3.head.done = false), !(1 & r3.wrap) || (((255 & u3) << 8) + (u3 >> 8)) % 31) {
+                  e2.msg = "incorrect header check", r3.mode = 30;
+                  break;
+                }
+                if (8 != (15 & u3)) {
+                  e2.msg = "unknown compression method", r3.mode = 30;
+                  break;
+                }
+                if (l2 -= 4, k = 8 + (15 & (u3 >>>= 4)), 0 === r3.wbits) r3.wbits = k;
+                else if (k > r3.wbits) {
+                  e2.msg = "invalid window size", r3.mode = 30;
+                  break;
+                }
+                r3.dmax = 1 << k, e2.adler = r3.check = 1, r3.mode = 512 & u3 ? 10 : 12, l2 = u3 = 0;
+                break;
+              case 2:
+                for (; l2 < 16; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                if (r3.flags = u3, 8 != (255 & r3.flags)) {
+                  e2.msg = "unknown compression method", r3.mode = 30;
+                  break;
+                }
+                if (57344 & r3.flags) {
+                  e2.msg = "unknown header flags set", r3.mode = 30;
+                  break;
+                }
+                r3.head && (r3.head.text = u3 >> 8 & 1), 512 & r3.flags && (E2[0] = 255 & u3, E2[1] = u3 >>> 8 & 255, r3.check = B2(r3.check, E2, 2, 0)), l2 = u3 = 0, r3.mode = 3;
+              case 3:
+                for (; l2 < 32; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                r3.head && (r3.head.time = u3), 512 & r3.flags && (E2[0] = 255 & u3, E2[1] = u3 >>> 8 & 255, E2[2] = u3 >>> 16 & 255, E2[3] = u3 >>> 24 & 255, r3.check = B2(r3.check, E2, 4, 0)), l2 = u3 = 0, r3.mode = 4;
+              case 4:
+                for (; l2 < 16; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                r3.head && (r3.head.xflags = 255 & u3, r3.head.os = u3 >> 8), 512 & r3.flags && (E2[0] = 255 & u3, E2[1] = u3 >>> 8 & 255, r3.check = B2(r3.check, E2, 2, 0)), l2 = u3 = 0, r3.mode = 5;
+              case 5:
+                if (1024 & r3.flags) {
+                  for (; l2 < 16; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  r3.length = u3, r3.head && (r3.head.extra_len = u3), 512 & r3.flags && (E2[0] = 255 & u3, E2[1] = u3 >>> 8 & 255, r3.check = B2(r3.check, E2, 2, 0)), l2 = u3 = 0;
+                } else r3.head && (r3.head.extra = null);
+                r3.mode = 6;
+              case 6:
+                if (1024 & r3.flags && (o2 < (d3 = r3.length) && (d3 = o2), d3 && (r3.head && (k = r3.head.extra_len - r3.length, r3.head.extra || (r3.head.extra = new Array(r3.head.extra_len)), I.arraySet(r3.head.extra, n2, s2, d3, k)), 512 & r3.flags && (r3.check = B2(r3.check, n2, d3, s2)), o2 -= d3, s2 += d3, r3.length -= d3), r3.length)) break e;
+                r3.length = 0, r3.mode = 7;
+              case 7:
+                if (2048 & r3.flags) {
+                  if (0 === o2) break e;
+                  for (d3 = 0; k = n2[s2 + d3++], r3.head && k && r3.length < 65536 && (r3.head.name += String.fromCharCode(k)), k && d3 < o2; ) ;
+                  if (512 & r3.flags && (r3.check = B2(r3.check, n2, d3, s2)), o2 -= d3, s2 += d3, k) break e;
+                } else r3.head && (r3.head.name = null);
+                r3.length = 0, r3.mode = 8;
+              case 8:
+                if (4096 & r3.flags) {
+                  if (0 === o2) break e;
+                  for (d3 = 0; k = n2[s2 + d3++], r3.head && k && r3.length < 65536 && (r3.head.comment += String.fromCharCode(k)), k && d3 < o2; ) ;
+                  if (512 & r3.flags && (r3.check = B2(r3.check, n2, d3, s2)), o2 -= d3, s2 += d3, k) break e;
+                } else r3.head && (r3.head.comment = null);
+                r3.mode = 9;
+              case 9:
+                if (512 & r3.flags) {
+                  for (; l2 < 16; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  if (u3 !== (65535 & r3.check)) {
+                    e2.msg = "header crc mismatch", r3.mode = 30;
+                    break;
+                  }
+                  l2 = u3 = 0;
+                }
+                r3.head && (r3.head.hcrc = r3.flags >> 9 & 1, r3.head.done = true), e2.adler = r3.check = 0, r3.mode = 12;
+                break;
+              case 10:
+                for (; l2 < 32; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                e2.adler = r3.check = L2(u3), l2 = u3 = 0, r3.mode = 11;
+              case 11:
+                if (0 === r3.havedict) return e2.next_out = a3, e2.avail_out = h2, e2.next_in = s2, e2.avail_in = o2, r3.hold = u3, r3.bits = l2, 2;
+                e2.adler = r3.check = 1, r3.mode = 12;
+              case 12:
+                if (5 === t3 || 6 === t3) break e;
+              case 13:
+                if (r3.last) {
+                  u3 >>>= 7 & l2, l2 -= 7 & l2, r3.mode = 27;
+                  break;
+                }
+                for (; l2 < 3; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                switch (r3.last = 1 & u3, l2 -= 1, 3 & (u3 >>>= 1)) {
+                  case 0:
+                    r3.mode = 14;
+                    break;
+                  case 1:
+                    if (j(r3), r3.mode = 20, 6 !== t3) break;
+                    u3 >>>= 2, l2 -= 2;
+                    break e;
+                  case 2:
+                    r3.mode = 17;
+                    break;
+                  case 3:
+                    e2.msg = "invalid block type", r3.mode = 30;
+                }
+                u3 >>>= 2, l2 -= 2;
+                break;
+              case 14:
+                for (u3 >>>= 7 & l2, l2 -= 7 & l2; l2 < 32; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                if ((65535 & u3) != (u3 >>> 16 ^ 65535)) {
+                  e2.msg = "invalid stored block lengths", r3.mode = 30;
+                  break;
+                }
+                if (r3.length = 65535 & u3, l2 = u3 = 0, r3.mode = 15, 6 === t3) break e;
+              case 15:
+                r3.mode = 16;
+              case 16:
+                if (d3 = r3.length) {
+                  if (o2 < d3 && (d3 = o2), h2 < d3 && (d3 = h2), 0 === d3) break e;
+                  I.arraySet(i2, n2, s2, d3, a3), o2 -= d3, s2 += d3, h2 -= d3, a3 += d3, r3.length -= d3;
+                  break;
+                }
+                r3.mode = 12;
+                break;
+              case 17:
+                for (; l2 < 14; ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                if (r3.nlen = 257 + (31 & u3), u3 >>>= 5, l2 -= 5, r3.ndist = 1 + (31 & u3), u3 >>>= 5, l2 -= 5, r3.ncode = 4 + (15 & u3), u3 >>>= 4, l2 -= 4, 286 < r3.nlen || 30 < r3.ndist) {
+                  e2.msg = "too many length or distance symbols", r3.mode = 30;
+                  break;
+                }
+                r3.have = 0, r3.mode = 18;
+              case 18:
+                for (; r3.have < r3.ncode; ) {
+                  for (; l2 < 3; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  r3.lens[A3[r3.have++]] = 7 & u3, u3 >>>= 3, l2 -= 3;
+                }
+                for (; r3.have < 19; ) r3.lens[A3[r3.have++]] = 0;
+                if (r3.lencode = r3.lendyn, r3.lenbits = 7, S3 = { bits: r3.lenbits }, x = T2(0, r3.lens, 0, 19, r3.lencode, 0, r3.work, S3), r3.lenbits = S3.bits, x) {
+                  e2.msg = "invalid code lengths set", r3.mode = 30;
+                  break;
+                }
+                r3.have = 0, r3.mode = 19;
+              case 19:
+                for (; r3.have < r3.nlen + r3.ndist; ) {
+                  for (; g = (C3 = r3.lencode[u3 & (1 << r3.lenbits) - 1]) >>> 16 & 255, b = 65535 & C3, !((_ = C3 >>> 24) <= l2); ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  if (b < 16) u3 >>>= _, l2 -= _, r3.lens[r3.have++] = b;
+                  else {
+                    if (16 === b) {
+                      for (z2 = _ + 2; l2 < z2; ) {
+                        if (0 === o2) break e;
+                        o2--, u3 += n2[s2++] << l2, l2 += 8;
+                      }
+                      if (u3 >>>= _, l2 -= _, 0 === r3.have) {
+                        e2.msg = "invalid bit length repeat", r3.mode = 30;
+                        break;
+                      }
+                      k = r3.lens[r3.have - 1], d3 = 3 + (3 & u3), u3 >>>= 2, l2 -= 2;
+                    } else if (17 === b) {
+                      for (z2 = _ + 3; l2 < z2; ) {
+                        if (0 === o2) break e;
+                        o2--, u3 += n2[s2++] << l2, l2 += 8;
+                      }
+                      l2 -= _, k = 0, d3 = 3 + (7 & (u3 >>>= _)), u3 >>>= 3, l2 -= 3;
+                    } else {
+                      for (z2 = _ + 7; l2 < z2; ) {
+                        if (0 === o2) break e;
+                        o2--, u3 += n2[s2++] << l2, l2 += 8;
+                      }
+                      l2 -= _, k = 0, d3 = 11 + (127 & (u3 >>>= _)), u3 >>>= 7, l2 -= 7;
+                    }
+                    if (r3.have + d3 > r3.nlen + r3.ndist) {
+                      e2.msg = "invalid bit length repeat", r3.mode = 30;
+                      break;
+                    }
+                    for (; d3--; ) r3.lens[r3.have++] = k;
+                  }
+                }
+                if (30 === r3.mode) break;
+                if (0 === r3.lens[256]) {
+                  e2.msg = "invalid code -- missing end-of-block", r3.mode = 30;
+                  break;
+                }
+                if (r3.lenbits = 9, S3 = { bits: r3.lenbits }, x = T2(D2, r3.lens, 0, r3.nlen, r3.lencode, 0, r3.work, S3), r3.lenbits = S3.bits, x) {
+                  e2.msg = "invalid literal/lengths set", r3.mode = 30;
+                  break;
+                }
+                if (r3.distbits = 6, r3.distcode = r3.distdyn, S3 = { bits: r3.distbits }, x = T2(F, r3.lens, r3.nlen, r3.ndist, r3.distcode, 0, r3.work, S3), r3.distbits = S3.bits, x) {
+                  e2.msg = "invalid distances set", r3.mode = 30;
+                  break;
+                }
+                if (r3.mode = 20, 6 === t3) break e;
+              case 20:
+                r3.mode = 21;
+              case 21:
+                if (6 <= o2 && 258 <= h2) {
+                  e2.next_out = a3, e2.avail_out = h2, e2.next_in = s2, e2.avail_in = o2, r3.hold = u3, r3.bits = l2, R2(e2, c3), a3 = e2.next_out, i2 = e2.output, h2 = e2.avail_out, s2 = e2.next_in, n2 = e2.input, o2 = e2.avail_in, u3 = r3.hold, l2 = r3.bits, 12 === r3.mode && (r3.back = -1);
+                  break;
+                }
+                for (r3.back = 0; g = (C3 = r3.lencode[u3 & (1 << r3.lenbits) - 1]) >>> 16 & 255, b = 65535 & C3, !((_ = C3 >>> 24) <= l2); ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                if (g && 0 == (240 & g)) {
+                  for (v = _, y = g, w = b; g = (C3 = r3.lencode[w + ((u3 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C3, !(v + (_ = C3 >>> 24) <= l2); ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  u3 >>>= v, l2 -= v, r3.back += v;
+                }
+                if (u3 >>>= _, l2 -= _, r3.back += _, r3.length = b, 0 === g) {
+                  r3.mode = 26;
+                  break;
+                }
+                if (32 & g) {
+                  r3.back = -1, r3.mode = 12;
+                  break;
+                }
+                if (64 & g) {
+                  e2.msg = "invalid literal/length code", r3.mode = 30;
+                  break;
+                }
+                r3.extra = 15 & g, r3.mode = 22;
+              case 22:
+                if (r3.extra) {
+                  for (z2 = r3.extra; l2 < z2; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  r3.length += u3 & (1 << r3.extra) - 1, u3 >>>= r3.extra, l2 -= r3.extra, r3.back += r3.extra;
+                }
+                r3.was = r3.length, r3.mode = 23;
+              case 23:
+                for (; g = (C3 = r3.distcode[u3 & (1 << r3.distbits) - 1]) >>> 16 & 255, b = 65535 & C3, !((_ = C3 >>> 24) <= l2); ) {
+                  if (0 === o2) break e;
+                  o2--, u3 += n2[s2++] << l2, l2 += 8;
+                }
+                if (0 == (240 & g)) {
+                  for (v = _, y = g, w = b; g = (C3 = r3.distcode[w + ((u3 & (1 << v + y) - 1) >> v)]) >>> 16 & 255, b = 65535 & C3, !(v + (_ = C3 >>> 24) <= l2); ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  u3 >>>= v, l2 -= v, r3.back += v;
+                }
+                if (u3 >>>= _, l2 -= _, r3.back += _, 64 & g) {
+                  e2.msg = "invalid distance code", r3.mode = 30;
+                  break;
+                }
+                r3.offset = b, r3.extra = 15 & g, r3.mode = 24;
+              case 24:
+                if (r3.extra) {
+                  for (z2 = r3.extra; l2 < z2; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  r3.offset += u3 & (1 << r3.extra) - 1, u3 >>>= r3.extra, l2 -= r3.extra, r3.back += r3.extra;
+                }
+                if (r3.offset > r3.dmax) {
+                  e2.msg = "invalid distance too far back", r3.mode = 30;
+                  break;
+                }
+                r3.mode = 25;
+              case 25:
+                if (0 === h2) break e;
+                if (d3 = c3 - h2, r3.offset > d3) {
+                  if ((d3 = r3.offset - d3) > r3.whave && r3.sane) {
+                    e2.msg = "invalid distance too far back", r3.mode = 30;
+                    break;
+                  }
+                  p = d3 > r3.wnext ? (d3 -= r3.wnext, r3.wsize - d3) : r3.wnext - d3, d3 > r3.length && (d3 = r3.length), m = r3.window;
+                } else m = i2, p = a3 - r3.offset, d3 = r3.length;
+                for (h2 < d3 && (d3 = h2), h2 -= d3, r3.length -= d3; i2[a3++] = m[p++], --d3; ) ;
+                0 === r3.length && (r3.mode = 21);
+                break;
+              case 26:
+                if (0 === h2) break e;
+                i2[a3++] = r3.length, h2--, r3.mode = 21;
+                break;
+              case 27:
+                if (r3.wrap) {
+                  for (; l2 < 32; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 |= n2[s2++] << l2, l2 += 8;
+                  }
+                  if (c3 -= h2, e2.total_out += c3, r3.total += c3, c3 && (e2.adler = r3.check = r3.flags ? B2(r3.check, i2, c3, a3 - c3) : O(r3.check, i2, c3, a3 - c3)), c3 = h2, (r3.flags ? u3 : L2(u3)) !== r3.check) {
+                    e2.msg = "incorrect data check", r3.mode = 30;
+                    break;
+                  }
+                  l2 = u3 = 0;
+                }
+                r3.mode = 28;
+              case 28:
+                if (r3.wrap && r3.flags) {
+                  for (; l2 < 32; ) {
+                    if (0 === o2) break e;
+                    o2--, u3 += n2[s2++] << l2, l2 += 8;
+                  }
+                  if (u3 !== (4294967295 & r3.total)) {
+                    e2.msg = "incorrect length check", r3.mode = 30;
+                    break;
+                  }
+                  l2 = u3 = 0;
+                }
+                r3.mode = 29;
+              case 29:
+                x = 1;
+                break e;
+              case 30:
+                x = -3;
+                break e;
+              case 31:
+                return -4;
+              case 32:
+              default:
+                return U2;
+            }
+            return e2.next_out = a3, e2.avail_out = h2, e2.next_in = s2, e2.avail_in = o2, r3.hold = u3, r3.bits = l2, (r3.wsize || c3 !== e2.avail_out && r3.mode < 30 && (r3.mode < 27 || 4 !== t3)) && Z2(e2, e2.output, e2.next_out, c3 - e2.avail_out) ? (r3.mode = 31, -4) : (f2 -= e2.avail_in, c3 -= e2.avail_out, e2.total_in += f2, e2.total_out += c3, r3.total += c3, r3.wrap && c3 && (e2.adler = r3.check = r3.flags ? B2(r3.check, i2, c3, e2.next_out - c3) : O(r3.check, i2, c3, e2.next_out - c3)), e2.data_type = r3.bits + (r3.last ? 64 : 0) + (12 === r3.mode ? 128 : 0) + (20 === r3.mode || 15 === r3.mode ? 256 : 0), (0 == f2 && 0 === c3 || 4 === t3) && x === N && (x = -5), x);
+          }, r2.inflateEnd = function(e2) {
+            if (!e2 || !e2.state) return U2;
+            var t3 = e2.state;
+            return t3.window && (t3.window = null), e2.state = null, N;
+          }, r2.inflateGetHeader = function(e2, t3) {
+            var r3;
+            return e2 && e2.state ? 0 == (2 & (r3 = e2.state).wrap) ? U2 : ((r3.head = t3).done = false, N) : U2;
+          }, r2.inflateSetDictionary = function(e2, t3) {
+            var r3, n2 = t3.length;
+            return e2 && e2.state ? 0 !== (r3 = e2.state).wrap && 11 !== r3.mode ? U2 : 11 === r3.mode && O(1, t3, n2, 0) !== r3.check ? -3 : Z2(e2, t3, n2, n2) ? (r3.mode = 31, -4) : (r3.havedict = 1, N) : U2;
+          }, r2.inflateInfo = "pako inflate (from Nodeca project)";
+        }, { "../utils/common": 41, "./adler32": 43, "./crc32": 45, "./inffast": 48, "./inftrees": 50 }], 50: [function(e, t2, r2) {
+          "use strict";
+          var D2 = e("../utils/common"), F = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0], N = [16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18, 19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 72, 78], U2 = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577, 0, 0], P = [16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24, 24, 25, 25, 26, 26, 27, 27, 28, 28, 29, 29, 64, 64];
+          t2.exports = function(e2, t3, r3, n, i, s, a2, o) {
+            var h, u2, l, f, c2, d3, p, m, _, g = o.bits, b = 0, v = 0, y = 0, w = 0, k = 0, x = 0, S3 = 0, z2 = 0, C3 = 0, E2 = 0, A3 = null, I = 0, O = new D2.Buf16(16), B2 = new D2.Buf16(16), R2 = null, T2 = 0;
+            for (b = 0; b <= 15; b++) O[b] = 0;
+            for (v = 0; v < n; v++) O[t3[r3 + v]]++;
+            for (k = g, w = 15; 1 <= w && 0 === O[w]; w--) ;
+            if (w < k && (k = w), 0 === w) return i[s++] = 20971520, i[s++] = 20971520, o.bits = 1, 0;
+            for (y = 1; y < w && 0 === O[y]; y++) ;
+            for (k < y && (k = y), b = z2 = 1; b <= 15; b++) if (z2 <<= 1, (z2 -= O[b]) < 0) return -1;
+            if (0 < z2 && (0 === e2 || 1 !== w)) return -1;
+            for (B2[1] = 0, b = 1; b < 15; b++) B2[b + 1] = B2[b] + O[b];
+            for (v = 0; v < n; v++) 0 !== t3[r3 + v] && (a2[B2[t3[r3 + v]]++] = v);
+            if (d3 = 0 === e2 ? (A3 = R2 = a2, 19) : 1 === e2 ? (A3 = F, I -= 257, R2 = N, T2 -= 257, 256) : (A3 = U2, R2 = P, -1), b = y, c2 = s, S3 = v = E2 = 0, l = -1, f = (C3 = 1 << (x = k)) - 1, 1 === e2 && 852 < C3 || 2 === e2 && 592 < C3) return 1;
+            for (; ; ) {
+              for (p = b - S3, _ = a2[v] < d3 ? (m = 0, a2[v]) : a2[v] > d3 ? (m = R2[T2 + a2[v]], A3[I + a2[v]]) : (m = 96, 0), h = 1 << b - S3, y = u2 = 1 << x; i[c2 + (E2 >> S3) + (u2 -= h)] = p << 24 | m << 16 | _ | 0, 0 !== u2; ) ;
+              for (h = 1 << b - 1; E2 & h; ) h >>= 1;
+              if (0 !== h ? (E2 &= h - 1, E2 += h) : E2 = 0, v++, 0 == --O[b]) {
+                if (b === w) break;
+                b = t3[r3 + a2[v]];
+              }
+              if (k < b && (E2 & f) !== l) {
+                for (0 === S3 && (S3 = k), c2 += y, z2 = 1 << (x = b - S3); x + S3 < w && !((z2 -= O[x + S3]) <= 0); ) x++, z2 <<= 1;
+                if (C3 += 1 << x, 1 === e2 && 852 < C3 || 2 === e2 && 592 < C3) return 1;
+                i[l = E2 & f] = k << 24 | x << 16 | c2 - s | 0;
+              }
+            }
+            return 0 !== E2 && (i[c2 + E2] = b - S3 << 24 | 64 << 16 | 0), o.bits = k, 0;
+          };
+        }, { "../utils/common": 41 }], 51: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = { 2: "need dictionary", 1: "stream end", 0: "", "-1": "file error", "-2": "stream error", "-3": "data error", "-4": "insufficient memory", "-5": "buffer error", "-6": "incompatible version" };
+        }, {}], 52: [function(e, t2, r2) {
+          "use strict";
+          var i = e("../utils/common"), o = 0, h = 1;
+          function n(e2) {
+            for (var t3 = e2.length; 0 <= --t3; ) e2[t3] = 0;
+          }
+          var s = 0, a2 = 29, u2 = 256, l = u2 + 1 + a2, f = 30, c2 = 19, _ = 2 * l + 1, g = 15, d3 = 16, p = 7, m = 256, b = 16, v = 17, y = 18, w = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0], k = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13], x = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7], S3 = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15], z2 = new Array(2 * (l + 2));
+          n(z2);
+          var C3 = new Array(2 * f);
+          n(C3);
+          var E2 = new Array(512);
+          n(E2);
+          var A3 = new Array(256);
+          n(A3);
+          var I = new Array(a2);
+          n(I);
+          var O, B2, R2, T2 = new Array(f);
+          function D2(e2, t3, r3, n2, i2) {
+            this.static_tree = e2, this.extra_bits = t3, this.extra_base = r3, this.elems = n2, this.max_length = i2, this.has_stree = e2 && e2.length;
+          }
+          function F(e2, t3) {
+            this.dyn_tree = e2, this.max_code = 0, this.stat_desc = t3;
+          }
+          function N(e2) {
+            return e2 < 256 ? E2[e2] : E2[256 + (e2 >>> 7)];
+          }
+          function U2(e2, t3) {
+            e2.pending_buf[e2.pending++] = 255 & t3, e2.pending_buf[e2.pending++] = t3 >>> 8 & 255;
+          }
+          function P(e2, t3, r3) {
+            e2.bi_valid > d3 - r3 ? (e2.bi_buf |= t3 << e2.bi_valid & 65535, U2(e2, e2.bi_buf), e2.bi_buf = t3 >> d3 - e2.bi_valid, e2.bi_valid += r3 - d3) : (e2.bi_buf |= t3 << e2.bi_valid & 65535, e2.bi_valid += r3);
+          }
+          function L2(e2, t3, r3) {
+            P(e2, r3[2 * t3], r3[2 * t3 + 1]);
+          }
+          function j(e2, t3) {
+            for (var r3 = 0; r3 |= 1 & e2, e2 >>>= 1, r3 <<= 1, 0 < --t3; ) ;
+            return r3 >>> 1;
+          }
+          function Z2(e2, t3, r3) {
+            var n2, i2, s2 = new Array(g + 1), a3 = 0;
+            for (n2 = 1; n2 <= g; n2++) s2[n2] = a3 = a3 + r3[n2 - 1] << 1;
+            for (i2 = 0; i2 <= t3; i2++) {
+              var o2 = e2[2 * i2 + 1];
+              0 !== o2 && (e2[2 * i2] = j(s2[o2]++, o2));
+            }
+          }
+          function W(e2) {
+            var t3;
+            for (t3 = 0; t3 < l; t3++) e2.dyn_ltree[2 * t3] = 0;
+            for (t3 = 0; t3 < f; t3++) e2.dyn_dtree[2 * t3] = 0;
+            for (t3 = 0; t3 < c2; t3++) e2.bl_tree[2 * t3] = 0;
+            e2.dyn_ltree[2 * m] = 1, e2.opt_len = e2.static_len = 0, e2.last_lit = e2.matches = 0;
+          }
+          function M(e2) {
+            8 < e2.bi_valid ? U2(e2, e2.bi_buf) : 0 < e2.bi_valid && (e2.pending_buf[e2.pending++] = e2.bi_buf), e2.bi_buf = 0, e2.bi_valid = 0;
+          }
+          function H(e2, t3, r3, n2) {
+            var i2 = 2 * t3, s2 = 2 * r3;
+            return e2[i2] < e2[s2] || e2[i2] === e2[s2] && n2[t3] <= n2[r3];
+          }
+          function G(e2, t3, r3) {
+            for (var n2 = e2.heap[r3], i2 = r3 << 1; i2 <= e2.heap_len && (i2 < e2.heap_len && H(t3, e2.heap[i2 + 1], e2.heap[i2], e2.depth) && i2++, !H(t3, n2, e2.heap[i2], e2.depth)); ) e2.heap[r3] = e2.heap[i2], r3 = i2, i2 <<= 1;
+            e2.heap[r3] = n2;
+          }
+          function K(e2, t3, r3) {
+            var n2, i2, s2, a3, o2 = 0;
+            if (0 !== e2.last_lit) for (; n2 = e2.pending_buf[e2.d_buf + 2 * o2] << 8 | e2.pending_buf[e2.d_buf + 2 * o2 + 1], i2 = e2.pending_buf[e2.l_buf + o2], o2++, 0 === n2 ? L2(e2, i2, t3) : (L2(e2, (s2 = A3[i2]) + u2 + 1, t3), 0 !== (a3 = w[s2]) && P(e2, i2 -= I[s2], a3), L2(e2, s2 = N(--n2), r3), 0 !== (a3 = k[s2]) && P(e2, n2 -= T2[s2], a3)), o2 < e2.last_lit; ) ;
+            L2(e2, m, t3);
+          }
+          function Y(e2, t3) {
+            var r3, n2, i2, s2 = t3.dyn_tree, a3 = t3.stat_desc.static_tree, o2 = t3.stat_desc.has_stree, h2 = t3.stat_desc.elems, u3 = -1;
+            for (e2.heap_len = 0, e2.heap_max = _, r3 = 0; r3 < h2; r3++) 0 !== s2[2 * r3] ? (e2.heap[++e2.heap_len] = u3 = r3, e2.depth[r3] = 0) : s2[2 * r3 + 1] = 0;
+            for (; e2.heap_len < 2; ) s2[2 * (i2 = e2.heap[++e2.heap_len] = u3 < 2 ? ++u3 : 0)] = 1, e2.depth[i2] = 0, e2.opt_len--, o2 && (e2.static_len -= a3[2 * i2 + 1]);
+            for (t3.max_code = u3, r3 = e2.heap_len >> 1; 1 <= r3; r3--) G(e2, s2, r3);
+            for (i2 = h2; r3 = e2.heap[1], e2.heap[1] = e2.heap[e2.heap_len--], G(e2, s2, 1), n2 = e2.heap[1], e2.heap[--e2.heap_max] = r3, e2.heap[--e2.heap_max] = n2, s2[2 * i2] = s2[2 * r3] + s2[2 * n2], e2.depth[i2] = (e2.depth[r3] >= e2.depth[n2] ? e2.depth[r3] : e2.depth[n2]) + 1, s2[2 * r3 + 1] = s2[2 * n2 + 1] = i2, e2.heap[1] = i2++, G(e2, s2, 1), 2 <= e2.heap_len; ) ;
+            e2.heap[--e2.heap_max] = e2.heap[1], (function(e3, t4) {
+              var r4, n3, i3, s3, a4, o3, h3 = t4.dyn_tree, u4 = t4.max_code, l2 = t4.stat_desc.static_tree, f2 = t4.stat_desc.has_stree, c3 = t4.stat_desc.extra_bits, d4 = t4.stat_desc.extra_base, p2 = t4.stat_desc.max_length, m2 = 0;
+              for (s3 = 0; s3 <= g; s3++) e3.bl_count[s3] = 0;
+              for (h3[2 * e3.heap[e3.heap_max] + 1] = 0, r4 = e3.heap_max + 1; r4 < _; r4++) p2 < (s3 = h3[2 * h3[2 * (n3 = e3.heap[r4]) + 1] + 1] + 1) && (s3 = p2, m2++), h3[2 * n3 + 1] = s3, u4 < n3 || (e3.bl_count[s3]++, a4 = 0, d4 <= n3 && (a4 = c3[n3 - d4]), o3 = h3[2 * n3], e3.opt_len += o3 * (s3 + a4), f2 && (e3.static_len += o3 * (l2[2 * n3 + 1] + a4)));
+              if (0 !== m2) {
+                do {
+                  for (s3 = p2 - 1; 0 === e3.bl_count[s3]; ) s3--;
+                  e3.bl_count[s3]--, e3.bl_count[s3 + 1] += 2, e3.bl_count[p2]--, m2 -= 2;
+                } while (0 < m2);
+                for (s3 = p2; 0 !== s3; s3--) for (n3 = e3.bl_count[s3]; 0 !== n3; ) u4 < (i3 = e3.heap[--r4]) || (h3[2 * i3 + 1] !== s3 && (e3.opt_len += (s3 - h3[2 * i3 + 1]) * h3[2 * i3], h3[2 * i3 + 1] = s3), n3--);
+              }
+            })(e2, t3), Z2(s2, u3, e2.bl_count);
+          }
+          function X2(e2, t3, r3) {
+            var n2, i2, s2 = -1, a3 = t3[1], o2 = 0, h2 = 7, u3 = 4;
+            for (0 === a3 && (h2 = 138, u3 = 3), t3[2 * (r3 + 1) + 1] = 65535, n2 = 0; n2 <= r3; n2++) i2 = a3, a3 = t3[2 * (n2 + 1) + 1], ++o2 < h2 && i2 === a3 || (o2 < u3 ? e2.bl_tree[2 * i2] += o2 : 0 !== i2 ? (i2 !== s2 && e2.bl_tree[2 * i2]++, e2.bl_tree[2 * b]++) : o2 <= 10 ? e2.bl_tree[2 * v]++ : e2.bl_tree[2 * y]++, s2 = i2, u3 = (o2 = 0) === a3 ? (h2 = 138, 3) : i2 === a3 ? (h2 = 6, 3) : (h2 = 7, 4));
+          }
+          function V(e2, t3, r3) {
+            var n2, i2, s2 = -1, a3 = t3[1], o2 = 0, h2 = 7, u3 = 4;
+            for (0 === a3 && (h2 = 138, u3 = 3), n2 = 0; n2 <= r3; n2++) if (i2 = a3, a3 = t3[2 * (n2 + 1) + 1], !(++o2 < h2 && i2 === a3)) {
+              if (o2 < u3) for (; L2(e2, i2, e2.bl_tree), 0 != --o2; ) ;
+              else 0 !== i2 ? (i2 !== s2 && (L2(e2, i2, e2.bl_tree), o2--), L2(e2, b, e2.bl_tree), P(e2, o2 - 3, 2)) : o2 <= 10 ? (L2(e2, v, e2.bl_tree), P(e2, o2 - 3, 3)) : (L2(e2, y, e2.bl_tree), P(e2, o2 - 11, 7));
+              s2 = i2, u3 = (o2 = 0) === a3 ? (h2 = 138, 3) : i2 === a3 ? (h2 = 6, 3) : (h2 = 7, 4);
+            }
+          }
+          n(T2);
+          var q2 = false;
+          function J(e2, t3, r3, n2) {
+            P(e2, (s << 1) + (n2 ? 1 : 0), 3), (function(e3, t4, r4, n3) {
+              M(e3), n3 && (U2(e3, r4), U2(e3, ~r4)), i.arraySet(e3.pending_buf, e3.window, t4, r4, e3.pending), e3.pending += r4;
+            })(e2, t3, r3, true);
+          }
+          r2._tr_init = function(e2) {
+            q2 || ((function() {
+              var e3, t3, r3, n2, i2, s2 = new Array(g + 1);
+              for (n2 = r3 = 0; n2 < a2 - 1; n2++) for (I[n2] = r3, e3 = 0; e3 < 1 << w[n2]; e3++) A3[r3++] = n2;
+              for (A3[r3 - 1] = n2, n2 = i2 = 0; n2 < 16; n2++) for (T2[n2] = i2, e3 = 0; e3 < 1 << k[n2]; e3++) E2[i2++] = n2;
+              for (i2 >>= 7; n2 < f; n2++) for (T2[n2] = i2 << 7, e3 = 0; e3 < 1 << k[n2] - 7; e3++) E2[256 + i2++] = n2;
+              for (t3 = 0; t3 <= g; t3++) s2[t3] = 0;
+              for (e3 = 0; e3 <= 143; ) z2[2 * e3 + 1] = 8, e3++, s2[8]++;
+              for (; e3 <= 255; ) z2[2 * e3 + 1] = 9, e3++, s2[9]++;
+              for (; e3 <= 279; ) z2[2 * e3 + 1] = 7, e3++, s2[7]++;
+              for (; e3 <= 287; ) z2[2 * e3 + 1] = 8, e3++, s2[8]++;
+              for (Z2(z2, l + 1, s2), e3 = 0; e3 < f; e3++) C3[2 * e3 + 1] = 5, C3[2 * e3] = j(e3, 5);
+              O = new D2(z2, w, u2 + 1, l, g), B2 = new D2(C3, k, 0, f, g), R2 = new D2(new Array(0), x, 0, c2, p);
+            })(), q2 = true), e2.l_desc = new F(e2.dyn_ltree, O), e2.d_desc = new F(e2.dyn_dtree, B2), e2.bl_desc = new F(e2.bl_tree, R2), e2.bi_buf = 0, e2.bi_valid = 0, W(e2);
+          }, r2._tr_stored_block = J, r2._tr_flush_block = function(e2, t3, r3, n2) {
+            var i2, s2, a3 = 0;
+            0 < e2.level ? (2 === e2.strm.data_type && (e2.strm.data_type = (function(e3) {
+              var t4, r4 = 4093624447;
+              for (t4 = 0; t4 <= 31; t4++, r4 >>>= 1) if (1 & r4 && 0 !== e3.dyn_ltree[2 * t4]) return o;
+              if (0 !== e3.dyn_ltree[18] || 0 !== e3.dyn_ltree[20] || 0 !== e3.dyn_ltree[26]) return h;
+              for (t4 = 32; t4 < u2; t4++) if (0 !== e3.dyn_ltree[2 * t4]) return h;
+              return o;
+            })(e2)), Y(e2, e2.l_desc), Y(e2, e2.d_desc), a3 = (function(e3) {
+              var t4;
+              for (X2(e3, e3.dyn_ltree, e3.l_desc.max_code), X2(e3, e3.dyn_dtree, e3.d_desc.max_code), Y(e3, e3.bl_desc), t4 = c2 - 1; 3 <= t4 && 0 === e3.bl_tree[2 * S3[t4] + 1]; t4--) ;
+              return e3.opt_len += 3 * (t4 + 1) + 5 + 5 + 4, t4;
+            })(e2), i2 = e2.opt_len + 3 + 7 >>> 3, (s2 = e2.static_len + 3 + 7 >>> 3) <= i2 && (i2 = s2)) : i2 = s2 = r3 + 5, r3 + 4 <= i2 && -1 !== t3 ? J(e2, t3, r3, n2) : 4 === e2.strategy || s2 === i2 ? (P(e2, 2 + (n2 ? 1 : 0), 3), K(e2, z2, C3)) : (P(e2, 4 + (n2 ? 1 : 0), 3), (function(e3, t4, r4, n3) {
+              var i3;
+              for (P(e3, t4 - 257, 5), P(e3, r4 - 1, 5), P(e3, n3 - 4, 4), i3 = 0; i3 < n3; i3++) P(e3, e3.bl_tree[2 * S3[i3] + 1], 3);
+              V(e3, e3.dyn_ltree, t4 - 1), V(e3, e3.dyn_dtree, r4 - 1);
+            })(e2, e2.l_desc.max_code + 1, e2.d_desc.max_code + 1, a3 + 1), K(e2, e2.dyn_ltree, e2.dyn_dtree)), W(e2), n2 && M(e2);
+          }, r2._tr_tally = function(e2, t3, r3) {
+            return e2.pending_buf[e2.d_buf + 2 * e2.last_lit] = t3 >>> 8 & 255, e2.pending_buf[e2.d_buf + 2 * e2.last_lit + 1] = 255 & t3, e2.pending_buf[e2.l_buf + e2.last_lit] = 255 & r3, e2.last_lit++, 0 === t3 ? e2.dyn_ltree[2 * r3]++ : (e2.matches++, t3--, e2.dyn_ltree[2 * (A3[r3] + u2 + 1)]++, e2.dyn_dtree[2 * N(t3)]++), e2.last_lit === e2.lit_bufsize - 1;
+          }, r2._tr_align = function(e2) {
+            P(e2, 2, 3), L2(e2, m, z2), (function(e3) {
+              16 === e3.bi_valid ? (U2(e3, e3.bi_buf), e3.bi_buf = 0, e3.bi_valid = 0) : 8 <= e3.bi_valid && (e3.pending_buf[e3.pending++] = 255 & e3.bi_buf, e3.bi_buf >>= 8, e3.bi_valid -= 8);
+            })(e2);
+          };
+        }, { "../utils/common": 41 }], 53: [function(e, t2, r2) {
+          "use strict";
+          t2.exports = function() {
+            this.input = null, this.next_in = 0, this.avail_in = 0, this.total_in = 0, this.output = null, this.next_out = 0, this.avail_out = 0, this.total_out = 0, this.msg = "", this.state = null, this.data_type = 2, this.adler = 0;
+          };
+        }, {}], 54: [function(e, t2, r2) {
+          (function(e2) {
+            !(function(r3, n) {
+              "use strict";
+              if (!r3.setImmediate) {
+                var i, s, t3, a2, o = 1, h = {}, u2 = false, l = r3.document, e3 = Object.getPrototypeOf && Object.getPrototypeOf(r3);
+                e3 = e3 && e3.setTimeout ? e3 : r3, i = "[object process]" === {}.toString.call(r3.process) ? function(e4) {
+                  process.nextTick(function() {
+                    c2(e4);
+                  });
+                } : (function() {
+                  if (r3.postMessage && !r3.importScripts) {
+                    var e4 = true, t4 = r3.onmessage;
+                    return r3.onmessage = function() {
+                      e4 = false;
+                    }, r3.postMessage("", "*"), r3.onmessage = t4, e4;
+                  }
+                })() ? (a2 = "setImmediate$" + Math.random() + "$", r3.addEventListener ? r3.addEventListener("message", d3, false) : r3.attachEvent("onmessage", d3), function(e4) {
+                  r3.postMessage(a2 + e4, "*");
+                }) : r3.MessageChannel ? ((t3 = new MessageChannel()).port1.onmessage = function(e4) {
+                  c2(e4.data);
+                }, function(e4) {
+                  t3.port2.postMessage(e4);
+                }) : l && "onreadystatechange" in l.createElement("script") ? (s = l.documentElement, function(e4) {
+                  var t4 = l.createElement("script");
+                  t4.onreadystatechange = function() {
+                    c2(e4), t4.onreadystatechange = null, s.removeChild(t4), t4 = null;
+                  }, s.appendChild(t4);
+                }) : function(e4) {
+                  setTimeout(c2, 0, e4);
+                }, e3.setImmediate = function(e4) {
+                  "function" != typeof e4 && (e4 = new Function("" + e4));
+                  for (var t4 = new Array(arguments.length - 1), r4 = 0; r4 < t4.length; r4++) t4[r4] = arguments[r4 + 1];
+                  var n2 = { callback: e4, args: t4 };
+                  return h[o] = n2, i(o), o++;
+                }, e3.clearImmediate = f;
+              }
+              function f(e4) {
+                delete h[e4];
+              }
+              function c2(e4) {
+                if (u2) setTimeout(c2, 0, e4);
+                else {
+                  var t4 = h[e4];
+                  if (t4) {
+                    u2 = true;
+                    try {
+                      !(function(e5) {
+                        var t5 = e5.callback, r4 = e5.args;
+                        switch (r4.length) {
+                          case 0:
+                            t5();
+                            break;
+                          case 1:
+                            t5(r4[0]);
+                            break;
+                          case 2:
+                            t5(r4[0], r4[1]);
+                            break;
+                          case 3:
+                            t5(r4[0], r4[1], r4[2]);
+                            break;
+                          default:
+                            t5.apply(n, r4);
+                        }
+                      })(t4);
+                    } finally {
+                      f(e4), u2 = false;
+                    }
+                  }
+                }
+              }
+              function d3(e4) {
+                e4.source === r3 && "string" == typeof e4.data && 0 === e4.data.indexOf(a2) && c2(+e4.data.slice(a2.length));
+              }
+            })("undefined" == typeof self ? void 0 === e2 ? this : e2 : self);
+          }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
+        }, {}] }, {}, [10])(10);
+      });
     }
   });
 
@@ -68020,7 +70417,7 @@
     }
     return tok;
   };
-  var letCommand = (parser23, name2, tok, global2) => {
+  var letCommand = (parser23, name2, tok, global3) => {
     var macro2 = parser23.gullet.macros.get(tok.text);
     if (macro2 == null) {
       tok.noexpand = true;
@@ -68031,7 +70428,7 @@
         unexpandable: !parser23.gullet.isExpandable(tok.text)
       };
     }
-    parser23.gullet.macros.set(name2, macro2, global2);
+    parser23.gullet.macros.set(name2, macro2, global3);
   };
   defineFunction({
     type: "internal",
@@ -72808,11 +75205,11 @@
      * operation at every level, so takes time linear in their number.
      * A value of undefined means to delete existing definitions.
      */
-    set(name2, value, global2) {
-      if (global2 === void 0) {
-        global2 = false;
+    set(name2, value, global3) {
+      if (global3 === void 0) {
+        global3 = false;
       }
-      if (global2) {
+      if (global3) {
         for (var i = 0; i < this.undefStack.length; i++) {
           delete this.undefStack[i][name2];
         }
@@ -76407,11 +78804,24 @@ $$
   // node_modules/lucide/dist/esm/icons/chevron-right.mjs
   var ChevronRight = [["path", { d: "m9 18 6-6-6-6" }]];
 
+  // node_modules/lucide/dist/esm/icons/circle-x.mjs
+  var CircleX = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "m15 9-6 6" }],
+    ["path", { d: "m9 9 6 6" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/code-xml.mjs
   var CodeXml = [
     ["path", { d: "m18 16 4-4-4-4" }],
     ["path", { d: "m6 8-4 4 4 4" }],
     ["path", { d: "m14.5 4-5 16" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/copy.mjs
+  var Copy = [
+    ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2" }],
+    ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" }]
   ];
 
   // node_modules/lucide/dist/esm/icons/file-plus-corner.mjs
@@ -76489,6 +78899,13 @@ $$
     ["circle", { cx: "6", cy: "18", r: "3" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/globe.mjs
+  var Globe = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" }],
+    ["path", { d: "M2 12h20" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/hard-drive.mjs
   var HardDrive = [
     ["path", { d: "M10 16h.01" }],
@@ -76500,6 +78917,26 @@ $$
     ],
     ["path", { d: "M21.946 12.013H2.054" }],
     ["path", { d: "M6 16h.01" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/info.mjs
+  var Info = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "M12 16v-4" }],
+    ["path", { d: "M12 8h.01" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/keyboard.mjs
+  var Keyboard = [
+    ["path", { d: "M10 8h.01" }],
+    ["path", { d: "M12 12h.01" }],
+    ["path", { d: "M14 8h.01" }],
+    ["path", { d: "M16 12h.01" }],
+    ["path", { d: "M18 8h.01" }],
+    ["path", { d: "M6 8h.01" }],
+    ["path", { d: "M7 16h10" }],
+    ["path", { d: "M8 12h.01" }],
+    ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2" }]
   ];
 
   // node_modules/lucide/dist/esm/icons/layers.mjs
@@ -76550,6 +78987,20 @@ $$
     ["path", { d: "M12 12V8" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/palette.mjs
+  var Palette = [
+    [
+      "path",
+      {
+        d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+      }
+    ],
+    ["circle", { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }],
+    ["circle", { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }],
+    ["circle", { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }],
+    ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/panel-left.mjs
   var PanelLeft = [
     ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
@@ -76571,6 +79022,14 @@ $$
       }
     ],
     ["path", { d: "m15 5 4 4" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/plug.mjs
+  var Plug = [
+    ["path", { d: "M12 22v-5" }],
+    ["path", { d: "M15 8V2" }],
+    ["path", { d: "M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" }],
+    ["path", { d: "M9 8V2" }]
   ];
 
   // node_modules/lucide/dist/esm/icons/puzzle.mjs
@@ -76906,6 +79365,25 @@ $$
       for (const [id3, panel] of this.panels) {
         addButton(id3, resolvePluginPanelIcon(panel.icon, Folder), panel.title || "Plugin panel");
       }
+      const divider = document.createElement("div");
+      divider.className = "sidebar-nav-divider";
+      divider.setAttribute("role", "separator");
+      this.nav.appendChild(divider);
+      const settingsButton = document.createElement("button");
+      settingsButton.type = "button";
+      settingsButton.className = "sidebar-nav-button sidebar-nav-settings";
+      settingsButton.dataset.sidebarPanelId = "settings";
+      settingsButton.title = "Settings";
+      settingsButton.setAttribute("aria-label", "Settings");
+      settingsButton.appendChild(this.createLucideIcon(Settings2));
+      settingsButton.addEventListener("click", () => {
+        if (window.settingsDialog?.open) {
+          window.settingsDialog.open();
+        } else if (window.settingsAPI?.open) {
+          window.settingsAPI.open();
+        }
+      });
+      this.nav.appendChild(settingsButton);
       if (focusedId) {
         [...this.nav.querySelectorAll(".sidebar-nav-button")].find((button) => button.dataset.sidebarPanelId === focusedId)?.focus();
       }
@@ -77238,6 +79716,16 @@ $$
       ...props
     });
   }
+  function arrayBufferToBase64(buffer) {
+    let binary2 = "";
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    const chunkSize = 8192;
+    for (let i = 0; i < len; i += chunkSize) {
+      binary2 += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)));
+    }
+    return btoa(binary2);
+  }
   var PluginManagerPanel = class {
     /**
      * @param {Object} options
@@ -77274,6 +79762,15 @@ $$
         this.container.appendChild(this.box);
       }
       this.box.setAttribute("tabindex", "-1");
+      if (!document.getElementById("plugin-panel-tabbar-styles")) {
+        const style2 = document.createElement("style");
+        style2.id = "plugin-panel-tabbar-styles";
+        style2.textContent = `
+        .plugin-detail-tabs::-webkit-scrollbar { display: none; }
+        .plugin-detail-tabs { -ms-overflow-style: none; scrollbar-width: none; }
+      `;
+        document.head.appendChild(style2);
+      }
       this._bindOverlayEvents();
     }
     /**
@@ -77515,6 +80012,59 @@ $$
       }
     }
     /**
+     * Install a plugin from a GitHub repository.
+     * Downloads the repo as a zip, extracts it, and installs.
+     */
+    async installFromGitHub() {
+      try {
+        const url = prompt("GitHub repo URL (e.g. user/repo or https://github.com/user/repo)");
+        if (!url) return;
+        let zipUrl;
+        if (url.includes("github.com/")) {
+          const match2 = url.match(/github\.com\/([^/]+\/[^/]+)/);
+          if (match2) {
+            zipUrl = `https://github.com/${match2[1]}/archive/refs/heads/main.zip`;
+          }
+        } else if (url.includes("/")) {
+          zipUrl = `https://github.com/${url}/archive/refs/heads/main.zip`;
+        }
+        if (!zipUrl) {
+          this.showToast("Invalid GitHub URL", "error");
+          return;
+        }
+        this.showToast("Downloading plugin from GitHub...", "info");
+        const resp = await fetch(zipUrl);
+        if (!resp.ok) {
+          throw new Error(`Failed to download: ${resp.status} ${resp.statusText}`);
+        }
+        const blob = await resp.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        const JSZip = (await Promise.resolve().then(() => __toESM(require_jszip_min()))).default;
+        const zip = new JSZip();
+        await zip.loadAsync(arrayBuffer);
+        const rootFolders = Object.keys(zip.files).filter((name2) => name2.endsWith("/"));
+        if (rootFolders.length === 0) {
+          throw new Error("Zip does not contain a root folder");
+        }
+        const rootFolder = rootFolders[0].slice(0, -1);
+        const base64 = arrayBufferToBase64(arrayBuffer);
+        if (!this.pluginManager?.installFromGitHubZip) throw new Error("Install API not available");
+        const result = await this.pluginManager.installFromGitHubZip(base64);
+        if (result?.success !== false) {
+          const id3 = result?.pluginId || rootFolder;
+          this.recentlyInstalled = id3;
+          this.showToast(`Plugin "${id3}" installed from GitHub!`, "success");
+          await this.loadData();
+        } else {
+          this.showToast(`Install failed: ${result?.error || "Unknown error"}`, "error");
+        }
+        fs.rmSync(tmpDir, { recursive: true, force: true });
+      } catch (err) {
+        console.error("[PluginManagerPanel] GitHub install error:", err);
+        this.showToast(`GitHub install failed: ${err.message}`, "error");
+      }
+    }
+    /**
      * Toggle a plugin enabled/disabled with optimistic update and rollback on failure.
      * @param {Object} plugin
      * @param {boolean} enable
@@ -77525,6 +80075,7 @@ $$
       const prevEnabled = plugin.enabled;
       const prevActive = plugin.active;
       const prevError = plugin.error;
+      const wasInDetailView = this.selectedPluginId === plugin.name;
       plugin.enabled = enable;
       if (enable) {
         plugin.active = true;
@@ -77532,7 +80083,7 @@ $$
       } else {
         plugin.active = false;
       }
-      this._renderListContent();
+      this.render();
       try {
         const res = enable ? await this.pluginManager.enable(plugin.name) : await this.pluginManager.disable(plugin.name);
         if (res && res.success === false) {
@@ -77540,20 +80091,25 @@ $$
           plugin.active = prevActive;
           plugin.error = res.error || prevError;
           this.showToast(`Failed to ${enable ? "enable" : "disable"} ${plugin.name}: ${res.error}`, "error");
+          this.render();
         } else {
           this.showToast(`Plugin "${plugin.name}" ${enable ? "enabled" : "disabled"}.`, "success");
           if (enable) {
             await this.loadSettings();
           }
+          if (!enable) {
+            this.selectedPluginId = null;
+          }
+          this.render();
         }
       } catch (err) {
         plugin.enabled = prevEnabled;
         plugin.active = prevActive;
         plugin.error = err.message;
         this.showToast(`Action failed: ${err.message}`, "error");
+        this.render();
       } finally {
         this.inFlightActions.delete(plugin.name);
-        this._renderListContent();
       }
     }
     /**
@@ -77582,7 +80138,7 @@ $$
         this.showToast(`Uninstall error: ${err.message}`, "error");
       } finally {
         this.inFlightActions.delete(plugin.name);
-        this._renderListContent();
+        this.render();
       }
     }
     /**
@@ -77763,11 +80319,128 @@ $$
       toastEl.appendChild(closeBtn);
     }
     /**
+     * Show error details modal with copy functionality.
+     * @param {string} pluginName
+     * @param {string} error
+     * @private
+     */
+    _showErrorModal(pluginName2, error) {
+      const modal = document.createElement("div");
+      modal.className = "plugin-error-modal-overlay";
+      modal.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    `;
+      const modalContent = document.createElement("div");
+      modalContent.className = "plugin-error-modal";
+      modalContent.style.cssText = `
+      background: var(--fm-bg-secondary);
+      border: 1px solid var(--fm-border);
+      border-radius: 12px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    `;
+      const header3 = document.createElement("div");
+      header3.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--fm-border);
+    `;
+      header3.innerHTML = `<h3 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">${createIcon(TriangleExclamationPoint, { width: 18, height: 18 }).outerHTML} Error Details: ${pluginName2}</h3>`;
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "plugin-error-modal-close";
+      closeBtn.style.cssText = "background: none; border: none; cursor: pointer; padding: 4px; color: var(--fm-text-muted);";
+      closeBtn.appendChild(createIcon(CircleX, { width: 20, height: 20 }));
+      closeBtn.addEventListener("click", () => modal.remove());
+      header3.appendChild(closeBtn);
+      modalContent.appendChild(header3);
+      const content3 = document.createElement("div");
+      content3.style.cssText = `
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 60vh;
+    `;
+      const errorLabel = document.createElement("div");
+      errorLabel.style.cssText = "font-size: 12px; font-weight: 600; color: var(--fm-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;";
+      errorLabel.textContent = "Error Message";
+      content3.appendChild(errorLabel);
+      const errorBox = document.createElement("pre");
+      errorBox.style.cssText = `
+      background: var(--fm-bg-tertiary);
+      border: 1px solid var(--fm-border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: var(--fm-font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--fm-text);
+      margin: 0 0 16px 0;
+      max-height: 400px;
+      overflow-y: auto;
+    `;
+      errorBox.textContent = String(error).slice(-5e3);
+      content3.appendChild(errorBox);
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "plugin-error-copy-btn plugins-btn-secondary";
+      copyBtn.style.cssText = "display: flex; align-items: center; gap: 8px;";
+      copyBtn.appendChild(createIcon(Copy, { width: 14, height: 14 }));
+      const copyText = document.createElement("span");
+      copyText.textContent = "Copy Error to Clipboard";
+      copyBtn.appendChild(copyText);
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(`${pluginName2} Error:
+${error}`);
+          copyBtn.innerHTML = "";
+          copyBtn.appendChild(createIcon(Check, { width: 14, height: 14 }));
+          const copiedText = document.createElement("span");
+          copiedText.textContent = "Copied!";
+          copyBtn.appendChild(copiedText);
+          setTimeout(() => {
+            copyBtn.innerHTML = "";
+            copyBtn.appendChild(createIcon(Copy, { width: 14, height: 14 }));
+            copyBtn.appendChild(copyText);
+          }, 2e3);
+        } catch (err) {
+          this.showToast("Failed to copy to clipboard", "error");
+        }
+      });
+      content3.appendChild(copyBtn);
+      modalContent.appendChild(content3);
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.remove();
+      });
+      const handleEscape = (e) => {
+        if (e.key === "Escape") {
+          modal.remove();
+          document.removeEventListener("keydown", handleEscape);
+        }
+      };
+      document.addEventListener("keydown", handleEscape);
+      closeBtn.focus();
+    }
+    /**
      * Main render method. Renders either the plugin list or dedicated plugin detail section.
      */
-    render() {
+    async render() {
       if (this.selectedPluginId) {
-        this._renderDetailView();
+        await this._renderDetailView();
       } else {
         this._renderListView();
       }
@@ -77809,6 +80482,14 @@ $$
       installBtn.appendChild(installBtnText);
       installBtn.addEventListener("click", () => this.installFromFolder());
       headerActions.appendChild(installBtn);
+      const installGithubBtn = document.createElement("button");
+      installGithubBtn.className = "plugins-btn-secondary";
+      installGithubBtn.appendChild(createIcon(GitBranch, { width: 15, height: 15 }));
+      const installGithubText = document.createElement("span");
+      installGithubText.textContent = "Install from GitHub\u2026";
+      installGithubBtn.appendChild(installGithubText);
+      installGithubBtn.addEventListener("click", () => this.installFromGitHub());
+      headerActions.appendChild(installGithubBtn);
       const closeBtn = document.createElement("button");
       closeBtn.className = "plugins-close-btn";
       closeBtn.title = "Close (Esc)";
@@ -78135,7 +80816,7 @@ $$
      * Render the dedicated detail section for this.selectedPluginId.
      * @private
      */
-    _renderDetailView() {
+    async _renderDetailView() {
       this.box.replaceChildren();
       const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
       if (!plugin) {
@@ -78186,13 +80867,15 @@ $$
       const tabBar = document.createElement("div");
       tabBar.className = "plugin-detail-tabs";
       tabBar.setAttribute("role", "tablist");
+      tabBar.style.cssText = "display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;";
       const tabs = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "settings", label: "Settings", icon: Settings2 },
         { id: "contributions", label: "Contributions", icon: Puzzle },
         { id: "permissions", label: "Permissions", icon: Shield },
         { id: "location", label: "Location", icon: HardDrive },
-        { id: "manage", label: "Manage", icon: Trash }
+        { id: "manage", label: "Manage", icon: Trash },
+        { id: "registry", label: "Registry", icon: Globe }
       ];
       tabs.forEach((tab3) => {
         const btn = document.createElement("button");
@@ -78201,6 +80884,7 @@ $$
         btn.setAttribute("aria-selected", this.detailTab === tab3.id);
         btn.setAttribute("aria-controls", `panel-${tab3.id}`);
         btn.id = `tab-${tab3.id}`;
+        btn.style.cssText = "flex-shrink: 0; white-space: nowrap;";
         btn.appendChild(createIcon(tab3.icon, { width: 14, height: 14 }));
         const label = document.createElement("span");
         label.textContent = tab3.label;
@@ -78280,6 +80964,9 @@ $$
         errorMsg.textContent = String(plugin.error);
         errorText.appendChild(errorMsg);
         errorBlock.appendChild(errorText);
+        const errorActions = document.createElement("div");
+        errorActions.className = "plugin-error-actions";
+        errorActions.style.cssText = "display: flex; gap: 8px; margin-top: 8px;";
         const retryBtn = document.createElement("button");
         retryBtn.className = "plugin-retry-btn";
         retryBtn.appendChild(createIcon(RotateCw, { width: 12, height: 12 }));
@@ -78290,7 +80977,19 @@ $$
           e.stopPropagation();
           this.togglePlugin(plugin, true);
         });
-        errorBlock.appendChild(retryBtn);
+        errorActions.appendChild(retryBtn);
+        const viewErrorBtn = document.createElement("button");
+        viewErrorBtn.className = "plugin-btn-secondary";
+        viewErrorBtn.appendChild(createIcon(TriangleExclamationPoint, { width: 12, height: 12 }));
+        const viewErrorText = document.createElement("span");
+        viewErrorText.textContent = "View Details";
+        viewErrorBtn.appendChild(viewErrorText);
+        viewErrorBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this._showErrorModal(plugin.name, plugin.error);
+        });
+        errorActions.appendChild(viewErrorBtn);
+        errorBlock.appendChild(errorActions);
         content3.appendChild(errorBlock);
       }
       const panelsContainer = document.createElement("div");
@@ -78356,12 +81055,12 @@ $$
         overviewPanel.appendChild(authorSection);
       }
       panelsContainer.appendChild(overviewPanel);
-      const settingsPanel2 = document.createElement("div");
-      settingsPanel2.id = "panel-settings";
-      settingsPanel2.setAttribute("role", "tabpanel");
-      settingsPanel2.setAttribute("aria-labelledby", "tab-settings");
-      settingsPanel2.hidden = this.detailTab !== "settings";
-      settingsPanel2.className = "plugin-tab-panel";
+      const settingsPanel = document.createElement("div");
+      settingsPanel.id = "panel-settings";
+      settingsPanel.setAttribute("role", "tabpanel");
+      settingsPanel.setAttribute("aria-labelledby", "tab-settings");
+      settingsPanel.hidden = this.detailTab !== "settings";
+      settingsPanel.className = "plugin-tab-panel";
       const manifestSettings = plugin.manifest?.settings || {};
       const pluginSettingsData = this.settingsMap.get(plugin.name);
       const storedMetadata = pluginSettingsData?.metadata || {};
@@ -78484,14 +81183,14 @@ $$
           group.appendChild(row);
         });
         settingsSection.appendChild(group);
-        settingsPanel2.appendChild(settingsSection);
+        settingsPanel.appendChild(settingsSection);
       } else {
         const emptyState = document.createElement("div");
         emptyState.className = "plugin-settings-empty";
         emptyState.textContent = "This plugin has no configurable settings.";
-        settingsPanel2.appendChild(emptyState);
+        settingsPanel.appendChild(emptyState);
       }
-      panelsContainer.appendChild(settingsPanel2);
+      panelsContainer.appendChild(settingsPanel);
       const contribPanel = document.createElement("div");
       contribPanel.id = "panel-contributions";
       contribPanel.setAttribute("role", "tabpanel");
@@ -78575,22 +81274,124 @@ $$
       permPanel.setAttribute("aria-labelledby", "tab-permissions");
       permPanel.hidden = this.detailTab !== "permissions";
       permPanel.className = "plugin-tab-panel";
-      if (Array.isArray(plugin.permissions) && plugin.permissions.length > 0) {
+      const ALL_PERMISSIONS = [
+        "editor.read",
+        "editor.write",
+        "editor.selection",
+        "editor.commands",
+        "file.read",
+        "file.write",
+        "file.save",
+        "file.export",
+        "settings.read",
+        "settings.write",
+        "ui.menus",
+        "ui.statusbar",
+        "ui.notifications",
+        "clipboard.read",
+        "clipboard.write",
+        "ui.panels",
+        "ui.customViews",
+        "editor.slashCommands",
+        "clipboard.smartPaste",
+        "network.request",
+        "network.request:write"
+      ];
+      const requestedPerms = plugin.manifest?.permissions || [];
+      const grantedPerms = plugin.permissions || [];
+      if (requestedPerms.length > 0 || grantedPerms.length > 0) {
         const permSection = document.createElement("div");
         permSection.className = "plugin-detail-section";
         const permTitle = document.createElement("div");
         permTitle.className = "plugin-section-title";
-        permTitle.textContent = "Requested Permissions";
+        permTitle.textContent = "Permissions";
         permSection.appendChild(permTitle);
-        const permList = document.createElement("div");
-        permList.className = "plugin-tags-list";
-        plugin.permissions.forEach((perm) => {
-          const tag2 = document.createElement("span");
-          tag2.className = "plugin-tag";
-          tag2.textContent = perm;
-          permList.appendChild(tag2);
-        });
-        permSection.appendChild(permList);
+        if (requestedPerms.length > 0) {
+          const requestedTitle = document.createElement("div");
+          requestedTitle.className = "plugin-subsection-title";
+          requestedTitle.textContent = "Requested (from manifest)";
+          requestedTitle.style.cssText = "font-size: 12px; font-weight: 600; color: var(--fm-text-muted); margin: 16px 0 8px 0;";
+          permSection.appendChild(requestedTitle);
+          const requestedList = document.createElement("div");
+          requestedList.className = "plugin-permission-list";
+          requestedPerms.forEach((perm) => {
+            const row = document.createElement("div");
+            row.className = "plugin-permission-row";
+            row.style.cssText = "display: flex; align-items: center; gap: 12px; padding: 8px 0;";
+            const label = document.createElement("label");
+            label.className = "plugin-permission-label";
+            label.style.cssText = "flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer;";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = grantedPerms.includes(perm);
+            checkbox.disabled = true;
+            checkbox.style.cssText = "width: 16px; height: 16px; accent-color: var(--fm-accent);";
+            label.appendChild(checkbox);
+            const permName = document.createElement("span");
+            permName.textContent = perm;
+            permName.style.cssText = "font-family: var(--fm-font-mono); font-size: 12px;";
+            label.appendChild(permName);
+            row.appendChild(label);
+            requestedList.appendChild(row);
+          });
+          permSection.appendChild(requestedList);
+        }
+        const additionalPerms = ALL_PERMISSIONS.filter((p) => !requestedPerms.includes(p));
+        if (additionalPerms.length > 0) {
+          const additionalTitle = document.createElement("div");
+          additionalTitle.className = "plugin-subsection-title";
+          additionalTitle.textContent = "Available (grant at runtime)";
+          additionalTitle.style.cssText = "font-size: 12px; font-weight: 600; color: var(--fm-text-muted); margin: 16px 0 8px 0;";
+          permSection.appendChild(additionalTitle);
+          const additionalList = document.createElement("div");
+          additionalList.className = "plugin-permission-list";
+          additionalPerms.forEach((perm) => {
+            const row = document.createElement("div");
+            row.className = "plugin-permission-row";
+            row.style.cssText = "display: flex; align-items: center; gap: 12px; padding: 8px 0;";
+            const label = document.createElement("label");
+            label.className = "plugin-permission-label";
+            label.style.cssText = "flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer;";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = grantedPerms.includes(perm);
+            checkbox.style.cssText = "width: 16px; height: 16px; accent-color: var(--fm-accent);";
+            label.appendChild(checkbox);
+            const permName = document.createElement("span");
+            permName.textContent = perm;
+            permName.style.cssText = "font-family: var(--fm-font-mono); font-size: 12px;";
+            label.appendChild(permName);
+            const status = document.createElement("span");
+            status.textContent = grantedPerms.includes(perm) ? "Granted" : "Revoked";
+            status.className = grantedPerms.includes(perm) ? "plugin-perm-status granted" : "plugin-perm-status revoked";
+            status.style.cssText = "font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--fm-bg-tertiary);";
+            label.appendChild(status);
+            row.appendChild(label);
+            additionalList.appendChild(row);
+            checkbox.addEventListener("change", async (e) => {
+              e.stopPropagation();
+              checkbox.disabled = true;
+              try {
+                if (checkbox.checked) {
+                  await this.pluginManager.grantPermission?.(plugin.name, perm);
+                  status.textContent = "Granted";
+                  status.className = "plugin-perm-status granted";
+                } else {
+                  await this.pluginManager.revokePermission?.(plugin.name, perm);
+                  status.textContent = "Revoked";
+                  status.className = "plugin-perm-status revoked";
+                }
+                await this.loadData();
+              } catch (err) {
+                this.showToast(`Failed to update permission: ${err.message}`, "error");
+                checkbox.checked = !checkbox.checked;
+              } finally {
+                checkbox.disabled = false;
+              }
+            });
+          });
+          permSection.appendChild(additionalList);
+        }
         permPanel.appendChild(permSection);
       } else {
         const emptyState = document.createElement("div");
@@ -78672,6 +81473,7 @@ $$
       reloadBtn.appendChild(reloadText);
       reloadBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
+        if (this.inFlightActions.has(plugin.name)) return;
         this.inFlightActions.add(plugin.name);
         this.render();
         try {
@@ -78691,12 +81493,1013 @@ $$
       });
       reloadSection.appendChild(reloadBtn);
       managePanel.appendChild(reloadSection);
+      if (window.appAPI?.isDevMode) {
+        const isDev = await window.appAPI.isDevMode();
+        if (isDev) {
+          const devReloadSection = document.createElement("div");
+          devReloadSection.className = "plugin-detail-section";
+          const devReloadTitle = document.createElement("div");
+          devReloadTitle.className = "plugin-section-title";
+          devReloadTitle.textContent = "Dev Mode: Hot Reload";
+          devReloadSection.appendChild(devReloadTitle);
+          const devReloadBtn = document.createElement("button");
+          devReloadBtn.className = "plugins-btn-primary";
+          devReloadBtn.appendChild(createIcon(RotateCw, { width: 13, height: 13 }));
+          const devReloadText = document.createElement("span");
+          devReloadText.textContent = "Hot Reload (instant)";
+          devReloadBtn.appendChild(devReloadText);
+          devReloadBtn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            this.inFlightActions.add(plugin.name);
+            this.render();
+            try {
+              if (this.pluginManager.devReload) {
+                const result = await this.pluginManager.devReload(plugin.name);
+                if (result?.success) {
+                  this.showToast(`Plugin "${plugin.name}" hot reloaded.`, "success");
+                } else {
+                  this.showToast(`Hot reload failed: ${result?.error || "Unknown error"}`, "error");
+                }
+              } else {
+                this.showToast("Hot reload not available", "error");
+              }
+            } catch (err) {
+              this.showToast(`Hot reload error: ${err.message}`, "error");
+            } finally {
+              this.inFlightActions.delete(plugin.name);
+              this.render();
+            }
+          });
+          devReloadSection.appendChild(devReloadBtn);
+          managePanel.appendChild(devReloadSection);
+        }
+      }
       panelsContainer.appendChild(managePanel);
+      const registryPanel = document.createElement("div");
+      registryPanel.id = "panel-registry";
+      registryPanel.setAttribute("role", "tabpanel");
+      registryPanel.setAttribute("aria-labelledby", "tab-registry");
+      registryPanel.hidden = this.detailTab !== "registry";
+      registryPanel.className = "plugin-tab-panel";
+      this._renderRegistryPanel(registryPanel);
+      panelsContainer.appendChild(registryPanel);
       content3.appendChild(panelsContainer);
       this.box.appendChild(content3);
       backBtn.focus();
     }
+    /**
+     * Render the Registry panel with available plugins from registry index.
+     * @private
+     */
+    async _renderRegistryPanel(container) {
+      container.replaceChildren();
+      const section2 = document.createElement("div");
+      section2.className = "plugin-detail-section";
+      const title = document.createElement("div");
+      title.className = "plugin-section-title";
+      title.textContent = "Plugin Registry";
+      section2.appendChild(title);
+      const desc = document.createElement("div");
+      desc.className = "plugin-detail-desc";
+      desc.textContent = "Browse and install plugins from the FlowMark registry.";
+      desc.style.marginBottom = "16px";
+      section2.appendChild(desc);
+      try {
+        const registry = await window.pluginRegistryAPI?.getRegistry?.() || {};
+        const entries = Object.entries(registry);
+        if (entries.length === 0) {
+          const empty2 = document.createElement("div");
+          empty2.className = "plugin-registry-empty";
+          empty2.textContent = "No plugins in registry yet.";
+          section2.appendChild(empty2);
+          container.appendChild(section2);
+          return;
+        }
+        const grid = document.createElement("div");
+        grid.className = "plugin-registry-grid";
+        grid.style.cssText = "display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;";
+        for (const [key, plugin] of entries) {
+          const card = document.createElement("div");
+          card.className = "plugin-registry-card";
+          card.style.cssText = "background: var(--fm-bg-secondary); border: 1px solid var(--fm-border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;";
+          const header3 = document.createElement("div");
+          header3.style.cssText = "display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;";
+          const info = document.createElement("div");
+          const name2 = document.createElement("div");
+          name2.style.cssText = "font-weight: 600; font-size: 14px;";
+          name2.textContent = plugin.name || key;
+          info.appendChild(name2);
+          const version2 = document.createElement("div");
+          version2.style.cssText = "font-size: 12px; color: var(--fm-text-muted);";
+          version2.textContent = `v${plugin.version}`;
+          info.appendChild(version2);
+          if (plugin.description) {
+            const descEl = document.createElement("div");
+            descEl.style.cssText = "font-size: 12px; color: var(--fm-text-muted); margin-top: 4px;";
+            descEl.textContent = plugin.description;
+            info.appendChild(descEl);
+          }
+          header3.appendChild(info);
+          card.appendChild(header3);
+          const actions = document.createElement("div");
+          actions.style.cssText = "display: flex; gap: 8px; margin-top: auto;";
+          const installBtn = document.createElement("button");
+          installBtn.className = "plugins-btn-primary";
+          installBtn.style.flex = "1";
+          installBtn.textContent = "Install";
+          installBtn.addEventListener("click", async () => {
+            installBtn.disabled = true;
+            installBtn.textContent = "Downloading...";
+            try {
+              if (!plugin.repo) throw new Error("No repository URL in registry");
+              const zipUrl = `${plugin.repo}/archive/refs/heads/main.zip`;
+              const resp = await fetch(zipUrl);
+              if (!resp.ok) throw new Error(`Failed to download: ${resp.status}`);
+              const blob = await resp.blob();
+              const arrayBuffer = await blob.arrayBuffer();
+              const base64 = arrayBufferToBase64(arrayBuffer);
+              installBtn.textContent = "Installing...";
+              if (!this.pluginManager?.installFromGitHubZip) throw new Error("Install API not available");
+              const result = await this.pluginManager.installFromGitHubZip(base64);
+              if (result?.success) {
+                this.showToast(`Plugin "${plugin.name}" installed!`, "success");
+                await this.loadData();
+                this.render();
+              } else {
+                throw new Error(result?.error || "Unknown error");
+              }
+            } catch (err) {
+              this.showToast(`Install failed: ${err.message}`, "error");
+              installBtn.disabled = false;
+              installBtn.textContent = "Install";
+            }
+          });
+          actions.appendChild(installBtn);
+          if (plugin.repo) {
+            const repoBtn = document.createElement("button");
+            repoBtn.className = "plugins-btn-secondary";
+            repoBtn.style.cssText = "padding: 0 12px;";
+            repoBtn.appendChild(createIcon(GitBranch, { width: 14, height: 14 }));
+            const repoText = document.createElement("span");
+            repoText.textContent = " View Source";
+            repoBtn.appendChild(repoText);
+            repoBtn.addEventListener("click", () => {
+              window.shellAPI.openExternal(plugin.repo);
+            });
+            actions.appendChild(repoBtn);
+          }
+          card.appendChild(actions);
+          grid.appendChild(card);
+        }
+        section2.appendChild(grid);
+      } catch (err) {
+        console.error("[PluginManagerPanel] Registry load error:", err);
+        const errorEl = document.createElement("div");
+        errorEl.className = "plugin-registry-error";
+        errorEl.style.cssText = "color: var(--fm-error); padding: 16px; text-align: center;";
+        errorEl.textContent = `Failed to load registry: ${err.message}`;
+        section2.appendChild(errorEl);
+      }
+      container.appendChild(section2);
+    }
   };
+
+  // src/ui/settingsDialog.js
+  var SettingsDialog = class {
+    constructor() {
+      this.tabs = [];
+      this.activeTabId = null;
+      this.element = null;
+      this.previousFocus = null;
+      this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+      this.boundHandleClickOutside = this.handleClickOutside.bind(this);
+      this.render();
+    }
+    registerTab(tab3) {
+      if (!tab3?.id || !tab3?.label || !tab3?.component) {
+        console.warn("Invalid tab registration:", tab3);
+        return false;
+      }
+      this.tabs.push(tab3);
+      this.renderTabList();
+      this.renderContentPane();
+      return true;
+    }
+    open() {
+      this.previousFocus = document.activeElement;
+      document.body.classList.add("settings-dialog-open");
+      this.element.classList.remove("hidden");
+      this.element.setAttribute("aria-hidden", "false");
+      if (!this.activeTabId && this.tabs.length > 0) {
+        this.activeTabId = this.tabs[0].id;
+      }
+      this.renderTabList();
+      this.renderContentPane();
+      const activeTab = this.tabs.find((t2) => t2.id === this.activeTabId);
+      if (activeTab && typeof activeTab.onActivate === "function") {
+        try {
+          activeTab.onActivate();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      this.trapFocus();
+      this.focusFirstTab();
+      document.addEventListener("keydown", this.boundHandleKeyDown);
+      document.addEventListener("mousedown", this.boundHandleClickOutside);
+      window.dispatchEvent(new CustomEvent("settings:open"));
+    }
+    close() {
+      const activeTab = this.tabs.find((t2) => t2.id === this.activeTabId);
+      if (activeTab && typeof activeTab.onDeactivate === "function") {
+        try {
+          activeTab.onDeactivate();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      document.body.classList.remove("settings-dialog-open");
+      this.element.classList.add("hidden");
+      this.element.setAttribute("aria-hidden", "true");
+      this.restoreFocus();
+      document.removeEventListener("keydown", this.boundHandleKeyDown);
+      document.removeEventListener("mousedown", this.boundHandleClickOutside);
+      window.dispatchEvent(new CustomEvent("settings:close"));
+    }
+    isOpen() {
+      return !this.element.classList.contains("hidden");
+    }
+    activateTab(tabId) {
+      if (this.activeTabId === tabId) return true;
+      const prevTab = this.tabs.find((t2) => t2.id === this.activeTabId);
+      if (prevTab && typeof prevTab.onDeactivate === "function") {
+        try {
+          prevTab.onDeactivate();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      const tab3 = this.tabs.find((t2) => t2.id === tabId);
+      if (!tab3) return false;
+      this.activeTabId = tabId;
+      this.renderTabList();
+      this.renderContentPane();
+      if (typeof tab3.onActivate === "function") {
+        try {
+          tab3.onActivate();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      this.focusTabButton(tabId);
+      return true;
+    }
+    render() {
+      this.element = document.createElement("div");
+      this.element.id = "settings-dialog";
+      this.element.className = "settings-dialog hidden";
+      this.element.setAttribute("role", "dialog");
+      this.element.setAttribute("aria-modal", "true");
+      this.element.setAttribute("aria-labelledby", "settings-dialog-title");
+      this.element.setAttribute("aria-hidden", "true");
+      this.element.innerHTML = `
+      <div class="settings-dialog-backdrop" tabindex="-1"></div>
+      <div class="settings-dialog-window">
+        <header class="settings-dialog-header">
+          <h2 id="settings-dialog-title">Settings</h2>
+          <button type="button" class="settings-dialog-close" aria-label="Close settings">
+            ${createElement(X, { width: 18, height: 18, "aria-hidden": "true", class: "line-icon" }).outerHTML}
+          </button>
+        </header>
+        <div class="settings-dialog-body">
+          <nav class="settings-dialog-tabs" role="tablist" aria-label="Settings categories">
+            <!-- Tab buttons rendered here -->
+          </nav>
+          <div class="settings-dialog-content" role="tabpanel">
+            <!-- Tab content rendered here -->
+          </div>
+        </div>
+        <footer class="settings-dialog-footer">
+          <button type="button" class="settings-dialog-done">Done</button>
+        </footer>
+      </div>
+    `;
+      this.element.querySelector(".settings-dialog-close").addEventListener("click", () => this.close());
+      this.element.querySelector(".settings-dialog-done").addEventListener("click", () => this.close());
+      this.element.querySelector(".settings-dialog-backdrop").addEventListener("click", () => this.close());
+      document.body.appendChild(this.element);
+    }
+    renderTabList() {
+      const tabsNav = this.element.querySelector(".settings-dialog-tabs");
+      if (!tabsNav) return;
+      tabsNav.innerHTML = "";
+      for (const tab3 of this.tabs) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.role = "tab";
+        button.id = `settings-tab-${tab3.id}`;
+        button.dataset.tabId = tab3.id;
+        button.className = `settings-tab-button ${this.activeTabId === tab3.id ? "active" : ""}`;
+        button.setAttribute("aria-selected", this.activeTabId === tab3.id ? "true" : "false");
+        button.setAttribute("aria-controls", `settings-panel-${tab3.id}`);
+        button.title = tab3.label;
+        const iconEl = typeof tab3.icon === "string" ? tab3.icon : createElement(tab3.icon, { width: 18, height: 18, "aria-hidden": "true", class: "line-icon" }).outerHTML;
+        button.innerHTML = `${iconEl}<span class="settings-tab-label">${tab3.label}</span>`;
+        button.addEventListener("click", () => this.activateTab(tab3.id));
+        tabsNav.appendChild(button);
+      }
+      if (!this.activeTabId && this.tabs.length > 0) {
+        this.activeTabId = this.tabs[0].id;
+        this.renderTabList();
+        this.renderContentPane();
+      }
+    }
+    renderContentPane() {
+      const contentEl = this.element.querySelector(".settings-dialog-content");
+      if (!contentEl) return;
+      const activeTab = this.tabs.find((t2) => t2.id === this.activeTabId);
+      if (!activeTab) {
+        contentEl.innerHTML = '<div class="settings-placeholder">Select a tab</div>';
+        return;
+      }
+      contentEl.innerHTML = "";
+      contentEl.setAttribute("aria-labelledby", `settings-tab-${this.activeTabId}`);
+      contentEl.id = `settings-panel-${this.activeTabId}`;
+      contentEl.setAttribute("role", "tabpanel");
+      try {
+        const component = typeof activeTab.component === "function" ? activeTab.component() : activeTab.component;
+        if (component instanceof HTMLElement) {
+          contentEl.appendChild(component);
+        } else if (typeof component === "string") {
+          contentEl.innerHTML = component;
+        }
+      } catch (err) {
+        console.error(`Failed to render tab ${this.activeTabId}:`, err);
+        contentEl.innerHTML = '<div class="settings-error">Failed to load tab content</div>';
+      }
+    }
+    focusFirstTab() {
+      const firstTab = this.element.querySelector(".settings-tab-button");
+      firstTab?.focus();
+    }
+    focusTabButton(tabId) {
+      const button = this.element.querySelector(`[data-tab-id="${tabId}"]`);
+      button?.focus();
+    }
+    trapFocus() {
+      const focusableElements = this.element.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      this.element._focusTrap = (e) => {
+        if (e.key !== "Tab") return;
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      };
+      this.element.addEventListener("keydown", this.element._focusTrap);
+    }
+    restoreFocus() {
+      if (this.element._focusTrap) {
+        this.element.removeEventListener("keydown", this.element._focusTrap);
+        this.element._focusTrap = null;
+      }
+      if (this.previousFocus && typeof this.previousFocus.focus === "function") {
+        this.previousFocus.focus();
+      }
+    }
+    handleKeyDown(event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.close();
+      }
+    }
+    handleClickOutside(event) {
+      const dialogWin = this.element.querySelector(".settings-dialog-window");
+      if (dialogWin && !dialogWin.contains(event.target)) {
+        this.close();
+      }
+    }
+    destroy() {
+      this.close();
+      this.element?.remove();
+      this.element = null;
+    }
+  };
+
+  // src/ui/settingsTabs/index.js
+  var SettingsTab = class {
+    constructor(options = {}) {
+      this.id = options.id || "";
+      this.label = options.label || "";
+      this.icon = options.icon || null;
+      this.component = () => this.render();
+    }
+    /**
+     * Render the tab content. Override in subclasses.
+     * @returns {HTMLElement|string} The tab content
+     */
+    render() {
+      return `<div class="settings-tab-placeholder">${this.label} tab content</div>`;
+    }
+    /**
+     * Called when the tab is activated. Override for initialization logic.
+     */
+    onActivate() {
+    }
+    /**
+     * Called when the tab is deactivated. Override for cleanup logic.
+     */
+    onDeactivate() {
+    }
+    /**
+     * Get the tab configuration for registration
+     */
+    getConfig() {
+      return {
+        id: this.id,
+        label: this.label,
+        icon: this.icon,
+        component: this.component,
+        onActivate: () => this.onActivate(),
+        onDeactivate: () => this.onDeactivate()
+      };
+    }
+  };
+  var SettingsTabRegistry = class {
+    constructor() {
+      this.tabs = [];
+    }
+    register(tab3) {
+      const config2 = tab3 instanceof SettingsTab ? tab3.getConfig() : tab3;
+      if (!config2.id || !config2.label || !config2.component) {
+        console.warn("Invalid tab config:", config2);
+        return false;
+      }
+      const index = this.tabs.findIndex((t2) => t2.id === config2.id);
+      if (index >= 0) {
+        this.tabs[index] = config2;
+      } else {
+        this.tabs.push(config2);
+      }
+      return true;
+    }
+    unregister(tabId) {
+      const index = this.tabs.findIndex((t2) => t2.id === tabId);
+      if (index >= 0) {
+        this.tabs.splice(index, 1);
+        return true;
+      }
+      return false;
+    }
+    get(tabId) {
+      return this.tabs.find((t2) => t2.id === tabId);
+    }
+    getAll() {
+      return [...this.tabs];
+    }
+    getOrderedIds() {
+      return this.tabs.map((t2) => t2.id);
+    }
+  };
+  var settingsTabRegistry = new SettingsTabRegistry();
+  function createSettingsTab(id3, label, icon, renderFn) {
+    return {
+      id: id3,
+      label,
+      icon,
+      component: renderFn
+    };
+  }
+
+  // src/ui/settingsTabs/generalTab.js
+  var GeneralTab = class extends SettingsTab {
+    constructor() {
+      super({
+        id: "general",
+        label: "General",
+        icon: FolderOpen
+      });
+      this.element = null;
+      this.unsubSettingsChange = null;
+    }
+    async onActivate() {
+      await this.loadSettings();
+      if (this.element) this.bindEvents();
+    }
+    onDeactivate() {
+      this.unsubSettingsChange?.();
+      this.unsubSettingsChange = null;
+    }
+    async loadSettings() {
+      const defaults5 = {
+        startup: "welcome",
+        autosave: 30,
+        defaultFolder: "",
+        language: "auto"
+      };
+      for (const [key, defaultValue] of Object.entries(defaults5)) {
+        try {
+          const value = await window.settingsAPI?.get(key);
+          if (value !== void 0 && value !== null) {
+            defaults5[key] = value;
+          }
+        } catch (e) {
+          console.warn(`Failed to load setting ${key}:`, e);
+        }
+      }
+      const startup = this.element?.querySelector("#setting-startup");
+      const autosave = this.element?.querySelector("#setting-autosave");
+      const defaultFolder = this.element?.querySelector("#setting-default-folder");
+      const language2 = this.element?.querySelector("#setting-language");
+      if (startup) startup.value = defaults5.startup;
+      if (autosave) autosave.value = defaults5.autosave;
+      if (defaultFolder) defaultFolder.value = defaults5.defaultFolder;
+      if (language2) language2.value = defaults5.language;
+    }
+    bindEvents() {
+      const saveSetting = async (key, value) => {
+        try {
+          await window.settingsAPI?.set(key, value);
+        } catch (e) {
+          console.error(`Failed to save setting ${key}:`, e);
+        }
+      };
+      const startup = this.element.querySelector("#setting-startup");
+      const autosave = this.element.querySelector("#setting-autosave");
+      const defaultFolder = this.element.querySelector("#setting-default-folder");
+      const language2 = this.element.querySelector("#setting-language");
+      const browseBtn = this.element.querySelector("#btn-select-folder");
+      startup?.addEventListener("change", () => saveSetting("startup", startup.value));
+      autosave?.addEventListener("change", () => saveSetting("autosave", parseInt(autosave.value, 10)));
+      language2?.addEventListener("change", () => saveSetting("language", language2.value));
+      browseBtn?.addEventListener("click", async () => {
+        try {
+          const result = await window.fileAPI?.open();
+          if (result && !result.canceled && result.filePath) {
+            defaultFolder.value = result.filePath;
+            await saveSetting("defaultFolder", result.filePath);
+          }
+        } catch (e) {
+          console.error("Failed to select folder:", e);
+        }
+      });
+    }
+    render() {
+      this.element = document.createElement("div");
+      this.element.className = "settings-tab-content";
+      this.element.innerHTML = `
+      <h3>General</h3>
+      <div class="settings-form">
+        <fieldset>
+          <legend>Startup</legend>
+          <label>
+            <span>On launch</span>
+            <select id="setting-startup">
+              <option value="welcome">Welcome screen</option>
+              <option value="new-file">New file</option>
+              <option value="last-session">Restore last session</option>
+            </select>
+          </label>
+          <label>
+            <span>Auto-save interval (seconds)</span>
+            <input type="number" id="setting-autosave" min="10" max="3600" value="30" />
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Files</legend>
+          <label>
+            <span>Default folder</span>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="setting-default-folder" placeholder="Select folder..." readonly style="flex:1;" />
+              <button type="button" id="btn-select-folder">Browse\u2026</button>
+            </div>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Language</legend>
+          <label>
+            <span>Interface language</span>
+            <select id="setting-language">
+              <option value="auto">System default</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+        </fieldset>
+      </div>
+    `;
+      return this.element;
+    }
+  };
+  var generalTab = new GeneralTab();
+
+  // src/ui/settingsTabs/appearanceTab.js
+  var ACCENTS = {
+    blue: { dark: "#7cb8f0", light: "#2970c8" },
+    steel: { dark: "#90aac8", light: "#3a5878" },
+    sky: { dark: "#80d0e8", light: "#1888a8" },
+    sage: { dark: "#90c8a0", light: "#2a7a48" },
+    mint: { dark: "#80e0c0", light: "#0a8060" },
+    olive: { dark: "#b0c880", light: "#506820" },
+    rose: { dark: "#f0a0b0", light: "#b83050" },
+    coral: { dark: "#f0907a", light: "#c04030" },
+    blush: { dark: "#e8b0c8", light: "#a03870" },
+    lavender: { dark: "#b8a8f0", light: "#5040b8" },
+    mauve: { dark: "#d0a0d0", light: "#883888" },
+    violet: { dark: "#c0a0e8", light: "#6030b0" },
+    peach: { dark: "#f0b890", light: "#b05820" },
+    sand: { dark: "#d4b896", light: "#7a5030" },
+    amber: { dark: "#e8c870", light: "#987010" },
+    slate: { dark: "#a0b8c8", light: "#305068" }
+  };
+  var THEMES = [
+    { value: "theme-dark", label: "Dark", class: "dark" },
+    { value: "theme-light", label: "Light", class: "light" },
+    { value: "theme-sepia", label: "Sepia", class: "sepia" },
+    { value: "system", label: "System", class: "system" }
+  ];
+  var CUSTOM_COLOR_KEYS = [
+    { key: "--fm-bg", label: "Background", type: "color" },
+    { key: "--fm-text", label: "Text", type: "color" },
+    { key: "--fm-accent", label: "Accent", type: "color" },
+    { key: "--fm-border", label: "Border", type: "color" }
+  ];
+  var AppearanceTab = class extends SettingsTab {
+    constructor() {
+      super({
+        id: "appearance",
+        label: "Appearance",
+        icon: Palette
+      });
+      this.element = null;
+      this.currentAccent = "blue";
+      this.currentTheme = "theme-dark";
+      this.customColors = {};
+    }
+    async onActivate() {
+      await this.loadSettings();
+      if (this.element) this.bindEvents();
+    }
+    onDeactivate() {
+    }
+    async loadSettings() {
+      try {
+        const apiTheme = await window.themeAPI?.getTheme?.();
+        const settingsTheme = await window.settingsAPI?.get?.("theme");
+        this.currentTheme = apiTheme || settingsTheme || window.themeControls?.getTheme() || "theme-dark";
+        const settingsAccent = await window.settingsAPI?.get?.("accent");
+        this.currentAccent = settingsAccent || window.themeControls?.getAccent() || "blue";
+        this.customColors = {};
+        const savedCustom = await window.themeAPI?.getCustomColors?.() || await window.settingsAPI?.get?.("customColors");
+        if (savedCustom && typeof savedCustom === "object") {
+          this.customColors = { ...savedCustom };
+        } else {
+          const CUSTOM_COLOR_KEYS2 = [
+            { key: "--fm-bg", label: "Background" },
+            { key: "--fm-text", label: "Text" },
+            { key: "--fm-accent", label: "Accent" },
+            { key: "--fm-border", label: "Border" }
+          ];
+          for (const { key } of CUSTOM_COLOR_KEYS2) {
+            const value = getComputedStyle(document.documentElement).getPropertyValue(key).trim();
+            if (value) this.customColors[key] = value;
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to load appearance settings:", e);
+      }
+      if (this.element) {
+        const themeRadios = this.element.querySelectorAll('input[name="theme"]');
+        themeRadios.forEach((r2) => r2.checked = r2.value === this.currentTheme);
+        const accentBtns = this.element.querySelectorAll(".accent-opt");
+        accentBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.accent === this.currentAccent));
+        this.renderCustomColorInputs();
+      }
+    }
+    bindEvents() {
+      const themeRadios = this.element.querySelectorAll('input[name="theme"]');
+      themeRadios.forEach((radio) => {
+        radio.addEventListener("change", async () => {
+          this.currentTheme = radio.value;
+          await this.saveTheme();
+          this.updateCustomSectionVisibility();
+        });
+      });
+      const accentBtns = this.element.querySelectorAll(".accent-opt");
+      accentBtns.forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          this.currentAccent = btn.dataset.accent;
+          await this.saveAccent();
+          this.updateAccentSelection();
+        });
+      });
+      const fontSize = this.element.querySelector("#setting-font-size");
+      const fontSizeVal = this.element.querySelector("#font-size-value");
+      fontSize?.addEventListener("input", () => {
+        fontSizeVal.textContent = fontSize.value + "px";
+      });
+      fontSize?.addEventListener("change", async () => {
+        await this.saveSetting("fontSize", parseInt(fontSize.value, 10));
+      });
+      const lineHeight = this.element.querySelector("#setting-line-height");
+      const lineHeightVal = this.element.querySelector("#line-height-value");
+      lineHeight?.addEventListener("input", () => {
+        lineHeightVal.textContent = lineHeight.value;
+      });
+      lineHeight?.addEventListener("change", async () => {
+        await this.saveSetting("lineHeight", parseFloat(lineHeight.value));
+      });
+      const editorWidth = this.element.querySelector("#setting-editor-width");
+      const editorWidthVal = this.element.querySelector("#editor-width-value");
+      editorWidth?.addEventListener("input", () => {
+        editorWidthVal.textContent = editorWidth.value + "px";
+      });
+      editorWidth?.addEventListener("change", async () => {
+        await this.saveSetting("editorWidth", parseInt(editorWidth.value, 10));
+      });
+      this.element.querySelectorAll(".custom-color-input").forEach((input) => {
+        input.addEventListener("input", () => {
+          const key = input.dataset.key;
+          this.customColors[key] = input.value;
+          this.applyCustomColor(key, input.value);
+        });
+        input.addEventListener("change", async () => {
+          await this.saveCustomColors();
+        });
+      });
+      this.updateCustomSectionVisibility();
+    }
+    async saveTheme() {
+      try {
+        window.themeControls?.setTheme(this.currentTheme);
+        await window.settingsAPI?.set?.("theme", this.currentTheme);
+        await window.themeAPI?.setTheme?.(this.currentTheme);
+        this.updateCustomSectionVisibility();
+      } catch (e) {
+        console.error("Failed to save theme:", e);
+      }
+    }
+    async saveAccent() {
+      try {
+        window.themeControls?.setAccent(this.currentAccent);
+        await window.settingsAPI?.set?.("accent", this.currentAccent);
+        this.updateAccentSelection();
+      } catch (e) {
+        console.error("Failed to save accent:", e);
+      }
+    }
+    updateAccentSelection() {
+      this.element?.querySelectorAll(".accent-opt").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.accent === this.currentAccent);
+      });
+    }
+    updateCustomSectionVisibility() {
+      const customSection = this.element?.querySelector("#custom-colors-section");
+      if (customSection) {
+        customSection.style.display = this.currentTheme === "custom" ? "block" : "none";
+      }
+    }
+    renderCustomColorInputs() {
+      const container = this.element?.querySelector("#custom-color-inputs");
+      if (!container) return;
+      container.innerHTML = CUSTOM_COLOR_KEYS.map(({ key, label }) => `
+      <label class="custom-color-label">
+        <span>${label}</span>
+        <input type="color" class="custom-color-input" data-key="${key}" value="${this.customColors[key] || "#000000"}" />
+      </label>
+    `).join("");
+    }
+    applyCustomColor(key, value) {
+      document.documentElement.style.setProperty(key, value);
+    }
+    async saveCustomColors() {
+      try {
+        for (const [key, value] of Object.entries(this.customColors)) {
+          window.themeControls?.applyCustomColor(key, value);
+          await window.themeAPI?.setCustomColor?.(key, value);
+        }
+        await window.settingsAPI?.set?.("customColors", this.customColors);
+      } catch (e) {
+        console.error("Failed to save custom colors:", e);
+      }
+    }
+    async saveSetting(key, value) {
+      try {
+        await window.settingsAPI?.set(key, value);
+      } catch (e) {
+        console.error(`Failed to save setting ${key}:`, e);
+      }
+    }
+    render() {
+      this.element = document.createElement("div");
+      this.element.className = "settings-tab-content";
+      this.element.innerHTML = `
+      <h3>Appearance</h3>
+      <div class="settings-form">
+        <fieldset>
+          <legend>Base Theme</legend>
+          <div class="theme-options">
+            ${THEMES.map((t2) => `
+              <label class="theme-option">
+                <input type="radio" name="theme" value="${t2.value}" />
+                <span class="theme-preview ${t2.class}"></span>
+                <span>${t2.label}</span>
+              </label>
+            `).join("")}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Accent Color</legend>
+          <div id="accent-options" class="accent-options-grid">
+            ${Object.keys(ACCENTS).map((key) => `
+              <button type="button" class="accent-opt" data-accent="${key}" style="--c:${ACCENTS[key].dark}" title="${key}"></button>
+            `).join("")}
+          </div>
+        </fieldset>
+        <fieldset id="custom-colors-section" style="display:none;">
+          <legend>Custom Theme Colors</legend>
+          <div id="custom-color-inputs" class="custom-color-grid"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Editor</legend>
+          <label>
+            <span>Font size</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <input type="range" id="setting-font-size" min="12" max="24" value="17" style="flex:1;" />
+              <span class="range-value" id="font-size-value">17px</span>
+            </div>
+          </label>
+          <label>
+            <span>Line height</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <input type="range" id="setting-line-height" min="1.2" max="2.5" step="0.1" value="1.9" style="flex:1;" />
+              <span class="range-value" id="line-height-value">1.9</span>
+            </div>
+          </label>
+          <label>
+            <span>Editor width</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <input type="range" id="setting-editor-width" min="560" max="1200" step="40" value="720" style="flex:1;" />
+              <span class="range-value" id="editor-width-value">720px</span>
+            </div>
+          </label>
+        </fieldset>
+      </div>
+    `;
+      return this.element;
+    }
+  };
+  var appearanceTab = new AppearanceTab();
+
+  // src/ui/settingsTabs/pluginsTab.js
+  var pluginsTab = createSettingsTab(
+    "plugins",
+    "Plugins",
+    Plug,
+    () => {
+      const container = document.createElement("div");
+      container.className = "settings-tab-content";
+      container.innerHTML = `
+      <h3>Plugins</h3>
+      <p class="settings-placeholder">Plugin manager will be embedded here in Phase 3.</p>
+      <div class="settings-form">
+        <div class="plugin-manager-placeholder">
+          <p>This will contain the full plugin management UI:</p>
+          <ul>
+            <li>Plugin list with enable/disable toggles</li>
+            <li>Plugin detail view (Overview, Settings, Contributions, Permissions, Location, Manage, Registry)</li>
+            <li>Install from folder / GitHub</li>
+            <li>Hot reload for development</li>
+          </ul>
+        </div>
+      </div>
+    `;
+      return container;
+    }
+  );
+
+  // src/ui/settingsTabs/shortcutsTab.js
+  var shortcutsTab = createSettingsTab(
+    "shortcuts",
+    "Shortcuts",
+    Keyboard,
+    () => {
+      const container = document.createElement("div");
+      container.className = "settings-tab-content";
+      container.innerHTML = `
+      <h3>Keyboard Shortcuts</h3>
+      <p class="settings-placeholder">Shortcut editor will be implemented in Phase 4.</p>
+      <div class="settings-form">
+        <div class="shortcuts-placeholder">
+          <p>This will contain:</p>
+          <ul>
+            <li>Searchable list of all commands grouped by category</li>
+            <li>Editable keybinding inputs with conflict detection</li>
+            <li>Reset to defaults button</li>
+          </ul>
+        </div>
+      </div>
+    `;
+      return container;
+    }
+  );
+
+  // src/ui/settingsTabs/privacyTab.js
+  var privacyTab = createSettingsTab(
+    "privacy",
+    "Privacy",
+    Shield,
+    () => {
+      const container = document.createElement("div");
+      container.className = "settings-tab-content";
+      container.innerHTML = `
+      <h3>Privacy</h3>
+      <p class="settings-placeholder">Privacy settings will be implemented in Phase 4.</p>
+      <div class="settings-form">
+        <fieldset>
+          <legend>Data Collection</legend>
+          <label class="checkbox-label">
+            <input type="checkbox" id="setting-telemetry" />
+            <span>Allow anonymous usage telemetry</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="setting-crash-reports" />
+            <span>Automatically send crash reports</span>
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Updates</legend>
+          <label>
+            <span>Update channel</span>
+            <select id="setting-update-channel">
+              <option value="stable">Stable</option>
+              <option value="beta">Beta</option>
+              <option value="dev">Development</option>
+            </select>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="setting-auto-update" />
+            <span>Automatically check for updates</span>
+          </label>
+        </fieldset>
+      </div>
+    `;
+      return container;
+    }
+  );
+
+  // src/ui/settingsTabs/aboutTab.js
+  var aboutTab = createSettingsTab(
+    "about",
+    "About",
+    Info,
+    () => {
+      const container = document.createElement("div");
+      container.className = "settings-tab-content";
+      container.innerHTML = `
+      <h3>About FlowMark</h3>
+      <p class="settings-placeholder">About information will be fully implemented in Phase 2.</p>
+      <div class="settings-form">
+        <div class="about-content">
+          <div class="about-version">
+            <strong>Version:</strong> <span id="about-version">1.1.0</span>
+          </div>
+          <div class="about-build">
+            <strong>Build:</strong> <span id="about-build">development</span>
+          </div>
+          <div class="about-electron">
+            <strong>Electron:</strong> <span id="about-electron">--</span>
+          </div>
+          <div class="about-node">
+            <strong>Node.js:</strong> <span id="about-node">--</span>
+          </div>
+          <div class="about-chromium">
+            <strong>Chromium:</strong> <span id="about-chromium">--</span>
+          </div>
+          <div class="about-v8">
+            <strong>V8:</strong> <span id="about-v8">--</span>
+          </div>
+          <hr />
+          <div class="about-links">
+            <button type="button" id="btn-check-updates">Check for Updates</button>
+            <button type="button" id="btn-view-license">View License</button>
+            <button type="button" id="btn-github">GitHub Repository</button>
+          </div>
+        </div>
+      </div>
+    `;
+      return container;
+    }
+  );
 
   // src/session/sessionManager.js
   var saveTimeout = null;
@@ -81906,9 +85709,9 @@ $$
       ".cm-syntax-show": { color: accentColor, opacity: "0.6" }
     }, { dark: true });
   }
-  var THEMES = ["theme-dark", "theme-light", "theme-sepia"];
+  var THEMES2 = ["theme-dark", "theme-light", "theme-sepia"];
   var currentTheme = localStorage.getItem("fm-theme") || "theme-dark";
-  var ACCENTS = {
+  var ACCENTS2 = {
     // Blues
     blue: { dark: "#7cb8f0", light: "#2970c8" },
     steel: { dark: "#90aac8", light: "#3a5878" },
@@ -81935,12 +85738,14 @@ $$
   var currentAccent = localStorage.getItem("fm-accent") || "blue";
   function applyAccent(name2) {
     const isLight = currentTheme !== "theme-dark";
-    const color = ACCENTS[name2]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+    const color = ACCENTS2[name2]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
     document.documentElement.style.setProperty("--accent", color);
     document.documentElement.style.setProperty("--selection", `${color}38`);
     document.documentElement.style.setProperty("--selection-active", `${color}55`);
     currentAccent = name2;
     localStorage.setItem("fm-accent", name2);
+    window.settingsAPI?.set?.("accent", name2).catch(() => {
+    });
     if (typeof view !== "undefined" && view) {
       view.dispatch({ effects: [
         themeCompartment.reconfigure(makeTheme(color)),
@@ -81955,10 +85760,22 @@ $$
     }
   }
   function applyTheme(theme2) {
-    document.body.classList.remove(...THEMES);
-    if (theme2 !== "theme-dark") document.body.classList.add(theme2);
+    document.body.classList.remove(...THEMES2, "theme-custom");
+    if (theme2 === "system") {
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const systemTheme = prefersDark ? "theme-dark" : "theme-light";
+      document.body.classList.add(systemTheme);
+    } else if (theme2 === "custom") {
+      document.body.classList.add("theme-custom");
+    } else if (theme2 !== "theme-dark") {
+      document.body.classList.add(theme2);
+    }
     currentTheme = theme2;
     localStorage.setItem("fm-theme", theme2);
+    window.settingsAPI?.set?.("theme", theme2).catch(() => {
+    });
+    window.themeAPI?.setTheme?.(theme2).catch(() => {
+    });
     applyAccent(currentAccent);
     syncWindowBackground();
   }
@@ -82055,7 +85872,7 @@ $$
         view.setState(toDoc.editorState);
         view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
         const isLight = currentTheme !== "theme-dark";
-        const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+        const color = ACCENTS2[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
         view.dispatch({ effects: [
           themeCompartment.reconfigure(makeTheme(color)),
           highlightCompartment.reconfigure(makeHighlight(!isLight, color))
@@ -82302,7 +86119,7 @@ $$
   });
   function getEditorExtensions() {
     const isLight = currentTheme !== "theme-dark";
-    const color = ACCENTS[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS.blue.dark;
+    const color = ACCENTS2[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
     return [
       history(),
       drawSelection(),
@@ -82731,6 +86548,39 @@ Just start writing.
     splitter: document.getElementById("utility-pane-splitter"),
     activityBar: document.getElementById("utility-activity-bar")
   });
+  var settingsDialog = new SettingsDialog();
+  settingsDialog.registerTab(generalTab);
+  settingsDialog.registerTab(appearanceTab);
+  settingsDialog.registerTab(pluginsTab);
+  settingsDialog.registerTab(shortcutsTab);
+  settingsDialog.registerTab(privacyTab);
+  settingsDialog.registerTab(aboutTab);
+  window.settingsDialogUI = settingsDialog;
+  if (window.settingsAPI) {
+    window.settingsAPI.open = () => settingsDialog.open();
+    window.settingsAPI.close = () => settingsDialog.close();
+  } else {
+    window.settingsAPI = {
+      open: () => settingsDialog.open(),
+      close: () => settingsDialog.close()
+    };
+  }
+  if (window.settingsAPI?.onOpen) {
+    window.settingsAPI.onOpen(() => settingsDialog.open());
+  }
+  if (window.settingsAPI?.onClose) {
+    window.settingsAPI.onClose(() => settingsDialog.close());
+  }
+  window.themeControls = {
+    getTheme: () => currentTheme,
+    setTheme: (theme2) => applyTheme(theme2),
+    getAccent: () => currentAccent,
+    setAccent: (name2) => applyAccent(name2),
+    getAccents: () => ACCENTS2,
+    getThemes: () => THEMES2,
+    applyCustomColor: (key, value) => document.documentElement.style.setProperty(key, value)
+  };
+  window.settingsDialog = settingsDialog;
   window.fileAPI?.onWorkspaceChange?.((change) => {
     handleWorkspaceChange(change).catch((error) => console.error("Failed to process workspace change:", error));
   });
@@ -83218,7 +87068,6 @@ Just start writing.
     exportPDF: "export:pdf",
     exportHTML: "export:html",
     "insert:property": "insert:property",
-    settings: "view:settings",
     zen: "view:zen",
     "plugins:manage": "plugins:manage",
     "plugins:install": "plugins:install"
@@ -83256,40 +87105,6 @@ Just start writing.
     });
   });
   document.addEventListener("click", () => closeAllDropdowns());
-  var settingsPanel = document.getElementById("settings-panel");
-  function showSettings() {
-    document.querySelectorAll(".theme-opt").forEach((b) => {
-      b.classList.toggle("active", b.dataset.theme === currentTheme || currentTheme === "theme-dark" && b.dataset.theme === "theme-dark");
-    });
-    document.querySelectorAll(".accent-opt").forEach((b) => {
-      b.classList.toggle("active", b.dataset.accent === currentAccent);
-    });
-    settingsPanel.classList.remove("hidden");
-  }
-  function hideSettings() {
-    settingsPanel.classList.add("hidden");
-    view.focus();
-  }
-  settingsPanel.addEventListener("click", (e) => {
-    if (e.target === settingsPanel) {
-      hideSettings();
-      return;
-    }
-    const theme2 = e.target.closest("[data-theme]")?.dataset.theme;
-    if (theme2) {
-      applyTheme(theme2);
-      showSettings();
-      return;
-    }
-    const accent2 = e.target.closest("[data-accent]")?.dataset.accent;
-    if (accent2) {
-      applyAccent(accent2);
-      showSettings();
-    }
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !settingsPanel.classList.contains("hidden")) hideSettings();
-  });
   var welcome = document.getElementById("welcome");
   async function showWelcome() {
     const recents = await window.fileAPI.getRecents();
@@ -83455,7 +87270,63 @@ Just start writing.
   updatePlaceholder();
   updateWordCount();
   updateDocumentTitleInput();
-  applyTheme(currentTheme);
+  async function loadAppearanceSettings() {
+    try {
+      let savedTheme = null;
+      try {
+        savedTheme = await window.themeAPI?.getTheme?.();
+      } catch (_) {
+      }
+      if (!savedTheme) {
+        try {
+          savedTheme = await window.settingsAPI?.get?.("theme");
+        } catch (_) {
+        }
+      }
+      if (savedTheme) {
+        currentTheme = savedTheme;
+      } else {
+        const storedTheme = localStorage.getItem("fm-theme");
+        if (storedTheme) currentTheme = storedTheme;
+      }
+      let savedAccent = null;
+      try {
+        savedAccent = await window.settingsAPI?.get?.("accent");
+      } catch (_) {
+      }
+      if (savedAccent && ACCENTS2[savedAccent]) {
+        currentAccent = savedAccent;
+      } else {
+        const storedAccent = localStorage.getItem("fm-accent");
+        if (storedAccent && ACCENTS2[storedAccent]) currentAccent = storedAccent;
+      }
+      let customColors = null;
+      try {
+        customColors = await window.themeAPI?.getCustomColors?.();
+      } catch (_) {
+      }
+      if (!customColors) {
+        try {
+          customColors = await window.settingsAPI?.get?.("customColors");
+        } catch (_) {
+        }
+      }
+      if (customColors && typeof customColors === "object") {
+        for (const [key, value] of Object.entries(customColors)) {
+          document.documentElement.style.setProperty(key, value);
+        }
+      }
+      applyTheme(currentTheme);
+    } catch (e) {
+      console.warn("Failed to load appearance settings:", e);
+      const storedTheme = localStorage.getItem("fm-theme");
+      if (storedTheme) currentTheme = storedTheme;
+      const storedAccent = localStorage.getItem("fm-accent");
+      if (storedAccent) currentAccent = storedAccent;
+      applyTheme(currentTheme);
+    }
+  }
+  loadAppearanceSettings();
   var slashCommands = /* @__PURE__ */ new Map();
   async function initPlugins() {
     if (!window.pluginManager) {
@@ -83761,7 +87632,12 @@ Just start writing.
   }
   var slashMenu = null;
   var slashTriggerPos = null;
+  var dismissSlashListener = null;
   function hideSlashMenu() {
+    if (dismissSlashListener) {
+      document.removeEventListener("mousedown", dismissSlashListener, true);
+      dismissSlashListener = null;
+    }
     slashMenu?.remove();
     slashMenu = null;
     slashTriggerPos = null;
@@ -83781,8 +87657,9 @@ Just start writing.
       item.setAttribute("role", "option");
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
+        const triggerPos = slashTriggerPos;
         hideSlashMenu();
-        window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id, slashTriggerPos);
+        window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id, triggerPos);
       });
       slashMenu.appendChild(item);
     }
@@ -83792,30 +87669,63 @@ Just start writing.
       slashMenu.style.left = `${coords.left}px`;
       slashMenu.style.top = `${coords.bottom + 4}px`;
     }
+    dismissSlashListener = (e) => {
+      if (slashMenu && !slashMenu.contains(e.target)) {
+        hideSlashMenu();
+      }
+    };
+    document.addEventListener("mousedown", dismissSlashListener, true);
   }
   view.contentDOM.addEventListener("keydown", (event) => {
     if (event.key === "/") {
       setTimeout(showSlashMenu, 0);
-    } else if (event.key === "Escape") {
-      hideSlashMenu();
+    } else if (slashMenu) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        hideSlashMenu();
+      } else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        const items = slashMenu.querySelectorAll(".fm-slash-item");
+        if (items.length) {
+          event.preventDefault();
+          const active = slashMenu.querySelector(".fm-slash-item:focus");
+          let idx = Array.from(items).indexOf(active);
+          if (event.key === "ArrowDown") idx = (idx + 1) % items.length;
+          else idx = (idx - 1 + items.length) % items.length;
+          items[idx]?.focus();
+        }
+      } else if (event.key === "Enter") {
+        const active = slashMenu.querySelector(".fm-slash-item:focus");
+        if (active) {
+          event.preventDefault();
+          active.click();
+        } else {
+          hideSlashMenu();
+        }
+      } else if (event.key === "Backspace" || event.key === " ") {
+        hideSlashMenu();
+      }
     }
   });
   view.contentDOM.addEventListener("paste", async (event) => {
     if (!window.pluginManager?.applySmartPaste) return;
-    event.preventDefault();
     const data2 = event.clipboardData;
+    const textPlain = data2?.getData("text/plain") || "";
+    const textHtml = data2?.getData("text/html") || "";
+    if (!textPlain && !textHtml) return;
     const result = await window.pluginManager.applySmartPaste({
-      text: data2?.getData("text/plain") || "",
-      html: data2?.getData("text/html") || ""
+      text: textPlain,
+      html: textHtml
     });
     const text6 = typeof result?.text === "string" ? result.text : typeof result === "string" ? result : "";
-    if (!text6) return;
-    const { from: from3, to } = view.state.selection.main;
-    view.dispatch({
-      changes: { from: from3, to, insert: text6 },
-      selection: { anchor: from3 + text6.length }
-    });
-    view.focus();
+    if (text6 && text6 !== textPlain) {
+      event.preventDefault();
+      const { from: from3, to } = view.state.selection.main;
+      view.dispatch({
+        changes: { from: from3, to, insert: text6 },
+        selection: { anchor: from3 + text6.length }
+      });
+      view.focus();
+    }
   });
   async function initSession() {
     await initPlugins();
@@ -83835,6 +87745,19 @@ Just start writing.
 })();
 /*! Bundled license information:
 
+jszip/dist/jszip.min.js:
+  (*!
+  
+  JSZip v3.10.2 - A JavaScript class for generating and reading zip files
+  <http://stuartk.com/jszip>
+  
+  (c) 2009-2016 Stuart Knightley <stuart [at] stuartk.com>
+  Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/jszip/main/LICENSE.markdown.
+  
+  JSZip uses the library pako released under the MIT license :
+  https://github.com/nodeca/pako/blob/main/LICENSE
+  *)
+
 lucide/dist/esm/defaultAttributes.mjs:
 lucide/dist/esm/createElement.mjs:
 lucide/dist/esm/icons/arrow-left.mjs:
@@ -83845,7 +87768,9 @@ lucide/dist/esm/icons/calendar-days.mjs:
 lucide/dist/esm/icons/check.mjs:
 lucide/dist/esm/icons/chevron-down.mjs:
 lucide/dist/esm/icons/chevron-right.mjs:
+lucide/dist/esm/icons/circle-x.mjs:
 lucide/dist/esm/icons/code-xml.mjs:
+lucide/dist/esm/icons/copy.mjs:
 lucide/dist/esm/icons/file-plus-corner.mjs:
 lucide/dist/esm/icons/file.mjs:
 lucide/dist/esm/icons/folder-open.mjs:
@@ -83853,15 +87778,20 @@ lucide/dist/esm/icons/folder-root.mjs:
 lucide/dist/esm/icons/folder-plus.mjs:
 lucide/dist/esm/icons/folder.mjs:
 lucide/dist/esm/icons/git-branch.mjs:
+lucide/dist/esm/icons/globe.mjs:
 lucide/dist/esm/icons/hard-drive.mjs:
+lucide/dist/esm/icons/info.mjs:
+lucide/dist/esm/icons/keyboard.mjs:
 lucide/dist/esm/icons/layers.mjs:
 lucide/dist/esm/icons/layout-dashboard.mjs:
 lucide/dist/esm/icons/list-tree.mjs:
 lucide/dist/esm/icons/message-square.mjs:
 lucide/dist/esm/icons/network.mjs:
+lucide/dist/esm/icons/palette.mjs:
 lucide/dist/esm/icons/panel-left.mjs:
 lucide/dist/esm/icons/panel-right.mjs:
 lucide/dist/esm/icons/pencil.mjs:
+lucide/dist/esm/icons/plug.mjs:
 lucide/dist/esm/icons/puzzle.mjs:
 lucide/dist/esm/icons/refresh-cw.mjs:
 lucide/dist/esm/icons/rotate-cw.mjs:

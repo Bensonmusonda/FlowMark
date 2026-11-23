@@ -29,6 +29,13 @@ import TabBarUI from './ui/tabs.js';
 import FileTreeUI from './ui/fileTree.js';
 import { UtilityPane } from './ui/utilityPane.js';
 import { PluginManagerPanel } from './ui/plugins-panel.js';
+import { SettingsDialog } from './ui/settingsDialog.js';
+import { generalTab } from './ui/settingsTabs/generalTab.js';
+import { appearanceTab } from './ui/settingsTabs/appearanceTab.js';
+import { pluginsTab } from './ui/settingsTabs/pluginsTab.js';
+import { shortcutsTab } from './ui/settingsTabs/shortcutsTab.js';
+import { privacyTab } from './ui/settingsTabs/privacyTab.js';
+import { aboutTab } from './ui/settingsTabs/aboutTab.js';
 import SessionManager from './session/sessionManager.js';
 import { extractFrontmatter, stringifyFrontmatter } from './parser/frontmatter.js';
 import { PropertiesCardWidget } from './ui/propertiesCard.js';
@@ -2784,6 +2791,7 @@ function applyAccent(name) {
   document.documentElement.style.setProperty('--selection-active', `${color}55`);
   currentAccent = name;
   localStorage.setItem('fm-accent', name);
+  window.settingsAPI?.set?.('accent', name).catch(() => {});
   if (typeof view !== 'undefined' && view) {
     view.dispatch({ effects: [
       themeCompartment.reconfigure(makeTheme(color)),
@@ -2801,10 +2809,21 @@ function syncWindowBackground() {
 }
 
 function applyTheme(theme) {
-  document.body.classList.remove(...THEMES);
-  if (theme !== 'theme-dark') document.body.classList.add(theme);
+  document.body.classList.remove(...THEMES, 'theme-custom');
+  if (theme === 'system') {
+    // System theme: detect OS preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const systemTheme = prefersDark ? 'theme-dark' : 'theme-light';
+    document.body.classList.add(systemTheme);
+  } else if (theme === 'custom') {
+    document.body.classList.add('theme-custom');
+  } else if (theme !== 'theme-dark') {
+    document.body.classList.add(theme);
+  }
   currentTheme = theme;
   localStorage.setItem('fm-theme', theme);
+  window.settingsAPI?.set?.('theme', theme).catch(() => {});
+  window.themeAPI?.setTheme?.(theme).catch(() => {});
   applyAccent(currentAccent);
   syncWindowBackground();
 }
@@ -3625,6 +3644,48 @@ const utilityPane = new UtilityPane({
   splitter: document.getElementById('utility-pane-splitter'),
   activityBar: document.getElementById('utility-activity-bar'),
 });
+
+// Settings Dialog
+const settingsDialog = new SettingsDialog();
+settingsDialog.registerTab(generalTab);
+settingsDialog.registerTab(appearanceTab);
+settingsDialog.registerTab(pluginsTab);
+settingsDialog.registerTab(shortcutsTab);
+settingsDialog.registerTab(privacyTab);
+settingsDialog.registerTab(aboutTab);
+
+// Expose settings API for opening dialog from side nav
+window.settingsDialogUI = settingsDialog;
+if (window.settingsAPI) {
+  window.settingsAPI.open = () => settingsDialog.open();
+  window.settingsAPI.close = () => settingsDialog.close();
+} else {
+  window.settingsAPI = {
+    open: () => settingsDialog.open(),
+    close: () => settingsDialog.close(),
+  };
+}
+if (window.settingsAPI?.onOpen) {
+  window.settingsAPI.onOpen(() => settingsDialog.open());
+}
+if (window.settingsAPI?.onClose) {
+  window.settingsAPI.onClose(() => settingsDialog.close());
+}
+
+// Expose theme/accent functions for tabs (uses existing localStorage system)
+window.themeControls = {
+  getTheme: () => currentTheme,
+  setTheme: (theme) => applyTheme(theme),
+  getAccent: () => currentAccent,
+  setAccent: (name) => applyAccent(name),
+  getAccents: () => ACCENTS,
+  getThemes: () => THEMES,
+  applyCustomColor: (key, value) => document.documentElement.style.setProperty(key, value),
+};
+
+// Also expose dialog instance directly as fallback
+window.settingsDialog = settingsDialog;
+
 window.fileAPI?.onWorkspaceChange?.((change) => {
   handleWorkspaceChange(change).catch(error =>
     console.error('Failed to process workspace change:', error));
@@ -4179,7 +4240,6 @@ const dropdownActionToCommand = {
   exportPDF: 'export:pdf',
   exportHTML: 'export:html',
   'insert:property': 'insert:property',
-  settings: 'view:settings',
   zen: 'view:zen',
   'plugins:manage': 'plugins:manage',
   'plugins:install': 'plugins:install',
@@ -4225,38 +4285,6 @@ dropdownMenus.forEach(({ btn, menu }) => {
 });
 
 document.addEventListener('click', () => closeAllDropdowns());
-
-// ── Settings panel ────────────────────────────────────────────────────────────
-const settingsPanel = document.getElementById('settings-panel');
-
-function showSettings() {
-  // Mark active theme and accent
-  document.querySelectorAll('.theme-opt').forEach(b => {
-    b.classList.toggle('active', b.dataset.theme === currentTheme ||
-      (currentTheme === 'theme-dark' && b.dataset.theme === 'theme-dark'));
-  });
-  document.querySelectorAll('.accent-opt').forEach(b => {
-    b.classList.toggle('active', b.dataset.accent === currentAccent);
-  });
-  settingsPanel.classList.remove('hidden');
-}
-
-function hideSettings() {
-  settingsPanel.classList.add('hidden');
-  view.focus();
-}
-
-settingsPanel.addEventListener('click', e => {
-  if (e.target === settingsPanel) { hideSettings(); return; }
-  const theme = e.target.closest('[data-theme]')?.dataset.theme;
-  if (theme) { applyTheme(theme); showSettings(); return; }
-  const accent = e.target.closest('[data-accent]')?.dataset.accent;
-  if (accent) { applyAccent(accent); showSettings(); }
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && !settingsPanel.classList.contains('hidden')) hideSettings();
-});
 
 // ── Welcome screen ────────────────────────────────────────────────────────────
 const welcome = document.getElementById('welcome');
@@ -4448,8 +4476,54 @@ updateAppName();
 updatePlaceholder();
 updateWordCount();
 updateDocumentTitleInput();
-// Re-apply theme now that view exists (fixes highlight on non-dark startup)
-applyTheme(currentTheme);
+
+// Load theme, accent, and custom colors from new APIs
+async function loadAppearanceSettings() {
+  try {
+    let savedTheme = null;
+    try { savedTheme = await window.themeAPI?.getTheme?.(); } catch (_) {}
+    if (!savedTheme) {
+      try { savedTheme = await window.settingsAPI?.get?.('theme'); } catch (_) {}
+    }
+    if (savedTheme) {
+      currentTheme = savedTheme;
+    } else {
+      const storedTheme = localStorage.getItem('fm-theme');
+      if (storedTheme) currentTheme = storedTheme;
+    }
+
+    let savedAccent = null;
+    try { savedAccent = await window.settingsAPI?.get?.('accent'); } catch (_) {}
+    if (savedAccent && ACCENTS[savedAccent]) {
+      currentAccent = savedAccent;
+    } else {
+      const storedAccent = localStorage.getItem('fm-accent');
+      if (storedAccent && ACCENTS[storedAccent]) currentAccent = storedAccent;
+    }
+
+    let customColors = null;
+    try { customColors = await window.themeAPI?.getCustomColors?.(); } catch (_) {}
+    if (!customColors) {
+      try { customColors = await window.settingsAPI?.get?.('customColors'); } catch (_) {}
+    }
+    if (customColors && typeof customColors === 'object') {
+      for (const [key, value] of Object.entries(customColors)) {
+        document.documentElement.style.setProperty(key, value);
+      }
+    }
+
+    applyTheme(currentTheme);
+  } catch (e) {
+    console.warn('Failed to load appearance settings:', e);
+    const storedTheme = localStorage.getItem('fm-theme');
+    if (storedTheme) currentTheme = storedTheme;
+    const storedAccent = localStorage.getItem('fm-accent');
+    if (storedAccent) currentAccent = storedAccent;
+    applyTheme(currentTheme);
+  }
+}
+
+loadAppearanceSettings();
 
 // ── Plugin System Integration ──────────────────────────────────────────────────
 const slashCommands = new Map();
@@ -4799,8 +4873,13 @@ async function initPlugins() {
 // ── Slash command & smart paste extension hooks ──────────────────────────────
 let slashMenu = null;
 let slashTriggerPos = null; // Position of the '/' trigger character
+let dismissSlashListener = null;
 
 function hideSlashMenu() {
+  if (dismissSlashListener) {
+    document.removeEventListener('mousedown', dismissSlashListener, true);
+    dismissSlashListener = null;
+  }
   slashMenu?.remove();
   slashMenu = null;
   slashTriggerPos = null;
@@ -4822,9 +4901,10 @@ function showSlashMenu() {
     item.setAttribute('role', 'option');
     item.addEventListener('mousedown', (event) => {
       event.preventDefault();
+      const triggerPos = slashTriggerPos;
       hideSlashMenu();
       // Pass the trigger position so the command can replace the '/' character
-      window.pluginManager?.invokeSlashCommand?.(command.pluginId, command.id, slashTriggerPos);
+      window.pluginManager?.invokeSlashCommand?.(command.pluginId, command.id, triggerPos);
     });
     slashMenu.appendChild(item);
   }
@@ -4834,34 +4914,69 @@ function showSlashMenu() {
     slashMenu.style.left = `${coords.left}px`;
     slashMenu.style.top = `${coords.bottom + 4}px`;
   }
+
+  dismissSlashListener = (e) => {
+    if (slashMenu && !slashMenu.contains(e.target)) {
+      hideSlashMenu();
+    }
+  };
+  document.addEventListener('mousedown', dismissSlashListener, true);
 }
 
 view.contentDOM.addEventListener('keydown', (event) => {
   if (event.key === '/') {
     setTimeout(showSlashMenu, 0);
-  } else if (event.key === 'Escape') {
-    hideSlashMenu();
+  } else if (slashMenu) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      hideSlashMenu();
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      const items = slashMenu.querySelectorAll('.fm-slash-item');
+      if (items.length) {
+        event.preventDefault();
+        const active = slashMenu.querySelector('.fm-slash-item:focus');
+        let idx = Array.from(items).indexOf(active);
+        if (event.key === 'ArrowDown') idx = (idx + 1) % items.length;
+        else idx = (idx - 1 + items.length) % items.length;
+        items[idx]?.focus();
+      }
+    } else if (event.key === 'Enter') {
+      const active = slashMenu.querySelector('.fm-slash-item:focus');
+      if (active) {
+        event.preventDefault();
+        active.click();
+      } else {
+        hideSlashMenu();
+      }
+    } else if (event.key === 'Backspace' || event.key === ' ') {
+      hideSlashMenu();
+    }
   }
 });
 
 view.contentDOM.addEventListener('paste', async (event) => {
   if (!window.pluginManager?.applySmartPaste) return;
-  event.preventDefault();
   const data = event.clipboardData;
+  const textPlain = data?.getData('text/plain') || '';
+  const textHtml = data?.getData('text/html') || '';
+  if (!textPlain && !textHtml) return;
+
   const result = await window.pluginManager.applySmartPaste({
-    text: data?.getData('text/plain') || '',
-    html: data?.getData('text/html') || '',
+    text: textPlain,
+    html: textHtml,
   });
   const text = typeof result?.text === 'string'
     ? result.text
     : (typeof result === 'string' ? result : '');
-  if (!text) return;
-  const { from, to } = view.state.selection.main;
-  view.dispatch({
-    changes: { from, to, insert: text },
-    selection: { anchor: from + text.length },
-  });
-  view.focus();
+  if (text && text !== textPlain) {
+    event.preventDefault();
+    const { from, to } = view.state.selection.main;
+    view.dispatch({
+      changes: { from, to, insert: text },
+      selection: { anchor: from + text.length },
+    });
+    view.focus();
+  }
 });
 
 async function initSession() {

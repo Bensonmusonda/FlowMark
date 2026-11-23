@@ -36,6 +36,29 @@ let currentSlashTriggerPos = null; // Position of '/' trigger for current slash 
 const beforeSaveHandlers = [];
 const smartPasteHandlers = [];
 
+// Listen for runtime permission changes from host
+ipcRenderer.on('permissions:changed', (_, permissions) => {
+  if (Array.isArray(permissions)) {
+    PLUGIN_PERMISSIONS.clear();
+    for (const perm of permissions) PLUGIN_PERMISSIONS.add(perm);
+    // Update the exposed API's permissions array
+    if (window.flowmarkPlugin) {
+      window.flowmarkPlugin.permissions = [...PLUGIN_PERMISSIONS];
+    }
+  }
+});
+
+// Plugin Event Bus - listen for broadcasts from other plugins
+const broadcastListeners = new Map(); // channel -> Set of callbacks
+ipcRenderer.on('plugin:broadcast:*', (_, { channel, data }) => {
+  const listeners = broadcastListeners.get(channel);
+  if (listeners) {
+    for (const fn of listeners) {
+      try { fn(data); } catch (e) { console.error(`[plugin:${PLUGIN_ID}] broadcast listener error:`, e); }
+    }
+  }
+});
+
 // Host tells us a command was clicked in the main window
 ipcRenderer.on('plugin:command', (_, { id }) => {
   const fn = commandHandlers.get(id);
@@ -159,7 +182,8 @@ const pluginAPI = {
     replaceSelection: (text, from) => {
       if (!hasPermission('editor.write')) return Promise.reject(new Error('Permission denied: editor.write'));
       const payload = { text };
-      if (typeof from === 'number') payload.from = from;
+      const fromPos = typeof from === 'number' ? from : currentSlashTriggerPos;
+      if (typeof fromPos === 'number') payload.from = fromPos;
       return sendRequest('editor:replaceSelection', payload);
     },
     executeCommand: (commandId) => {
@@ -186,7 +210,12 @@ const pluginAPI = {
       if (typeof run === 'function') slashCommandHandlers.set(meta.id, run);
       return sendRequest('editor:registerSlashCommand', { command: meta });
     },
-    removeSlashCommand: (commandId) => sendRequest('editor:removeSlashCommand', { commandId })
+    removeSlashCommand: (commandId) => sendRequest('editor:removeSlashCommand', { commandId }),
+    registerMarkdownTransform: (fn) => {
+      if (!hasPermission('markdown.transform')) return Promise.reject(new Error('Permission denied: markdown.transform'));
+      if (typeof fn !== 'function') return Promise.reject(new Error('Transform must be a function'));
+      return sendRequest('editor:registerMarkdownTransform', { fnCode: fn.toString() });
+    }
   },
 
   // File API
@@ -293,6 +322,28 @@ const pluginAPI = {
       return sendRequest('ui:openCustomView', payload);
     },
     removeCustomView: (viewId) => sendRequest('ui:removeCustomView', { viewId })
+  },
+
+  // Plugin Event Bus (inter-plugin communication)
+  events: {
+    // Broadcast an event to other plugins
+    broadcast: (channel, data) => {
+      if (!hasPermission('plugins.communicate')) return Promise.reject(new Error('Permission denied: plugins.communicate'));
+      return sendRequest('plugins:broadcast', { channel, data });
+    },
+    // Subscribe to events from other plugins
+    on: (channel, callback) => {
+      if (!hasPermission('plugins.communicate')) return () => {};
+      const listeners = broadcastListeners.get(channel) || new Set();
+      listeners.add(callback);
+      broadcastListeners.set(channel, listeners);
+      // Subscribe with host
+      sendRequest('plugins:on', { channel });
+      return () => {
+        listeners.delete(callback);
+        if (listeners.size === 0) broadcastListeners.delete(channel);
+      };
+    }
   },
 
   // Clipboard API

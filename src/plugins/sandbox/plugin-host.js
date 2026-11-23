@@ -9,7 +9,7 @@ const { BrowserWindow, ipcMain, dialog, app } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
-const { validateManifest } = require('./manifest-schema');
+const { validateManifest } = require('./manifest-validator');
 const { PluginSettingsStore } = require('./plugin-settings-store');
 const {
   authorizePluginEvent,
@@ -26,9 +26,34 @@ class PluginSandboxHost {
     this.settingsStore = new PluginSettingsStore(
       path.join(app.getPath('userData'), 'plugin-settings.json')
     );
+    this.stateFile = path.join(app.getPath('userData'), 'plugin-state.json');
 
+    this._loadPluginState();
     this._setupIPC();
     this._registerCoreHandlers();
+  }
+
+  _loadPluginState() {
+    try {
+      if (fs.existsSync(this.stateFile)) {
+        const raw = fs.readFileSync(this.stateFile, 'utf8');
+        const state = JSON.parse(raw);
+        this.savedPluginState = state.enabled || {};
+      } else {
+        this.savedPluginState = {};
+      }
+    } catch (err) {
+      console.error('Failed to load plugin state:', err);
+      this.savedPluginState = {};
+    }
+  }
+
+  _savePluginState() {
+    try {
+      fs.writeFileSync(this.stateFile, JSON.stringify({ enabled: this.savedPluginState }, null, 2), 'utf8');
+    } catch (err) {
+      console.error('Failed to save plugin state:', err);
+    }
   }
 
   _setupIPC() {
@@ -147,12 +172,66 @@ class PluginSandboxHost {
     return true;
   }
 
+  /**
+   * Grant a permission to a plugin at runtime
+   */
+  grantPermission(pluginId, perm) {
+    const plugin = this.plugins.get(pluginId);
+    if (!plugin) return false;
+    plugin.permissions.add(perm);
+    if (plugin.window && !plugin.window.isDestroyed()) {
+      plugin.window.webContents.send('permissions:changed', [...plugin.permissions]);
+    }
+    this._notifyPluginsChanged();
+    return true;
+  }
+
+  /**
+   * Revoke a permission from a plugin at runtime
+   */
+  revokePermission(pluginId, perm) {
+    const plugin = this.plugins.get(pluginId);
+    if (!plugin) return false;
+    plugin.permissions.delete(perm);
+    if (plugin.window && !plugin.window.isDestroyed()) {
+      plugin.window.webContents.send('permissions:changed', [...plugin.permissions]);
+    }
+    this._notifyPluginsChanged();
+    return true;
+  }
+
   broadcast(channel, data, permission) {
     for (const p of this.plugins.values()) {
       if (p.state !== 'ready' || !p.window || p.window.isDestroyed()) continue;
       if (permission && !p.permissions.has(permission)) continue;
       p.window.webContents.send(channel, data);
     }
+  }
+
+  /**
+   * Broadcast an event to all plugins (or all except one) for inter-plugin communication.
+   * Requires 'plugins.communicate' permission.
+   */
+  broadcastToPlugins(channel, data, excludePluginId = null) {
+    for (const [id, p] of this.plugins) {
+      if (id === excludePluginId || p.state !== 'ready' || !p.window || p.window.isDestroyed()) continue;
+      if (!p.permissions.has('plugins.communicate')) continue;
+      p.window.webContents.send(`plugin:broadcast:${channel}`, data);
+    }
+  }
+
+  /**
+   * Register a handler for plugin-to-plugin broadcast messages.
+   */
+  registerBroadcastHandler(pluginId, channel, handler) {
+    const plugin = this.plugins.get(pluginId);
+    if (!plugin) return false;
+    if (!plugin.broadcastHandlers) plugin.broadcastHandlers = new Map();
+    if (!plugin.broadcastHandlers.has(channel)) {
+      plugin.broadcastHandlers.set(channel, []);
+    }
+    plugin.broadcastHandlers.get(channel).push(handler);
+    return true;
   }
 
   async applyBeforeSaveTransforms(initialContent) {
@@ -217,6 +296,25 @@ class PluginSandboxHost {
       });
     }
     return current;
+    }
+
+  /**
+   * Apply all registered markdown transforms in sequence.
+   * Used for preview/export pipeline.
+   */
+  async applyMarkdownTransforms(markdown, context = {}) {
+    let result = markdown;
+    for (const item of this.markdownTransforms || []) {
+      try {
+        const transformed = typeof item.transform === 'function'
+          ? await item.transform(result, context)
+          : (typeof item.fn === 'function' ? await item.fn(result, context) : result);
+        if (typeof transformed === 'string') result = transformed;
+      } catch (err) {
+        console.error('Markdown transform error:', err);
+      }
+    }
+    return result;
   }
 
   _registerCoreHandlers() {
@@ -244,9 +342,9 @@ class PluginSandboxHost {
       return { success: true };
     });
 
-    this.registerHandler('editor:replaceSelection', async ({ text }) => {
+    this.registerHandler('editor:replaceSelection', async ({ text, from }) => {
       await this.mainWindow.webContents.executeJavaScript(
-        `window.replaceEditorSelection?.(${JSON.stringify(text)}); null`);
+        `window.replaceEditorSelection?.(${JSON.stringify(text)}, ${JSON.stringify(from ?? null)}); null`);
       return { success: true };
     });
 
@@ -561,6 +659,84 @@ class PluginSandboxHost {
         return { error: err.message };
       }
     });
+
+    // Plugin Event Bus - broadcast to other plugins
+    this.registerHandler('plugins:broadcast', async ({ channel, data }, _event, plugin) => {
+      if (!plugin.permissions.has('plugins.communicate')) {
+        throw new Error('Missing permission: plugins.communicate');
+      }
+      if (!channel || typeof channel !== 'string') {
+        throw new Error('Channel is required');
+      }
+      this.broadcastToPlugins(channel, data, plugin.manifest.name);
+      return { success: true };
+    });
+
+    // Plugin Event Bus - subscribe to broadcasts
+    this.registerHandler('plugins:on', async ({ channel }, _event, plugin) => {
+      if (!plugin.permissions.has('plugins.communicate')) {
+        throw new Error('Missing permission: plugins.communicate');
+      }
+      if (!channel || typeof channel !== 'string') {
+        throw new Error('Channel is required');
+      }
+      // The plugin will receive events via the 'plugin:broadcast:<channel>' IPC
+      // We just acknowledge the subscription
+      if (!plugin.broadcastSubscriptions) plugin.broadcastSubscriptions = new Set();
+      plugin.broadcastSubscriptions.add(channel);
+      return { success: true };
+    });
+
+    // Async Markdown Transforms
+    this.markdownTransforms = this.markdownTransforms || [];
+    this.registerHandler('editor:registerMarkdownTransform', async ({ fnCode }, _event, plugin) => {
+      if (!plugin.permissions.has('markdown.transform')) {
+        throw new Error('Missing permission: markdown.transform');
+      }
+      if (!fnCode || typeof fnCode !== 'string') {
+        throw new Error('Function code is required');
+      }
+      this.markdownTransforms.push({
+        pluginId: plugin.manifest.name,
+        transform: async (markdown, context) => {
+          if (!plugin.window || plugin.window.isDestroyed()) return markdown;
+          try {
+            return await plugin.window.webContents.executeJavaScript(
+              `(${fnCode})(${JSON.stringify(markdown)}, ${JSON.stringify(context)})`
+            );
+          } catch (e) {
+            console.error(`Transform error in ${plugin.manifest.name}:`, e);
+            return markdown;
+          }
+        }
+      });
+      return { success: true };
+    });
+
+    // Workspace Events
+    this.registerHandler('workspace:onFileOpen', async ({ pattern }, _event, plugin) => {
+      if (!plugin.permissions.has('file.read')) {
+        throw new Error('Missing permission: file.read');
+      }
+      if (!pattern || typeof pattern !== 'string') {
+        throw new Error('Glob pattern is required');
+      }
+      plugin.fileWatchPatterns = plugin.fileWatchPatterns || [];
+      plugin.fileWatchPatterns.push(pattern);
+      return { success: true };
+    });
+
+    this.registerHandler('workspace:onFileSave', async ({ pattern }, _event, plugin) => {
+      if (!plugin.permissions.has('file.write')) {
+        throw new Error('Missing permission: file.write');
+      }
+      if (!pattern || typeof pattern !== 'string') {
+        throw new Error('Glob pattern is required');
+      }
+      plugin.fileSavePatterns = plugin.fileSavePatterns || [];
+      plugin.fileSavePatterns.push(pattern);
+      return { success: true };
+    });
   }
 
   registerHandler(channel, handler) {
@@ -613,18 +789,43 @@ class PluginSandboxHost {
     });
     pluginWindow.webContents.on('render-process-gone', (_event, details) => {
       if (plugin.window !== pluginWindow) return;
+
       plugin.state = 'error';
-      plugin.error = `Plugin renderer stopped: ${details?.reason || 'unknown reason'}`;
+      plugin.error = `Renderer crashed: ${details?.reason || 'unknown'}`;
+      plugin.crashCount = (plugin.crashCount || 0) + 1;
+      plugin.lastCrash = Date.now();
+
       plugin.window = null;
       if (!pluginWindow.isDestroyed()) pluginWindow.destroy();
       this._cleanupPluginUI(pluginId, plugin);
+
+      // Auto-recover up to 3 times with 5s delay
+      if (plugin.crashCount <= 3) {
+        console.log(`[PluginHost] Plugin ${pluginId} crashed (${plugin.crashCount}/3), scheduling recovery...`);
+        setTimeout(() => {
+          const p = this.plugins.get(pluginId);
+          if (p && p.state === 'error') {
+            console.log(`[PluginHost] Attempting auto-recovery for ${pluginId}...`);
+            this.createPluginWindow(p).catch(err => {
+              console.error(`[PluginHost] Auto-recovery failed for ${pluginId}:`, err);
+            });
+          }
+        }, 5000);
+      } else {
+        console.error(`[PluginHost] Plugin ${pluginId} exceeded max crash recovery attempts`);
+      }
+
       this._notifyPluginsChanged();
     });
     pluginWindow.on('closed', () => {
       if (plugin.window !== pluginWindow) return;
       plugin.window = null;
-      plugin.state = 'error';
-      plugin.error = 'Plugin window closed unexpectedly';
+      // If plugin was intentionally disabled, state is already 'disabled'
+      // Only set error if it wasn't an intentional disable
+      if (plugin.state !== 'disabled') {
+        plugin.state = 'error';
+        plugin.error = 'Plugin window closed unexpectedly';
+      }
       this._cleanupPluginUI(pluginId, plugin);
       this._notifyPluginsChanged();
     });
@@ -663,12 +864,17 @@ class PluginSandboxHost {
       uiCustomViews: new Set(),
       uiSlashCommands: new Set(),
       stylesheet: manifest.stylesheet || '',
-      state: 'loading',
+      state: this.savedPluginState[pluginId] !== false ? 'loading' : 'disabled',
+      // Use saved enabled state, default to true for new plugins
+      _enabled: this.savedPluginState[pluginId] !== false,
     };
     this.plugins.set(pluginId, plugin);   // must exist BEFORE the window loads
-    try {
-      await this.createPluginWindow(plugin);
-    } catch (err) {
+
+    // Only create window if plugin is enabled
+    if (plugin.state !== 'disabled') {
+      try {
+        await this.createPluginWindow(plugin);
+      } catch (err) {
       plugin.state = 'error';
       plugin.error = err instanceof Error ? err.message : String(err);
       if (plugin.window && !plugin.window.isDestroyed()) {
@@ -678,7 +884,8 @@ class PluginSandboxHost {
       this._notifyPluginsChanged();
       throw err;
     }
-    return pluginId;
+  }
+  return pluginId;
   }
 
   /**
@@ -707,6 +914,10 @@ class PluginSandboxHost {
     const plugin = this.plugins.get(pluginId);
     if (!plugin) return false;
 
+    // Persist the enabled state
+    this.savedPluginState[pluginId] = enabled;
+    this._savePluginState();
+
     if (enabled) {
       const hasWindow = plugin.window && !plugin.window.isDestroyed();
       if (hasWindow && (plugin.state === 'loading' || plugin.state === 'ready')) return true;
@@ -729,9 +940,11 @@ class PluginSandboxHost {
     } else {
       const hasWindow = plugin.window && !plugin.window.isDestroyed();
       if (plugin.state === 'disabled' && !hasWindow) return true;
-      if (hasWindow) plugin.window.destroy();
+      if (hasWindow) {
+        plugin.state = 'disabled'; // Set BEFORE destroy so closed handler sees it
+        plugin.window.destroy();
+      }
       plugin.window = null;
-      plugin.state = 'disabled';
       this._cleanupPluginUI(pluginId, plugin);
     }
 

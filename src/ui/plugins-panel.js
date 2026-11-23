@@ -19,6 +19,13 @@ import {
   Folder,
   RotateCw,
   Check,
+  LayoutDashboard,
+  Shield,
+  HardDrive,
+  Copy,
+  XCircle,
+  GitBranch,
+  Globe,
 } from 'lucide';
 
 /**
@@ -35,6 +42,17 @@ function createIcon(Icon, props = {}) {
     focusable: 'false',
     ...props,
   });
+}
+
+function arrayBufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)));
+  }
+  return btoa(binary);
 }
 
 export class PluginManagerPanel {
@@ -57,6 +75,7 @@ export class PluginManagerPanel {
     this.filter = 'all'; // 'all' | 'enabled' | 'disabled' | 'errors'
     this.searchQuery = '';
     this.selectedPluginId = null; // null = list view, string = detail view for that plugin
+    this.detailTab = 'overview'; // active tab in detail view
     this.inFlightActions = new Set();
     this.loading = true;
     this.recentlyInstalled = null;
@@ -74,6 +93,17 @@ export class PluginManagerPanel {
       this.container.appendChild(this.box);
     }
     this.box.setAttribute('tabindex', '-1');
+
+    // Inject CSS to hide scrollbars on tab bar (WebKit + Firefox)
+    if (!document.getElementById('plugin-panel-tabbar-styles')) {
+      const style = document.createElement('style');
+      style.id = 'plugin-panel-tabbar-styles';
+      style.textContent = `
+        .plugin-detail-tabs::-webkit-scrollbar { display: none; }
+        .plugin-detail-tabs { -ms-overflow-style: none; scrollbar-width: none; }
+      `;
+      document.head.appendChild(style);
+    }
 
     this._bindOverlayEvents();
   }
@@ -186,6 +216,7 @@ export class PluginManagerPanel {
     if (this.isOpen) return;
     this.isOpen = true;
     this.selectedPluginId = null;
+    this.detailTab = 'overview';
     this.previousActiveElement = document.activeElement;
     this.container.classList.remove('hidden');
     this.loading = true;
@@ -352,6 +383,73 @@ export class PluginManagerPanel {
   }
 
   /**
+   * Install a plugin from a GitHub repository.
+   * Downloads the repo as a zip, extracts it, and installs.
+   */
+  async installFromGitHub() {
+    try {
+      const url = prompt('GitHub repo URL (e.g. user/repo or https://github.com/user/repo)');
+      if (!url) return;
+
+      // Normalize to zip URL
+      let zipUrl;
+      if (url.includes('github.com/')) {
+        const match = url.match(/github\.com\/([^/]+\/[^/]+)/);
+        if (match) {
+          zipUrl = `https://github.com/${match[1]}/archive/refs/heads/main.zip`;
+        }
+      } else if (url.includes('/')) {
+        zipUrl = `https://github.com/${url}/archive/refs/heads/main.zip`;
+      }
+      if (!zipUrl) {
+        this.showToast('Invalid GitHub URL', 'error');
+        return;
+      }
+
+      this.showToast('Downloading plugin from GitHub...', 'info');
+
+      const resp = await fetch(zipUrl);
+      if (!resp.ok) {
+        throw new Error(`Failed to download: ${resp.status} ${resp.statusText}`);
+      }
+      const blob = await resp.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+
+      // Extract zip using JSZip (loaded dynamically)
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      await zip.loadAsync(arrayBuffer);
+
+      // Find the root folder (first entry that ends with /)
+      const rootFolders = Object.keys(zip.files).filter(name => name.endsWith('/'));
+      if (rootFolders.length === 0) {
+        throw new Error('Zip does not contain a root folder');
+      }
+      const rootFolder = rootFolders[0].slice(0, -1); // remove trailing /
+
+      // Extract to temp directory
+      // Install from extracted zip - send base64 to main process for extraction
+      const base64 = arrayBufferToBase64(arrayBuffer);
+      if (!this.pluginManager?.installFromGitHubZip) throw new Error('Install API not available');
+      const result = await this.pluginManager.installFromGitHubZip(base64);
+      if (result?.success !== false) {
+        const id = result?.pluginId || rootFolder;
+        this.recentlyInstalled = id;
+        this.showToast(`Plugin "${id}" installed from GitHub!`, 'success');
+        await this.loadData();
+      } else {
+        this.showToast(`Install failed: ${result?.error || 'Unknown error'}`, 'error');
+      }
+
+      // Cleanup temp dir
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    } catch (err) {
+      console.error('[PluginManagerPanel] GitHub install error:', err);
+      this.showToast(`GitHub install failed: ${err.message}`, 'error');
+    }
+  }
+
+  /**
    * Toggle a plugin enabled/disabled with optimistic update and rollback on failure.
    * @param {Object} plugin
    * @param {boolean} enable
@@ -363,6 +461,7 @@ export class PluginManagerPanel {
     const prevEnabled = plugin.enabled;
     const prevActive = plugin.active;
     const prevError = plugin.error;
+    const wasInDetailView = this.selectedPluginId === plugin.name;
 
     // Optimistic UI state
     plugin.enabled = enable;
@@ -372,7 +471,9 @@ export class PluginManagerPanel {
     } else {
       plugin.active = false;
     }
-    this._renderListContent();
+
+    // Update whichever view is currently visible
+    this.render();
 
     try {
       const res = enable
@@ -385,20 +486,26 @@ export class PluginManagerPanel {
         plugin.active = prevActive;
         plugin.error = res.error || prevError;
         this.showToast(`Failed to ${enable ? 'enable' : 'disable'} ${plugin.name}: ${res.error}`, 'error');
+        this.render();
       } else {
         this.showToast(`Plugin "${plugin.name}" ${enable ? 'enabled' : 'disabled'}.`, 'success');
         if (enable) {
           await this.loadSettings();
         }
+        // On successful disable, navigate back to list view
+        if (!enable) {
+          this.selectedPluginId = null;
+        }
+        this.render();
       }
     } catch (err) {
       plugin.enabled = prevEnabled;
       plugin.active = prevActive;
       plugin.error = err.message;
       this.showToast(`Action failed: ${err.message}`, 'error');
+      this.render();
     } finally {
       this.inFlightActions.delete(plugin.name);
-      this._renderListContent();
     }
   }
 
@@ -434,7 +541,7 @@ export class PluginManagerPanel {
       this.showToast(`Uninstall error: ${err.message}`, 'error');
     } finally {
       this.inFlightActions.delete(plugin.name);
-      this._renderListContent();
+      this.render();
     }
   }
 
@@ -638,11 +745,144 @@ export class PluginManagerPanel {
   }
 
   /**
+   * Show error details modal with copy functionality.
+   * @param {string} pluginName
+   * @param {string} error
+   * @private
+   */
+  _showErrorModal(pluginName, error) {
+    const modal = document.createElement('div');
+    modal.className = 'plugin-error-modal-overlay';
+    modal.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+    `;
+
+    const modalContent = document.createElement('div');
+    modalContent.className = 'plugin-error-modal';
+    modalContent.style.cssText = `
+      background: var(--fm-bg-secondary);
+      border: 1px solid var(--fm-border);
+      border-radius: 12px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 80vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    `;
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = `
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--fm-border);
+    `;
+    header.innerHTML = `<h3 style="margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">${createIcon(AlertTriangle, { width: 18, height: 18 }).outerHTML} Error Details: ${pluginName}</h3>`;
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'plugin-error-modal-close';
+    closeBtn.style.cssText = 'background: none; border: none; cursor: pointer; padding: 4px; color: var(--fm-text-muted);';
+    closeBtn.appendChild(createIcon(XCircle, { width: 20, height: 20 }));
+    closeBtn.addEventListener('click', () => modal.remove());
+    header.appendChild(closeBtn);
+    modalContent.appendChild(header);
+
+    // Error content
+    const content = document.createElement('div');
+    content.style.cssText = `
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 60vh;
+    `;
+
+    const errorLabel = document.createElement('div');
+    errorLabel.style.cssText = 'font-size: 12px; font-weight: 600; color: var(--fm-text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;';
+    errorLabel.textContent = 'Error Message';
+    content.appendChild(errorLabel);
+
+    const errorBox = document.createElement('pre');
+    errorBox.style.cssText = `
+      background: var(--fm-bg-tertiary);
+      border: 1px solid var(--fm-border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: var(--fm-font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--fm-text);
+      margin: 0 0 16px 0;
+      max-height: 400px;
+      overflow-y: auto;
+    `;
+    errorBox.textContent = String(error).slice(-5000); // Show last 5000 chars
+    content.appendChild(errorBox);
+
+    // Copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'plugin-error-copy-btn plugins-btn-secondary';
+    copyBtn.style.cssText = 'display: flex; align-items: center; gap: 8px;';
+    copyBtn.appendChild(createIcon(Copy, { width: 14, height: 14 }));
+    const copyText = document.createElement('span');
+    copyText.textContent = 'Copy Error to Clipboard';
+    copyBtn.appendChild(copyText);
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(`${pluginName} Error:\n${error}`);
+        copyBtn.innerHTML = '';
+        copyBtn.appendChild(createIcon(Check, { width: 14, height: 14 }));
+        const copiedText = document.createElement('span');
+        copiedText.textContent = 'Copied!';
+        copyBtn.appendChild(copiedText);
+        setTimeout(() => {
+          copyBtn.innerHTML = '';
+          copyBtn.appendChild(createIcon(Copy, { width: 14, height: 14 }));
+          copyBtn.appendChild(copyText);
+        }, 2000);
+      } catch (err) {
+        this.showToast('Failed to copy to clipboard', 'error');
+      }
+    });
+    content.appendChild(copyBtn);
+
+    modalContent.appendChild(content);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    // Close on overlay click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
+
+    // Close on Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        modal.remove();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+
+    // Focus close button
+    closeBtn.focus();
+  }
+
+  /**
    * Main render method. Renders either the plugin list or dedicated plugin detail section.
    */
-  render() {
+  async render() {
     if (this.selectedPluginId) {
-      this._renderDetailView();
+      await this._renderDetailView();
     } else {
       this._renderListView();
     }
@@ -694,6 +934,16 @@ export class PluginManagerPanel {
     installBtn.appendChild(installBtnText);
     installBtn.addEventListener('click', () => this.installFromFolder());
     headerActions.appendChild(installBtn);
+
+    // Install from GitHub
+    const installGithubBtn = document.createElement('button');
+    installGithubBtn.className = 'plugins-btn-secondary';
+    installGithubBtn.appendChild(createIcon(GitBranch, { width: 15, height: 15 }));
+    const installGithubText = document.createElement('span');
+    installGithubText.textContent = 'Install from GitHub…';
+    installGithubBtn.appendChild(installGithubText);
+    installGithubBtn.addEventListener('click', () => this.installFromGitHub());
+    headerActions.appendChild(installGithubBtn);
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'plugins-close-btn';
@@ -1102,6 +1352,7 @@ export class PluginManagerPanel {
    */
   openPluginDetails(pluginId) {
     this.selectedPluginId = pluginId;
+    this.detailTab = 'overview';
     this.render();
   }
 
@@ -1109,7 +1360,7 @@ export class PluginManagerPanel {
    * Render the dedicated detail section for this.selectedPluginId.
    * @private
    */
-  _renderDetailView() {
+  async _renderDetailView() {
     this.box.replaceChildren();
 
     const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
@@ -1120,6 +1371,9 @@ export class PluginManagerPanel {
     }
 
     const inFlight = this.inFlightActions.has(plugin.name);
+
+    // Initialize tab state if not present
+    if (!this.detailTab) this.detailTab = 'overview';
 
     // 1. Header with Back button
     const header = document.createElement('header');
@@ -1171,11 +1425,48 @@ export class PluginManagerPanel {
     // Toast message if present
     this._updateToast();
 
-    // 2. Scrollable Detail Content
+    // 2. Tab Navigation Bar
+    const tabBar = document.createElement('div');
+    tabBar.className = 'plugin-detail-tabs';
+    tabBar.setAttribute('role', 'tablist');
+    tabBar.style.cssText = 'display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;';
+
+    const tabs = [
+      { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+      { id: 'settings', label: 'Settings', icon: Settings },
+      { id: 'contributions', label: 'Contributions', icon: Puzzle },
+      { id: 'permissions', label: 'Permissions', icon: Shield },
+      { id: 'location', label: 'Location', icon: HardDrive },
+      { id: 'manage', label: 'Manage', icon: Trash2 },
+      { id: 'registry', label: 'Registry', icon: Globe },
+    ];
+
+    tabs.forEach((tab) => {
+      const btn = document.createElement('button');
+      btn.className = `plugin-tab-btn${this.detailTab === tab.id ? ' active' : ''}`;
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', this.detailTab === tab.id);
+      btn.setAttribute('aria-controls', `panel-${tab.id}`);
+      btn.id = `tab-${tab.id}`;
+      btn.style.cssText = 'flex-shrink: 0; white-space: nowrap;';
+      btn.appendChild(createIcon(tab.icon, { width: 14, height: 14 }));
+      const label = document.createElement('span');
+      label.textContent = tab.label;
+      btn.appendChild(label);
+      btn.addEventListener('click', () => {
+        this.detailTab = tab.id;
+        this.render();
+      });
+      tabBar.appendChild(btn);
+    });
+
+    this.box.appendChild(tabBar);
+
+    // 3. Scrollable Detail Content
     const content = document.createElement('div');
     content.className = 'plugins-content plugin-detail-view';
 
-    // Overview Hero Card
+    // Overview Hero Card (always shown)
     const heroCard = document.createElement('div');
     heroCard.className = 'plugin-detail-hero';
 
@@ -1247,7 +1538,7 @@ export class PluginManagerPanel {
     heroCard.appendChild(heroBody);
     content.appendChild(heroCard);
 
-    // Error block with Retry button
+    // Error block with Retry button and View Details
     if (plugin.error) {
       const errorBlock = document.createElement('div');
       errorBlock.className = 'plugin-card-error-block';
@@ -1260,6 +1551,10 @@ export class PluginManagerPanel {
       errorText.appendChild(errorMsg);
       errorBlock.appendChild(errorText);
 
+      const errorActions = document.createElement('div');
+      errorActions.className = 'plugin-error-actions';
+      errorActions.style.cssText = 'display: flex; gap: 8px; margin-top: 8px;';
+
       const retryBtn = document.createElement('button');
       retryBtn.className = 'plugin-retry-btn';
       retryBtn.appendChild(createIcon(RotateCw, { width: 12, height: 12 }));
@@ -1270,22 +1565,119 @@ export class PluginManagerPanel {
         e.stopPropagation();
         this.togglePlugin(plugin, true);
       });
-      errorBlock.appendChild(retryBtn);
+      errorActions.appendChild(retryBtn);
 
+      const viewErrorBtn = document.createElement('button');
+      viewErrorBtn.className = 'plugin-btn-secondary';
+      viewErrorBtn.appendChild(createIcon(AlertTriangle, { width: 12, height: 12 }));
+      const viewErrorText = document.createElement('span');
+      viewErrorText.textContent = 'View Details';
+      viewErrorBtn.appendChild(viewErrorText);
+      viewErrorBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this._showErrorModal(plugin.name, plugin.error);
+      });
+      errorActions.appendChild(viewErrorBtn);
+
+      errorBlock.appendChild(errorActions);
       content.appendChild(errorBlock);
     }
 
-    // Detail Sections
-    const detailsContainer = document.createElement('div');
-    detailsContainer.className = 'plugin-detail-sections';
+    // Tab Panels Container
+    const panelsContainer = document.createElement('div');
+    panelsContainer.className = 'plugin-detail-panels';
 
-    // 1. Settings Section
+    // --- Overview Panel ---
+    const overviewPanel = document.createElement('div');
+    overviewPanel.id = 'panel-overview';
+    overviewPanel.setAttribute('role', 'tabpanel');
+    overviewPanel.setAttribute('aria-labelledby', 'tab-overview');
+    overviewPanel.hidden = this.detailTab !== 'overview';
+    overviewPanel.className = 'plugin-tab-panel';
+
+    // Quick stats
+    const statsGrid = document.createElement('div');
+    statsGrid.className = 'plugin-stats-grid';
+
+    const statItems = [
+      { label: 'Status', value: plugin.active ? 'Active' : 'Inactive', icon: plugin.active ? Check : AlertTriangle },
+      { label: 'Version', value: plugin.version || '—', icon: Puzzle },
+      { label: 'Commands', value: (plugin.commands || []).length.toString(), icon: ChevronRight },
+      { label: 'Menu Items', value: (plugin.menuItems || []).length.toString(), icon: ChevronRight },
+    ];
+
+    statItems.forEach((stat) => {
+      const statCard = document.createElement('div');
+      statCard.className = 'plugin-stat-card';
+      const statIcon = document.createElement('div');
+      statIcon.className = 'plugin-stat-icon';
+      statIcon.appendChild(createIcon(stat.icon, { width: 16, height: 16 }));
+      statCard.appendChild(statIcon);
+      const statInfo = document.createElement('div');
+      statInfo.className = 'plugin-stat-info';
+      const statLabel = document.createElement('div');
+      statLabel.className = 'plugin-stat-label';
+      statLabel.textContent = stat.label;
+      statInfo.appendChild(statLabel);
+      const statValue = document.createElement('div');
+      statValue.className = 'plugin-stat-value';
+      statValue.textContent = stat.value;
+      statInfo.appendChild(statValue);
+      statCard.appendChild(statInfo);
+      statsGrid.appendChild(statCard);
+    });
+
+    overviewPanel.appendChild(statsGrid);
+
+    // Description
+    if (plugin.description) {
+      const descSection = document.createElement('div');
+      descSection.className = 'plugin-detail-section';
+      const descTitle = document.createElement('div');
+      descTitle.className = 'plugin-section-title';
+      descTitle.textContent = 'Description';
+      descSection.appendChild(descTitle);
+      const descText = document.createElement('div');
+      descText.className = 'plugin-detail-desc';
+      descText.textContent = plugin.description;
+      descSection.appendChild(descText);
+      overviewPanel.appendChild(descSection);
+    }
+
+    // Author
+    if (plugin.author) {
+      const authorSection = document.createElement('div');
+      authorSection.className = 'plugin-detail-section';
+      const authorTitle = document.createElement('div');
+      authorTitle.className = 'plugin-section-title';
+      authorTitle.textContent = 'Author';
+      authorSection.appendChild(authorTitle);
+      const authorText = document.createElement('div');
+      authorText.textContent = plugin.author;
+      authorSection.appendChild(authorText);
+      overviewPanel.appendChild(authorSection);
+    }
+
+    panelsContainer.appendChild(overviewPanel);
+
+    // --- Settings Panel ---
+    const settingsPanel = document.createElement('div');
+    settingsPanel.id = 'panel-settings';
+    settingsPanel.setAttribute('role', 'tabpanel');
+    settingsPanel.setAttribute('aria-labelledby', 'tab-settings');
+    settingsPanel.hidden = this.detailTab !== 'settings';
+    settingsPanel.className = 'plugin-tab-panel';
+
+    // Get manifest settings schema and stored values
+    const manifestSettings = plugin.manifest?.settings || {};
     const pluginSettingsData = this.settingsMap.get(plugin.name);
-    const metadata = pluginSettingsData?.metadata || {};
-    const values = pluginSettingsData?.values || {};
-    const settingKeys = Object.keys(metadata);
+    const storedMetadata = pluginSettingsData?.metadata || {};
+    const storedValues = pluginSettingsData?.values || {};
 
-    if (settingKeys.length > 0) {
+    // Merge manifest schema with stored metadata
+    const allSettingKeys = new Set([...Object.keys(manifestSettings), ...Object.keys(storedMetadata)]);
+
+    if (allSettingKeys.size > 0) {
       const settingsSection = document.createElement('div');
       settingsSection.className = 'plugin-detail-section';
 
@@ -1297,8 +1689,10 @@ export class PluginManagerPanel {
       const group = document.createElement('div');
       group.className = 'plugin-settings-group';
 
-      settingKeys.forEach((key) => {
-        const meta = metadata[key];
+      allSettingKeys.forEach((key) => {
+        const manifestMeta = manifestSettings[key] || {};
+        const storedMeta = storedMetadata[key] || {};
+        const meta = { ...storedMeta, ...manifestMeta };
         const row = document.createElement('div');
         row.className = 'plugin-setting-row';
 
@@ -1318,9 +1712,11 @@ export class PluginManagerPanel {
         }
         row.appendChild(metaCol);
 
-        const currentValue = values[key] !== undefined ? values[key] : meta.defaultValue;
+        const currentValue = storedValues[key] !== undefined ? storedValues[key] : (meta.default !== undefined ? meta.default : meta.defaultValue);
 
-        if (meta.type === 'boolean') {
+        const type = meta.type || (typeof currentValue === 'boolean' ? 'boolean' : typeof currentValue === 'number' ? 'number' : 'string');
+
+        if (type === 'boolean') {
           const boolSwitch = document.createElement('button');
           boolSwitch.setAttribute('role', 'switch');
           boolSwitch.setAttribute('aria-checked', String(!!currentValue));
@@ -1338,7 +1734,7 @@ export class PluginManagerPanel {
             this.updateSetting(plugin.name, key, nextVal);
           });
           row.appendChild(boolSwitch);
-        } else if (meta.type === 'enum' && Array.isArray(meta.options)) {
+        } else if ((type === 'select' || type === 'enum') && Array.isArray(meta.options)) {
           const select = document.createElement('select');
           select.className = 'plugin-setting-select';
           meta.options.forEach((opt) => {
@@ -1354,13 +1750,37 @@ export class PluginManagerPanel {
             this.updateSetting(plugin.name, key, e.target.value);
           });
           row.appendChild(select);
-        } else if (meta.type === 'number') {
+        } else if (type === 'number') {
           const input = document.createElement('input');
           input.type = 'number';
           input.className = 'plugin-setting-input';
           input.value = currentValue !== undefined ? currentValue : '';
           input.addEventListener('change', (e) => {
             this.updateSetting(plugin.name, key, parseFloat(e.target.value) || 0);
+          });
+          row.appendChild(input);
+        } else if (type === 'color') {
+          const input = document.createElement('input');
+          input.type = 'color';
+          input.className = 'plugin-setting-input plugin-setting-color';
+          input.value = typeof currentValue === 'string' && currentValue.startsWith('#') ? currentValue : '#000000';
+          input.addEventListener('change', (e) => {
+            this.updateSetting(plugin.name, key, e.target.value);
+          });
+          row.appendChild(input);
+        } else if (type === 'path') {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'plugin-setting-input';
+          input.placeholder = 'Select a file or folder...';
+          input.value = currentValue ?? '';
+          input.readOnly = true;
+          input.addEventListener('click', async () => {
+            const path = await this.pluginManager.pickFile?.({ title: `Select ${meta.label || key}` });
+            if (path) {
+              input.value = path;
+              this.updateSetting(plugin.name, key, path);
+            }
           });
           row.appendChild(input);
         } else {
@@ -1371,7 +1791,7 @@ export class PluginManagerPanel {
           input.value = typeof currentValue === 'object' ? JSON.stringify(currentValue) : (currentValue ?? '');
           input.addEventListener('change', (e) => {
             let val = e.target.value;
-            if (meta.type === 'json') {
+            if (type === 'json') {
               try {
                 val = JSON.parse(val);
               } catch {
@@ -1388,10 +1808,24 @@ export class PluginManagerPanel {
       });
 
       settingsSection.appendChild(group);
-      detailsContainer.appendChild(settingsSection);
+      settingsPanel.appendChild(settingsSection);
+    } else {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'plugin-settings-empty';
+      emptyState.textContent = 'This plugin has no configurable settings.';
+      settingsPanel.appendChild(emptyState);
     }
 
-    // 2. Contributions Section
+    panelsContainer.appendChild(settingsPanel);
+
+    // --- Contributions Panel ---
+    const contribPanel = document.createElement('div');
+    contribPanel.id = 'panel-contributions';
+    contribPanel.setAttribute('role', 'tabpanel');
+    contribPanel.setAttribute('aria-labelledby', 'tab-contributions');
+    contribPanel.hidden = this.detailTab !== 'contributions';
+    contribPanel.className = 'plugin-tab-panel';
+
     const hasCommands = Array.isArray(plugin.commands) && plugin.commands.length > 0;
     const hasMenuItems = Array.isArray(plugin.menuItems) && plugin.menuItems.length > 0;
     const hasSidebarPanels = Array.isArray(plugin.sidebarPanels) && plugin.sidebarPanels.length > 0;
@@ -1471,32 +1905,170 @@ export class PluginManagerPanel {
       }
 
       contribSection.appendChild(contribGrid);
-      detailsContainer.appendChild(contribSection);
+      contribPanel.appendChild(contribSection);
+    } else {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'plugin-contributions-empty';
+      emptyState.textContent = 'This plugin contributes no features.';
+      contribPanel.appendChild(emptyState);
     }
 
-    // 3. Permissions Section
-    if (Array.isArray(plugin.permissions) && plugin.permissions.length > 0) {
+    panelsContainer.appendChild(contribPanel);
+
+    // --- Permissions Panel ---
+    const permPanel = document.createElement('div');
+    permPanel.id = 'panel-permissions';
+    permPanel.setAttribute('role', 'tabpanel');
+    permPanel.setAttribute('aria-labelledby', 'tab-permissions');
+    permPanel.hidden = this.detailTab !== 'permissions';
+    permPanel.className = 'plugin-tab-panel';
+
+    // All known permissions from manifest schema
+    const ALL_PERMISSIONS = [
+      'editor.read', 'editor.write', 'editor.selection', 'editor.commands',
+      'file.read', 'file.write', 'file.save', 'file.export',
+      'settings.read', 'settings.write',
+      'ui.menus', 'ui.statusbar', 'ui.notifications',
+      'clipboard.read', 'clipboard.write',
+      'ui.panels', 'ui.customViews',
+      'editor.slashCommands',
+      'clipboard.smartPaste',
+      'network.request', 'network.request:write'
+    ];
+
+    const requestedPerms = plugin.manifest?.permissions || [];
+    const grantedPerms = plugin.permissions || [];
+
+    if (requestedPerms.length > 0 || grantedPerms.length > 0) {
       const permSection = document.createElement('div');
       permSection.className = 'plugin-detail-section';
 
       const permTitle = document.createElement('div');
       permTitle.className = 'plugin-section-title';
-      permTitle.textContent = 'Requested Permissions';
+      permTitle.textContent = 'Permissions';
       permSection.appendChild(permTitle);
 
-      const permList = document.createElement('div');
-      permList.className = 'plugin-tags-list';
-      plugin.permissions.forEach((perm) => {
-        const tag = document.createElement('span');
-        tag.className = 'plugin-tag';
-        tag.textContent = perm;
-        permList.appendChild(tag);
-      });
-      permSection.appendChild(permList);
-      detailsContainer.appendChild(permSection);
+      // Requested permissions (from manifest) - always shown
+      if (requestedPerms.length > 0) {
+        const requestedTitle = document.createElement('div');
+        requestedTitle.className = 'plugin-subsection-title';
+        requestedTitle.textContent = 'Requested (from manifest)';
+        requestedTitle.style.cssText = 'font-size: 12px; font-weight: 600; color: var(--fm-text-muted); margin: 16px 0 8px 0;';
+        permSection.appendChild(requestedTitle);
+
+        const requestedList = document.createElement('div');
+        requestedList.className = 'plugin-permission-list';
+        requestedPerms.forEach((perm) => {
+          const row = document.createElement('div');
+          row.className = 'plugin-permission-row';
+          row.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 8px 0;';
+
+          const label = document.createElement('label');
+          label.className = 'plugin-permission-label';
+          label.style.cssText = 'flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer;';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = grantedPerms.includes(perm);
+          checkbox.disabled = true; // Requested perms are always granted when plugin is enabled
+          checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: var(--fm-accent);';
+          label.appendChild(checkbox);
+
+          const permName = document.createElement('span');
+          permName.textContent = perm;
+          permName.style.cssText = 'font-family: var(--fm-font-mono); font-size: 12px;';
+          label.appendChild(permName);
+
+          row.appendChild(label);
+          requestedList.appendChild(row);
+        });
+        permSection.appendChild(requestedList);
+      }
+
+      // Additional available permissions that can be granted/revoked at runtime
+      const additionalPerms = ALL_PERMISSIONS.filter(p => !requestedPerms.includes(p));
+      if (additionalPerms.length > 0) {
+        const additionalTitle = document.createElement('div');
+        additionalTitle.className = 'plugin-subsection-title';
+        additionalTitle.textContent = 'Available (grant at runtime)';
+        additionalTitle.style.cssText = 'font-size: 12px; font-weight: 600; color: var(--fm-text-muted); margin: 16px 0 8px 0;';
+        permSection.appendChild(additionalTitle);
+
+        const additionalList = document.createElement('div');
+        additionalList.className = 'plugin-permission-list';
+        additionalPerms.forEach((perm) => {
+          const row = document.createElement('div');
+          row.className = 'plugin-permission-row';
+          row.style.cssText = 'display: flex; align-items: center; gap: 12px; padding: 8px 0;';
+
+          const label = document.createElement('label');
+          label.className = 'plugin-permission-label';
+          label.style.cssText = 'flex: 1; display: flex; align-items: center; gap: 8px; cursor: pointer;';
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = grantedPerms.includes(perm);
+          checkbox.style.cssText = 'width: 16px; height: 16px; accent-color: var(--fm-accent);';
+          label.appendChild(checkbox);
+
+          const permName = document.createElement('span');
+          permName.textContent = perm;
+          permName.style.cssText = 'font-family: var(--fm-font-mono); font-size: 12px;';
+          label.appendChild(permName);
+
+          const status = document.createElement('span');
+          status.textContent = grantedPerms.includes(perm) ? 'Granted' : 'Revoked';
+          status.className = grantedPerms.includes(perm) ? 'plugin-perm-status granted' : 'plugin-perm-status revoked';
+          status.style.cssText = 'font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--fm-bg-tertiary);';
+          label.appendChild(status);
+
+          row.appendChild(label);
+          additionalList.appendChild(row);
+
+          checkbox.addEventListener('change', async (e) => {
+            e.stopPropagation();
+            checkbox.disabled = true;
+            try {
+              if (checkbox.checked) {
+                await this.pluginManager.grantPermission?.(plugin.name, perm);
+                status.textContent = 'Granted';
+                status.className = 'plugin-perm-status granted';
+              } else {
+                await this.pluginManager.revokePermission?.(plugin.name, perm);
+                status.textContent = 'Revoked';
+                status.className = 'plugin-perm-status revoked';
+              }
+              // Reload plugin data to reflect changes
+              await this.loadData();
+            } catch (err) {
+              this.showToast(`Failed to update permission: ${err.message}`, 'error');
+              checkbox.checked = !checkbox.checked; // revert
+            } finally {
+              checkbox.disabled = false;
+            }
+          });
+        });
+        permSection.appendChild(additionalList);
+      }
+
+      permPanel.appendChild(permSection);
+    } else {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'plugin-permissions-empty';
+      emptyState.textContent = 'This plugin requests no permissions.';
+      permPanel.appendChild(emptyState);
     }
 
-    // 4. Install Path Section
+    panelsContainer.appendChild(permPanel);
+
+    // --- Location Panel ---
+    const locationPanel = document.createElement('div');
+    locationPanel.id = 'panel-location';
+    locationPanel.setAttribute('role', 'tabpanel');
+    locationPanel.setAttribute('aria-labelledby', 'tab-location');
+    locationPanel.hidden = this.detailTab !== 'location';
+    locationPanel.className = 'plugin-tab-panel';
+
     if (plugin.path) {
       const pathSection = document.createElement('div');
       pathSection.className = 'plugin-detail-section';
@@ -1510,10 +2082,36 @@ export class PluginManagerPanel {
       pathText.className = 'plugin-path-text';
       pathText.textContent = plugin.path;
       pathSection.appendChild(pathText);
-      detailsContainer.appendChild(pathSection);
+
+      const openBtn = document.createElement('button');
+      openBtn.className = 'plugins-btn-secondary';
+      openBtn.appendChild(createIcon(Folder, { width: 13, height: 13 }));
+      const openText = document.createElement('span');
+      openText.textContent = 'Open in Explorer';
+      openBtn.appendChild(openText);
+      openBtn.addEventListener('click', () => {
+        this.pluginManager.openPath?.(plugin.path);
+      });
+      pathSection.appendChild(openBtn);
+
+      locationPanel.appendChild(pathSection);
+    } else {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'plugin-location-empty';
+      emptyState.textContent = 'Plugin location unknown.';
+      locationPanel.appendChild(emptyState);
     }
 
-    // 5. Danger Zone (Uninstall)
+    panelsContainer.appendChild(locationPanel);
+
+    // --- Manage Panel ---
+    const managePanel = document.createElement('div');
+    managePanel.id = 'panel-manage';
+    managePanel.setAttribute('role', 'tabpanel');
+    managePanel.setAttribute('aria-labelledby', 'tab-manage');
+    managePanel.hidden = this.detailTab !== 'manage';
+    managePanel.className = 'plugin-tab-panel';
+
     const dangerSection = document.createElement('div');
     dangerSection.className = 'plugin-detail-section';
 
@@ -1532,13 +2130,250 @@ export class PluginManagerPanel {
       e.stopPropagation();
       this.uninstallPlugin(plugin);
     });
-    dangerSection.appendChild(uninstallBtn);
-    detailsContainer.appendChild(dangerSection);
 
-    content.appendChild(detailsContainer);
+    dangerSection.appendChild(uninstallBtn);
+    managePanel.appendChild(dangerSection);
+
+    // Add reload button
+    const reloadSection = document.createElement('div');
+    reloadSection.className = 'plugin-detail-section';
+
+    const reloadTitle = document.createElement('div');
+    reloadTitle.className = 'plugin-section-title';
+    reloadTitle.textContent = 'Reload Plugin';
+    reloadSection.appendChild(reloadTitle);
+
+    const reloadBtn = document.createElement('button');
+    reloadBtn.className = 'plugins-btn-secondary';
+    reloadBtn.appendChild(createIcon(RotateCw, { width: 13, height: 13 }));
+    const reloadText = document.createElement('span');
+    reloadText.textContent = 'Reload this plugin';
+    reloadBtn.appendChild(reloadText);
+    reloadBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (this.inFlightActions.has(plugin.name)) return;
+      this.inFlightActions.add(plugin.name);
+      this.render();
+      try {
+        if (this.pluginManager.reloadPlugin) {
+          await this.pluginManager.reloadPlugin(plugin.name);
+        } else {
+          // Fallback: disable then enable
+          await this.togglePlugin(plugin, false);
+          await this.togglePlugin(plugin, true);
+        }
+        this.showToast(`Plugin "${plugin.name}" reloaded.`, 'success');
+      } catch (err) {
+        this.showToast(`Reload failed: ${err.message}`, 'error');
+      } finally {
+        this.inFlightActions.delete(plugin.name);
+        this.render();
+      }
+    });
+    reloadSection.appendChild(reloadBtn);
+    managePanel.appendChild(reloadSection);
+
+    // Dev Mode: Hot Reload (only shown when FLOWMARK_DEV=1)
+    if (window.appAPI?.isDevMode) {
+      const isDev = await window.appAPI.isDevMode();
+      if (isDev) {
+        const devReloadSection = document.createElement('div');
+        devReloadSection.className = 'plugin-detail-section';
+
+        const devReloadTitle = document.createElement('div');
+        devReloadTitle.className = 'plugin-section-title';
+        devReloadTitle.textContent = 'Dev Mode: Hot Reload';
+        devReloadSection.appendChild(devReloadTitle);
+
+        const devReloadBtn = document.createElement('button');
+        devReloadBtn.className = 'plugins-btn-primary';
+        devReloadBtn.appendChild(createIcon(RotateCw, { width: 13, height: 13 }));
+        const devReloadText = document.createElement('span');
+        devReloadText.textContent = 'Hot Reload (instant)';
+        devReloadBtn.appendChild(devReloadText);
+        devReloadBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          this.inFlightActions.add(plugin.name);
+          this.render();
+          try {
+            if (this.pluginManager.devReload) {
+              const result = await this.pluginManager.devReload(plugin.name);
+              if (result?.success) {
+                this.showToast(`Plugin "${plugin.name}" hot reloaded.`, 'success');
+              } else {
+                this.showToast(`Hot reload failed: ${result?.error || 'Unknown error'}`, 'error');
+              }
+            } else {
+              this.showToast('Hot reload not available', 'error');
+            }
+          } catch (err) {
+            this.showToast(`Hot reload error: ${err.message}`, 'error');
+          } finally {
+            this.inFlightActions.delete(plugin.name);
+            this.render();
+          }
+        });
+        devReloadSection.appendChild(devReloadBtn);
+        managePanel.appendChild(devReloadSection);
+      }
+    }
+
+    panelsContainer.appendChild(managePanel);
+
+    // --- Registry Panel ---
+    const registryPanel = document.createElement('div');
+    registryPanel.id = 'panel-registry';
+    registryPanel.setAttribute('role', 'tabpanel');
+    registryPanel.setAttribute('aria-labelledby', 'tab-registry');
+    registryPanel.hidden = this.detailTab !== 'registry';
+    registryPanel.className = 'plugin-tab-panel';
+
+    // Load registry index
+    this._renderRegistryPanel(registryPanel);
+
+    panelsContainer.appendChild(registryPanel);
+
+    content.appendChild(panelsContainer);
     this.box.appendChild(content);
 
     // Focus back button on entering detail view
     backBtn.focus();
+  }
+
+  /**
+   * Render the Registry panel with available plugins from registry index.
+   * @private
+   */
+  async _renderRegistryPanel(container) {
+    container.replaceChildren();
+
+    const section = document.createElement('div');
+    section.className = 'plugin-detail-section';
+
+    const title = document.createElement('div');
+    title.className = 'plugin-section-title';
+    title.textContent = 'Plugin Registry';
+    section.appendChild(title);
+
+    const desc = document.createElement('div');
+    desc.className = 'plugin-detail-desc';
+    desc.textContent = 'Browse and install plugins from the FlowMark registry.';
+    desc.style.marginBottom = '16px';
+    section.appendChild(desc);
+
+    try {
+      // Load registry index via IPC
+      const registry = await window.pluginRegistryAPI?.getRegistry?.() || {};
+
+      const entries = Object.entries(registry);
+      if (entries.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'plugin-registry-empty';
+        empty.textContent = 'No plugins in registry yet.';
+        section.appendChild(empty);
+        container.appendChild(section);
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'plugin-registry-grid';
+      grid.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;';
+
+      for (const [key, plugin] of entries) {
+        const card = document.createElement('div');
+        card.className = 'plugin-registry-card';
+        card.style.cssText = 'background: var(--fm-bg-secondary); border: 1px solid var(--fm-border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;';
+
+        const header = document.createElement('div');
+        header.style.cssText = 'display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;';
+
+        const info = document.createElement('div');
+        const name = document.createElement('div');
+        name.style.cssText = 'font-weight: 600; font-size: 14px;';
+        name.textContent = plugin.name || key;
+        info.appendChild(name);
+
+        const version = document.createElement('div');
+        version.style.cssText = 'font-size: 12px; color: var(--fm-text-muted);';
+        version.textContent = `v${plugin.version}`;
+        info.appendChild(version);
+
+        if (plugin.description) {
+          const descEl = document.createElement('div');
+          descEl.style.cssText = 'font-size: 12px; color: var(--fm-text-muted); margin-top: 4px;';
+          descEl.textContent = plugin.description;
+          info.appendChild(descEl);
+        }
+
+        header.appendChild(info);
+        card.appendChild(header);
+
+        const actions = document.createElement('div');
+        actions.style.cssText = 'display: flex; gap: 8px; margin-top: auto;';
+
+        const installBtn = document.createElement('button');
+        installBtn.className = 'plugins-btn-primary';
+        installBtn.style.flex = '1';
+        installBtn.textContent = 'Install';
+        installBtn.addEventListener('click', async () => {
+          installBtn.disabled = true;
+          installBtn.textContent = 'Downloading...';
+          try {
+            if (!plugin.repo) throw new Error('No repository URL in registry');
+            const zipUrl = `${plugin.repo}/archive/refs/heads/main.zip`;
+            const resp = await fetch(zipUrl);
+            if (!resp.ok) throw new Error(`Failed to download: ${resp.status}`);
+            const blob = await resp.blob();
+            const arrayBuffer = await blob.arrayBuffer();
+            const base64 = arrayBufferToBase64(arrayBuffer);
+
+            installBtn.textContent = 'Installing...';
+
+            if (!this.pluginManager?.installFromGitHubZip) throw new Error('Install API not available');
+            const result = await this.pluginManager.installFromGitHubZip(base64);
+            if (result?.success) {
+              this.showToast(`Plugin "${plugin.name}" installed!`, 'success');
+              await this.loadData();
+              this.render(); // Refresh registry panel
+            } else {
+              throw new Error(result?.error || 'Unknown error');
+            }
+          } catch (err) {
+            this.showToast(`Install failed: ${err.message}`, 'error');
+            installBtn.disabled = false;
+            installBtn.textContent = 'Install';
+          }
+        });
+        actions.appendChild(installBtn);
+
+        if (plugin.repo) {
+          const repoBtn = document.createElement('button');
+          repoBtn.className = 'plugins-btn-secondary';
+          repoBtn.style.cssText = 'padding: 0 12px;';
+          repoBtn.appendChild(createIcon(GitBranch, { width: 14, height: 14 }));
+          const repoText = document.createElement('span');
+          repoText.textContent = ' View Source';
+          repoBtn.appendChild(repoText);
+          repoBtn.addEventListener('click', () => {
+            window.shellAPI.openExternal(plugin.repo);
+          });
+          actions.appendChild(repoBtn);
+        }
+
+        card.appendChild(actions);
+        grid.appendChild(card);
+      }
+
+      section.appendChild(grid);
+    } catch (err) {
+      console.error('[PluginManagerPanel] Registry load error:', err);
+      const errorEl = document.createElement('div');
+      errorEl.className = 'plugin-registry-error';
+      errorEl.style.cssText = 'color: var(--fm-error); padding: 16px; text-align: center;';
+      errorEl.textContent = `Failed to load registry: ${err.message}`;
+      section.appendChild(errorEl);
+    }
+
+    container.appendChild(section);
   }
 }

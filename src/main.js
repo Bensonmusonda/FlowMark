@@ -107,38 +107,39 @@ async function autoInstallBundledPlugins() {
   }
 
   try {
-    if (!fs.existsSync(bundledPluginsDir)) return;
+    // 1. Sync bundled plugins from src/plugins to userData/plugins
+    if (fs.existsSync(bundledPluginsDir)) {
+      const entries = fs.readdirSync(bundledPluginsDir, { withFileTypes: true });
+      const bundledPlugins = entries
+        .filter(e => e.isDirectory() && e.name !== 'sandbox')
+        .map(e => e.name);
 
-    const entries = fs.readdirSync(bundledPluginsDir, { withFileTypes: true });
-    const bundledPlugins = entries
-      .filter(e => e.isDirectory() && e.name !== 'sandbox')
-      .map(e => e.name);
-
-    // Always copy/sync fresh source files from src/plugins to userData/plugins on startup
-    for (const name of bundledPlugins) {
-      const sourcePath = path.join(bundledPluginsDir, name);
-      const destPath = path.join(userDataPluginsDir, name);
-
-      // Overwrite with latest source changes
-      copyDir(sourcePath, destPath);
+      for (const name of bundledPlugins) {
+        const sourcePath = path.join(bundledPluginsDir, name);
+        const destPath = path.join(userDataPluginsDir, name);
+        copyDir(sourcePath, destPath);
+      }
     }
 
-    // Load each plugin into the sandbox host
-    for (const name of bundledPlugins) {
-      const destPath = path.join(userDataPluginsDir, name);
-      try {
-        // If already loaded in host, remove first to reload fresh
-        if (pluginHost.plugins.has(name)) {
-          await pluginHost.uninstallPlugin(name);
+    // 2. Load all plugins in userData/plugins (both bundled and user-installed)
+    if (fs.existsSync(userDataPluginsDir)) {
+      const allEntries = fs.readdirSync(userDataPluginsDir, { withFileTypes: true });
+      for (const entry of allEntries) {
+        if (!entry.isDirectory() || entry.name === 'sandbox') continue;
+        const pluginDir = path.join(userDataPluginsDir, entry.name);
+        const manifestFile = path.join(pluginDir, 'plugin.json');
+        if (fs.existsSync(manifestFile) && !pluginHost.plugins.has(entry.name)) {
+          try {
+            await pluginHost.installPlugin(pluginDir);
+            console.log(`[main] Loaded plugin: ${entry.name}`);
+          } catch (err) {
+            console.warn(`[main] Failed to load plugin ${entry.name}:`, err.message);
+          }
         }
-        await pluginHost.installPlugin(destPath);
-        console.log(`[main] Synced & loaded plugin: ${name}`);
-      } catch (err) {
-        console.warn(`[main] Failed to load plugin ${name}:`, err.message);
       }
     }
   } catch (err) {
-    console.warn('[main] Failed to sync bundled plugins:', err);
+    console.warn('[main] Failed to initialize plugins:', err);
   }
 }
 
@@ -179,6 +180,8 @@ ipcMain.handle('dialog:save', async (_, arg) => {
   fs.writeFileSync(filePath, content, 'utf8');
   currentFilePath = filePath;
   addRecent(filePath);
+  // Broadcast file save event to plugins
+  if (pluginHost) pluginHost.broadcastToPlugins('workspace:fileSave', { path: filePath });
   return { canceled: false, filePath };
 });
 
@@ -207,6 +210,8 @@ ipcMain.handle('file:save', async (_, arg) => {
   fs.writeFileSync(targetPath, content, 'utf8');
   currentFilePath = targetPath;
   addRecent(targetPath);
+  // Broadcast file save event to plugins
+  if (pluginHost) pluginHost.broadcastToPlugins('workspace:fileSave', { path: targetPath });
   return { filePath: targetPath };
 });
 
@@ -221,6 +226,8 @@ ipcMain.handle('file:open', async () => {
   const content = fs.readFileSync(filePath, 'utf8');
   currentFilePath = filePath;
   addRecent(filePath);
+  // Broadcast file open event to plugins
+  if (pluginHost) pluginHost.broadcastToPlugins('workspace:fileOpen', { path: filePath });
   return { canceled: false, filePath, content };
 });
 
@@ -232,6 +239,8 @@ ipcMain.handle('file:openPath', async (_, filePath) => {
     const content = fs.readFileSync(resolved, 'utf8');
     currentFilePath = resolved;
     addRecent(resolved);
+    // Broadcast file open event to plugins
+    if (pluginHost) pluginHost.broadcastToPlugins('workspace:fileOpen', { path: resolved });
     return { canceled: false, filePath: resolved, content };
   } catch (e) {
     return { canceled: true, error: 'File not found' };
@@ -246,6 +255,8 @@ ipcMain.handle('file:createAndOpen', async (_, filePath) => {
     fs.writeFileSync(resolved, '', 'utf8');
     currentFilePath = resolved;
     addRecent(resolved);
+    // Broadcast file open event to plugins (new file created)
+    if (pluginHost) pluginHost.broadcastToPlugins('workspace:fileOpen', { path: resolved });
     return { canceled: false, filePath: resolved, content: '' };
   } catch (e) {
     return { canceled: true, error: e.message };
@@ -310,6 +321,106 @@ ipcMain.handle('session:load', async () => {
   } catch (err) {
     console.error('Failed to load session:', err);
     return null;
+  }
+});
+
+// ── Settings persistence ───────────────────────────────────────────────────────
+const SETTINGS_PATH = path.join(app.getPath('userData'), 'settings.json');
+
+function loadSettings() {
+  try {
+    if (!fs.existsSync(SETTINGS_PATH)) return {};
+    const raw = fs.readFileSync(SETTINGS_PATH, 'utf8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Failed to load settings:', err);
+    return {};
+  }
+}
+
+function saveSettings(settings) {
+  try {
+    fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('Failed to save settings:', err);
+    return false;
+  }
+}
+
+ipcMain.handle('settings:get', (_, key) => {
+  const settings = loadSettings();
+  return settings[key];
+});
+
+ipcMain.handle('settings:set', (_, { key, value }) => {
+  const settings = loadSettings();
+  settings[key] = value;
+  saveSettings(settings);
+  // Broadcast change to all windows
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('settings:changed', { key, value });
+  }
+  return { success: true };
+});
+
+ipcMain.handle('settings:getAll', () => {
+  return loadSettings();
+});
+
+ipcMain.handle('settings:register', (_, { key, defaultValue, meta }) => {
+  const settings = loadSettings();
+  if (!(key in settings)) {
+    settings[key] = defaultValue;
+    saveSettings(settings);
+  }
+  return { success: true, value: settings[key] };
+});
+
+// Theme API handlers
+ipcMain.handle('theme:get', () => {
+  const settings = loadSettings();
+  return settings.theme || 'theme-dark';
+});
+
+ipcMain.handle('theme:set', (_, theme) => {
+  const settings = loadSettings();
+  settings.theme = theme;
+  saveSettings(settings);
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('theme:changed', theme);
+  }
+  return { success: true };
+});
+
+ipcMain.handle('theme:getCustomColors', () => {
+  const settings = loadSettings();
+  return settings.customColors || {};
+});
+
+ipcMain.handle('theme:setCustomColor', (_, { key, value }) => {
+  const settings = loadSettings();
+  if (!settings.customColors || typeof settings.customColors !== 'object') {
+    settings.customColors = {};
+  }
+  settings.customColors[key] = value;
+  saveSettings(settings);
+  return { success: true };
+});
+
+ipcMain.handle('theme:apply', () => {
+  return { success: true };
+});
+
+ipcMain.on('settings:open', () => {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('settings:opened');
+  }
+});
+
+ipcMain.on('settings:close', () => {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('settings:closed');
   }
 });
 
@@ -460,6 +571,44 @@ ipcMain.handle('plugins:install', async (_, sourcePath) => {
   }
 });
 
+ipcMain.handle('plugins:installFromGitHubZip', async (_, zipBase64) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    const os = require('os');
+    const path = require('path');
+    const fs = require('fs');
+    const JSZip = require('jszip');
+    
+    const zip = new JSZip();
+    const buffer = Buffer.from(zipBase64, 'base64');
+    await zip.loadAsync(buffer);
+    
+    const rootFolders = Object.keys(zip.files).filter(name => name.endsWith('/'));
+    if (rootFolders.length === 0) throw new Error('Zip does not contain a root folder');
+    const rootFolder = rootFolders[0].slice(0, -1);
+    
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flowmark-plugin-'));
+    
+    for (const [name, file] of Object.entries(zip.files)) {
+      if (file.dir) continue;
+      const relativePath = name.startsWith(rootFolder + '/') ? name.slice(rootFolder.length + 1) : name;
+      const destPath = path.join(tmpDir, relativePath);
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      const content = await file.async('nodebuffer');
+      fs.writeFileSync(destPath, content);
+    }
+    
+    const pluginId = await pluginHost.installPlugin(tmpDir);
+    
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true, pluginId };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 ipcMain.handle('plugins:uninstall', async (_, name) => {
   if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
   try {
@@ -542,8 +691,59 @@ ipcMain.handle('plugins:invokeCommand', (_, { pluginId, commandId }) =>
 ipcMain.handle('plugins:invokeSlashCommand', (_, { pluginId, commandId, triggerPos }) =>
   pluginHost ? pluginHost.invokeSlashCommand(pluginId, commandId, triggerPos) : false);
 
+ipcMain.handle('plugins:grantPermission', async (_, { pluginId, permission }) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    const result = pluginHost.grantPermission(pluginId, permission);
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    }
+    return { success: result };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+ipcMain.handle('plugins:revokePermission', async (_, { pluginId, permission }) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  try {
+    const result = pluginHost.revokePermission(pluginId, permission);
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    }
+    return { success: result };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  }
+});
+
+ipcMain.handle('plugins:devReload', async (_, pluginId) => {
+  if (!process.env.FLOWMARK_DEV) return { success: false, error: 'Not in dev mode' };
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  const plugin = pluginHost.plugins.get(pluginId);
+  if (!plugin) return { success: false, error: 'Not found' };
+  await pluginHost.setPluginEnabled(pluginId, false);
+  await pluginHost.setPluginEnabled(pluginId, true);
+  return { success: true };
+});
+
 ipcMain.handle('plugins:smartPaste', async (_, data) =>
   pluginHost ? pluginHost.applySmartPaste(data) : data);
+
+ipcMain.handle('app:isDevMode', () => process.env.FLOWMARK_DEV === '1');
+
+ipcMain.handle('plugins:getRegistry', async () => {
+  const fs = require('fs');
+  const path = require('path');
+  const registryPath = path.join(__dirname, 'plugins', 'registry-index.json');
+  try {
+    const content = fs.readFileSync(registryPath, 'utf8');
+    return JSON.parse(content);
+  } catch (err) {
+    console.error('[main] Failed to load registry:', err);
+    return {};
+  }
+});
 
 // Renderer -> plugin windows (these channels were previously going nowhere)
 ipcMain.on('editor:contentChanged', (_, data) =>
@@ -596,6 +796,14 @@ const { buildExportDocument } = require('./export-html');
 
 ipcMain.handle('export:html', async (_, markdown, theme) => {
   try {
+    // Apply markdown transforms before export
+    if (pluginHost) {
+      try {
+        markdown = await pluginHost.applyMarkdownTransforms(markdown);
+      } catch (err) {
+        console.warn('[main] Plugin transform error on export:', err);
+      }
+    }
     const { filePath, canceled } = await dialog.showSaveDialog(win, {
       title: 'Export HTML',
       defaultPath: currentFilePath
@@ -612,6 +820,14 @@ ipcMain.handle('export:html', async (_, markdown, theme) => {
 });
 
 ipcMain.handle('export:pdf', async (_, markdown, theme) => {
+  // Apply markdown transforms before export
+  if (pluginHost) {
+    try {
+      markdown = await pluginHost.applyMarkdownTransforms(markdown);
+    } catch (err) {
+      console.warn('[main] Plugin transform error on export:', err);
+    }
+  }
   let exportWin = null;
   const tempPath = path.join(app.getPath('temp'), `flowmark-export-${Date.now()}.html`);
   try {

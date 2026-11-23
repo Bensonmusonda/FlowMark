@@ -55,6 +55,7 @@ contextBridge.exposeInMainWorld('pluginManager', {
   disable: (name) => ipcRenderer.invoke('plugins:disable', name),
   installFromFolder: () => ipcRenderer.invoke('plugins:installFromFolder'),
   install: (sourcePath) => ipcRenderer.invoke('plugins:install', sourcePath),
+  installFromGitHubZip: (zipBase64) => ipcRenderer.invoke('plugins:installFromGitHubZip', zipBase64),
   uninstall: (name) => ipcRenderer.invoke('plugins:uninstall', name),
   getSettings: (pluginId) => ipcRenderer.invoke('plugins:settings:get', pluginId),
   setSetting: (pluginIdOrKey, keyOrValue, maybeValue) => {
@@ -69,11 +70,14 @@ contextBridge.exposeInMainWorld('pluginManager', {
     return ipcRenderer.invoke('plugins:settings:set', payload);
   },
   reload: () => ipcRenderer.invoke('plugins:reload'),
+  devReload: (pluginId) => ipcRenderer.invoke('plugins:devReload', pluginId),
   openPluginsFolder: () => ipcRenderer.invoke('plugins:openPluginsFolder'),
   getStylesheets: () => ipcRenderer.invoke('plugins:getStylesheets'),
   invokeCommand: (pluginId, commandId) => ipcRenderer.invoke('plugins:invokeCommand', { pluginId, commandId }),
   invokeSlashCommand: (pluginId, commandId, triggerPos) => ipcRenderer.invoke('plugins:invokeSlashCommand', { pluginId, commandId, triggerPos }),
   applySmartPaste: (data) => ipcRenderer.invoke('plugins:smartPaste', data),
+  grantPermission: (pluginId, permission) => ipcRenderer.invoke('plugins:grantPermission', { pluginId, permission }),
+  revokePermission: (pluginId, permission) => ipcRenderer.invoke('plugins:revokePermission', { pluginId, permission }),
   onPluginsReady: (callback) => {
     const handler = (_, plugins) => callback(plugins);
     ipcRenderer.on('plugins:ready', handler);
@@ -185,9 +189,44 @@ contextBridge.exposeInMainWorld('shellAPI', {
 });
 
 contextBridge.exposeInMainWorld('settingsAPI', {
+  // Core settings
+  get: (key) => ipcRenderer.invoke('settings:get', key),
+  set: (key, value) => ipcRenderer.invoke('settings:set', { key, value }),
+  getAll: () => ipcRenderer.invoke('settings:getAll'),
+  register: (key, defaultValue, meta) => ipcRenderer.invoke('settings:register', { key, defaultValue, meta }),
   onChange: (callback) => {
     const handler = (_, { key, value, pluginId }) => callback(key, value, { pluginId });
     ipcRenderer.on('settings:changed', handler);
     return () => ipcRenderer.removeListener('settings:changed', handler);
   },
+
+  // Dialog control
+  open: () => ipcRenderer.send('settings:open'),
+  close: () => ipcRenderer.send('settings:close'),
+  onOpen: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('settings:opened', handler);
+    return () => ipcRenderer.removeListener('settings:opened', handler);
+  },
+  onClose: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('settings:closed', handler);
+    return () => ipcRenderer.removeListener('settings:closed', handler);
+  },
+});
+
+contextBridge.exposeInMainWorld('themeAPI', {
+  getTheme: () => ipcRenderer.invoke('theme:get'),
+  setTheme: (theme) => ipcRenderer.invoke('theme:set', theme),
+  getCustomColors: () => ipcRenderer.invoke('theme:getCustomColors'),
+  setCustomColor: (key, value) => ipcRenderer.invoke('theme:setCustomColor', { key, value }),
+  applyTheme: () => ipcRenderer.invoke('theme:apply'),
+});
+
+contextBridge.exposeInMainWorld('appAPI', {
+  isDevMode: () => ipcRenderer.invoke('app:isDevMode'),
+});
+
+contextBridge.exposeInMainWorld('pluginRegistryAPI', {
+  getRegistry: () => ipcRenderer.invoke('plugins:getRegistry'),
 });
