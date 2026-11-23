@@ -1,24 +1,47 @@
-const Ajv = require('ajv');
-const fs = require('fs');
-const path = require('path');
+const { z } = require("zod");
 
-const ajv = new Ajv({ allErrors: true, strict: false });
-const schemaPath = path.join(__dirname, 'manifest-schema.json');
-const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-const validate = ajv.compile(schema);
+const ManifestSchema = z.object({
+  name: z.string().min(1).regex(/^[a-z0-9-]+$/),
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  manifest_version: z.literal(1),
+  description: z.string().optional(),
+  author: z.string().optional(),
+  entry_point: z.string().min(1),
+  permissions: z.array(z.string()).default([]),
+  commands: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9-:]+$/),
+    label: z.string().min(1).max(200),
+    shortcut: z.string().optional(),
+    icon: z.string().optional(),
+  })).default([]),
+  menu_items: z.array(z.object({
+    id: z.string().regex(/^[a-z0-9-:]+$/),
+    label: z.string().min(1).max(200),
+    section: z.enum(["file", "edit", "insert", "view", "plugins"]),
+    shortcut: z.string().optional(),
+    icon: z.string().optional(),
+    order: z.number().int().default(100),
+  })).default([]),
+  stylesheet: z.string().optional(),
+  settings: z.record(z.object({
+    type: z.enum(["string", "number", "boolean", "select", "color", "path"]).default("string"),
+    label: z.string().optional(),
+    description: z.string().optional(),
+    default: z.any(),
+    options: z.array(z.string()).optional(),
+  })).default({}),
+});
 
 /**
  * Validate plugin manifest against schema
  */
 function validatePluginManifest(manifest) {
-  const valid = validate(manifest);
-  if (!valid) {
-    const errors = validate.errors.map(e =>
-      `${e.instancePath || '/'} ${e.message}`
-    ).join('; ');
+  const result = ManifestSchema.safeParse(manifest);
+  if (!result.success) {
+    const errors = result.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ");
     throw new Error(`Invalid manifest: ${errors}`);
   }
-  return manifest;
+  return result.data;
 }
 
-module.exports = { validatePluginManifest, validate };
+module.exports = { validatePluginManifest, ManifestSchema };

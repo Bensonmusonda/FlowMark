@@ -9,7 +9,7 @@ const { BrowserWindow, ipcMain, dialog, app } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
-const { validatePluginManifest } = require('./manifest-validator');
+const { validateManifest } = require('./manifest-schema');
 const { PluginSettingsStore } = require('./plugin-settings-store');
 const {
   authorizePluginEvent,
@@ -577,7 +577,9 @@ class PluginSandboxHost {
     }
     const raw = fs.readFileSync(manifestPath, 'utf8');
     const manifest = JSON.parse(raw);
-    return validatePluginManifest(manifest);
+    const { ok, data, errors } = validateManifest(manifest);
+    if (!ok) throw new Error('Invalid manifest:\n' + errors.join('\n'));
+    return data;
   }
 
   /**

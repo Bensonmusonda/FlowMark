@@ -76398,6 +76398,9 @@ $$
     ["path", { d: "M16 17h.01" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/check.mjs
+  var Check = [["path", { d: "M20 6 9 17l-5-5" }]];
+
   // node_modules/lucide/dist/esm/icons/chevron-down.mjs
   var ChevronDown = [["path", { d: "m6 9 6 6 6-6" }]];
 
@@ -76486,6 +76489,19 @@ $$
     ["circle", { cx: "6", cy: "18", r: "3" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/hard-drive.mjs
+  var HardDrive = [
+    ["path", { d: "M10 16h.01" }],
+    [
+      "path",
+      {
+        d: "M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+      }
+    ],
+    ["path", { d: "M21.946 12.013H2.054" }],
+    ["path", { d: "M6 16h.01" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/layers.mjs
   var Layers = [
     [
@@ -76496,6 +76512,14 @@ $$
     ],
     ["path", { d: "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" }],
     ["path", { d: "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/layout-dashboard.mjs
+  var LayoutDashboard = [
+    ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1" }],
+    ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1" }],
+    ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1" }],
+    ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1" }]
   ];
 
   // node_modules/lucide/dist/esm/icons/list-tree.mjs
@@ -76588,6 +76612,16 @@ $$
       }
     ],
     ["circle", { cx: "12", cy: "12", r: "3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/shield.mjs
+  var Shield = [
+    [
+      "path",
+      {
+        d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+      }
+    ]
   ];
 
   // node_modules/lucide/dist/esm/icons/tags.mjs
@@ -77223,6 +77257,7 @@ $$
       this.filter = "all";
       this.searchQuery = "";
       this.selectedPluginId = null;
+      this.detailTab = "overview";
       this.inFlightActions = /* @__PURE__ */ new Set();
       this.loading = true;
       this.recentlyInstalled = null;
@@ -77333,6 +77368,7 @@ $$
       if (this.isOpen) return;
       this.isOpen = true;
       this.selectedPluginId = null;
+      this.detailTab = "overview";
       this.previousActiveElement = document.activeElement;
       this.container.classList.remove("hidden");
       this.loading = true;
@@ -78092,6 +78128,7 @@ $$
      */
     openPluginDetails(pluginId) {
       this.selectedPluginId = pluginId;
+      this.detailTab = "overview";
       this.render();
     }
     /**
@@ -78107,6 +78144,7 @@ $$
         return;
       }
       const inFlight = this.inFlightActions.has(plugin.name);
+      if (!this.detailTab) this.detailTab = "overview";
       const header3 = document.createElement("header");
       header3.className = "plugins-header";
       const leftWrap = document.createElement("div");
@@ -78145,6 +78183,35 @@ $$
       header3.appendChild(headerActions);
       this.box.appendChild(header3);
       this._updateToast();
+      const tabBar = document.createElement("div");
+      tabBar.className = "plugin-detail-tabs";
+      tabBar.setAttribute("role", "tablist");
+      const tabs = [
+        { id: "overview", label: "Overview", icon: LayoutDashboard },
+        { id: "settings", label: "Settings", icon: Settings2 },
+        { id: "contributions", label: "Contributions", icon: Puzzle },
+        { id: "permissions", label: "Permissions", icon: Shield },
+        { id: "location", label: "Location", icon: HardDrive },
+        { id: "manage", label: "Manage", icon: Trash }
+      ];
+      tabs.forEach((tab3) => {
+        const btn = document.createElement("button");
+        btn.className = `plugin-tab-btn${this.detailTab === tab3.id ? " active" : ""}`;
+        btn.setAttribute("role", "tab");
+        btn.setAttribute("aria-selected", this.detailTab === tab3.id);
+        btn.setAttribute("aria-controls", `panel-${tab3.id}`);
+        btn.id = `tab-${tab3.id}`;
+        btn.appendChild(createIcon(tab3.icon, { width: 14, height: 14 }));
+        const label = document.createElement("span");
+        label.textContent = tab3.label;
+        btn.appendChild(label);
+        btn.addEventListener("click", () => {
+          this.detailTab = tab3.id;
+          this.render();
+        });
+        tabBar.appendChild(btn);
+      });
+      this.box.appendChild(tabBar);
       const content3 = document.createElement("div");
       content3.className = "plugins-content plugin-detail-view";
       const heroCard = document.createElement("div");
@@ -78226,13 +78293,81 @@ $$
         errorBlock.appendChild(retryBtn);
         content3.appendChild(errorBlock);
       }
-      const detailsContainer = document.createElement("div");
-      detailsContainer.className = "plugin-detail-sections";
+      const panelsContainer = document.createElement("div");
+      panelsContainer.className = "plugin-detail-panels";
+      const overviewPanel = document.createElement("div");
+      overviewPanel.id = "panel-overview";
+      overviewPanel.setAttribute("role", "tabpanel");
+      overviewPanel.setAttribute("aria-labelledby", "tab-overview");
+      overviewPanel.hidden = this.detailTab !== "overview";
+      overviewPanel.className = "plugin-tab-panel";
+      const statsGrid = document.createElement("div");
+      statsGrid.className = "plugin-stats-grid";
+      const statItems = [
+        { label: "Status", value: plugin.active ? "Active" : "Inactive", icon: plugin.active ? Check : TriangleExclamationPoint },
+        { label: "Version", value: plugin.version || "\u2014", icon: Puzzle },
+        { label: "Commands", value: (plugin.commands || []).length.toString(), icon: ChevronRight },
+        { label: "Menu Items", value: (plugin.menuItems || []).length.toString(), icon: ChevronRight }
+      ];
+      statItems.forEach((stat) => {
+        const statCard = document.createElement("div");
+        statCard.className = "plugin-stat-card";
+        const statIcon = document.createElement("div");
+        statIcon.className = "plugin-stat-icon";
+        statIcon.appendChild(createIcon(stat.icon, { width: 16, height: 16 }));
+        statCard.appendChild(statIcon);
+        const statInfo = document.createElement("div");
+        statInfo.className = "plugin-stat-info";
+        const statLabel = document.createElement("div");
+        statLabel.className = "plugin-stat-label";
+        statLabel.textContent = stat.label;
+        statInfo.appendChild(statLabel);
+        const statValue = document.createElement("div");
+        statValue.className = "plugin-stat-value";
+        statValue.textContent = stat.value;
+        statInfo.appendChild(statValue);
+        statCard.appendChild(statInfo);
+        statsGrid.appendChild(statCard);
+      });
+      overviewPanel.appendChild(statsGrid);
+      if (plugin.description) {
+        const descSection = document.createElement("div");
+        descSection.className = "plugin-detail-section";
+        const descTitle = document.createElement("div");
+        descTitle.className = "plugin-section-title";
+        descTitle.textContent = "Description";
+        descSection.appendChild(descTitle);
+        const descText = document.createElement("div");
+        descText.className = "plugin-detail-desc";
+        descText.textContent = plugin.description;
+        descSection.appendChild(descText);
+        overviewPanel.appendChild(descSection);
+      }
+      if (plugin.author) {
+        const authorSection = document.createElement("div");
+        authorSection.className = "plugin-detail-section";
+        const authorTitle = document.createElement("div");
+        authorTitle.className = "plugin-section-title";
+        authorTitle.textContent = "Author";
+        authorSection.appendChild(authorTitle);
+        const authorText = document.createElement("div");
+        authorText.textContent = plugin.author;
+        authorSection.appendChild(authorText);
+        overviewPanel.appendChild(authorSection);
+      }
+      panelsContainer.appendChild(overviewPanel);
+      const settingsPanel2 = document.createElement("div");
+      settingsPanel2.id = "panel-settings";
+      settingsPanel2.setAttribute("role", "tabpanel");
+      settingsPanel2.setAttribute("aria-labelledby", "tab-settings");
+      settingsPanel2.hidden = this.detailTab !== "settings";
+      settingsPanel2.className = "plugin-tab-panel";
+      const manifestSettings = plugin.manifest?.settings || {};
       const pluginSettingsData = this.settingsMap.get(plugin.name);
-      const metadata = pluginSettingsData?.metadata || {};
-      const values2 = pluginSettingsData?.values || {};
-      const settingKeys = Object.keys(metadata);
-      if (settingKeys.length > 0) {
+      const storedMetadata = pluginSettingsData?.metadata || {};
+      const storedValues = pluginSettingsData?.values || {};
+      const allSettingKeys = /* @__PURE__ */ new Set([...Object.keys(manifestSettings), ...Object.keys(storedMetadata)]);
+      if (allSettingKeys.size > 0) {
         const settingsSection = document.createElement("div");
         settingsSection.className = "plugin-detail-section";
         const settingsTitle = document.createElement("div");
@@ -78241,8 +78376,10 @@ $$
         settingsSection.appendChild(settingsTitle);
         const group = document.createElement("div");
         group.className = "plugin-settings-group";
-        settingKeys.forEach((key) => {
-          const meta2 = metadata[key];
+        allSettingKeys.forEach((key) => {
+          const manifestMeta = manifestSettings[key] || {};
+          const storedMeta = storedMetadata[key] || {};
+          const meta2 = { ...storedMeta, ...manifestMeta };
           const row = document.createElement("div");
           row.className = "plugin-setting-row";
           const metaCol = document.createElement("div");
@@ -78258,8 +78395,9 @@ $$
             metaCol.appendChild(desc);
           }
           row.appendChild(metaCol);
-          const currentValue = values2[key] !== void 0 ? values2[key] : meta2.defaultValue;
-          if (meta2.type === "boolean") {
+          const currentValue = storedValues[key] !== void 0 ? storedValues[key] : meta2.default !== void 0 ? meta2.default : meta2.defaultValue;
+          const type7 = meta2.type || (typeof currentValue === "boolean" ? "boolean" : typeof currentValue === "number" ? "number" : "string");
+          if (type7 === "boolean") {
             const boolSwitch = document.createElement("button");
             boolSwitch.setAttribute("role", "switch");
             boolSwitch.setAttribute("aria-checked", String(!!currentValue));
@@ -78275,7 +78413,7 @@ $$
               this.updateSetting(plugin.name, key, nextVal);
             });
             row.appendChild(boolSwitch);
-          } else if (meta2.type === "enum" && Array.isArray(meta2.options)) {
+          } else if ((type7 === "select" || type7 === "enum") && Array.isArray(meta2.options)) {
             const select = document.createElement("select");
             select.className = "plugin-setting-select";
             meta2.options.forEach((opt) => {
@@ -78291,13 +78429,37 @@ $$
               this.updateSetting(plugin.name, key, e.target.value);
             });
             row.appendChild(select);
-          } else if (meta2.type === "number") {
+          } else if (type7 === "number") {
             const input = document.createElement("input");
             input.type = "number";
             input.className = "plugin-setting-input";
             input.value = currentValue !== void 0 ? currentValue : "";
             input.addEventListener("change", (e) => {
               this.updateSetting(plugin.name, key, parseFloat(e.target.value) || 0);
+            });
+            row.appendChild(input);
+          } else if (type7 === "color") {
+            const input = document.createElement("input");
+            input.type = "color";
+            input.className = "plugin-setting-input plugin-setting-color";
+            input.value = typeof currentValue === "string" && currentValue.startsWith("#") ? currentValue : "#000000";
+            input.addEventListener("change", (e) => {
+              this.updateSetting(plugin.name, key, e.target.value);
+            });
+            row.appendChild(input);
+          } else if (type7 === "path") {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "plugin-setting-input";
+            input.placeholder = "Select a file or folder...";
+            input.value = currentValue ?? "";
+            input.readOnly = true;
+            input.addEventListener("click", async () => {
+              const path2 = await this.pluginManager.pickFile?.({ title: `Select ${meta2.label || key}` });
+              if (path2) {
+                input.value = path2;
+                this.updateSetting(plugin.name, key, path2);
+              }
             });
             row.appendChild(input);
           } else {
@@ -78307,7 +78469,7 @@ $$
             input.value = typeof currentValue === "object" ? JSON.stringify(currentValue) : currentValue ?? "";
             input.addEventListener("change", (e) => {
               let val = e.target.value;
-              if (meta2.type === "json") {
+              if (type7 === "json") {
                 try {
                   val = JSON.parse(val);
                 } catch {
@@ -78322,8 +78484,20 @@ $$
           group.appendChild(row);
         });
         settingsSection.appendChild(group);
-        detailsContainer.appendChild(settingsSection);
+        settingsPanel2.appendChild(settingsSection);
+      } else {
+        const emptyState = document.createElement("div");
+        emptyState.className = "plugin-settings-empty";
+        emptyState.textContent = "This plugin has no configurable settings.";
+        settingsPanel2.appendChild(emptyState);
       }
+      panelsContainer.appendChild(settingsPanel2);
+      const contribPanel = document.createElement("div");
+      contribPanel.id = "panel-contributions";
+      contribPanel.setAttribute("role", "tabpanel");
+      contribPanel.setAttribute("aria-labelledby", "tab-contributions");
+      contribPanel.hidden = this.detailTab !== "contributions";
+      contribPanel.className = "plugin-tab-panel";
       const hasCommands = Array.isArray(plugin.commands) && plugin.commands.length > 0;
       const hasMenuItems = Array.isArray(plugin.menuItems) && plugin.menuItems.length > 0;
       const hasSidebarPanels = Array.isArray(plugin.sidebarPanels) && plugin.sidebarPanels.length > 0;
@@ -78387,8 +78561,20 @@ $$
           });
         }
         contribSection.appendChild(contribGrid);
-        detailsContainer.appendChild(contribSection);
+        contribPanel.appendChild(contribSection);
+      } else {
+        const emptyState = document.createElement("div");
+        emptyState.className = "plugin-contributions-empty";
+        emptyState.textContent = "This plugin contributes no features.";
+        contribPanel.appendChild(emptyState);
       }
+      panelsContainer.appendChild(contribPanel);
+      const permPanel = document.createElement("div");
+      permPanel.id = "panel-permissions";
+      permPanel.setAttribute("role", "tabpanel");
+      permPanel.setAttribute("aria-labelledby", "tab-permissions");
+      permPanel.hidden = this.detailTab !== "permissions";
+      permPanel.className = "plugin-tab-panel";
       if (Array.isArray(plugin.permissions) && plugin.permissions.length > 0) {
         const permSection = document.createElement("div");
         permSection.className = "plugin-detail-section";
@@ -78405,8 +78591,20 @@ $$
           permList.appendChild(tag2);
         });
         permSection.appendChild(permList);
-        detailsContainer.appendChild(permSection);
+        permPanel.appendChild(permSection);
+      } else {
+        const emptyState = document.createElement("div");
+        emptyState.className = "plugin-permissions-empty";
+        emptyState.textContent = "This plugin requests no permissions.";
+        permPanel.appendChild(emptyState);
       }
+      panelsContainer.appendChild(permPanel);
+      const locationPanel = document.createElement("div");
+      locationPanel.id = "panel-location";
+      locationPanel.setAttribute("role", "tabpanel");
+      locationPanel.setAttribute("aria-labelledby", "tab-location");
+      locationPanel.hidden = this.detailTab !== "location";
+      locationPanel.className = "plugin-tab-panel";
       if (plugin.path) {
         const pathSection = document.createElement("div");
         pathSection.className = "plugin-detail-section";
@@ -78418,8 +78616,30 @@ $$
         pathText.className = "plugin-path-text";
         pathText.textContent = plugin.path;
         pathSection.appendChild(pathText);
-        detailsContainer.appendChild(pathSection);
+        const openBtn = document.createElement("button");
+        openBtn.className = "plugins-btn-secondary";
+        openBtn.appendChild(createIcon(Folder, { width: 13, height: 13 }));
+        const openText = document.createElement("span");
+        openText.textContent = "Open in Explorer";
+        openBtn.appendChild(openText);
+        openBtn.addEventListener("click", () => {
+          this.pluginManager.openPath?.(plugin.path);
+        });
+        pathSection.appendChild(openBtn);
+        locationPanel.appendChild(pathSection);
+      } else {
+        const emptyState = document.createElement("div");
+        emptyState.className = "plugin-location-empty";
+        emptyState.textContent = "Plugin location unknown.";
+        locationPanel.appendChild(emptyState);
       }
+      panelsContainer.appendChild(locationPanel);
+      const managePanel = document.createElement("div");
+      managePanel.id = "panel-manage";
+      managePanel.setAttribute("role", "tabpanel");
+      managePanel.setAttribute("aria-labelledby", "tab-manage");
+      managePanel.hidden = this.detailTab !== "manage";
+      managePanel.className = "plugin-tab-panel";
       const dangerSection = document.createElement("div");
       dangerSection.className = "plugin-detail-section";
       const dangerTitle = document.createElement("div");
@@ -78437,8 +78657,42 @@ $$
         this.uninstallPlugin(plugin);
       });
       dangerSection.appendChild(uninstallBtn);
-      detailsContainer.appendChild(dangerSection);
-      content3.appendChild(detailsContainer);
+      managePanel.appendChild(dangerSection);
+      const reloadSection = document.createElement("div");
+      reloadSection.className = "plugin-detail-section";
+      const reloadTitle = document.createElement("div");
+      reloadTitle.className = "plugin-section-title";
+      reloadTitle.textContent = "Reload Plugin";
+      reloadSection.appendChild(reloadTitle);
+      const reloadBtn = document.createElement("button");
+      reloadBtn.className = "plugins-btn-secondary";
+      reloadBtn.appendChild(createIcon(RotateCw, { width: 13, height: 13 }));
+      const reloadText = document.createElement("span");
+      reloadText.textContent = "Reload this plugin";
+      reloadBtn.appendChild(reloadText);
+      reloadBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        this.inFlightActions.add(plugin.name);
+        this.render();
+        try {
+          if (this.pluginManager.reloadPlugin) {
+            await this.pluginManager.reloadPlugin(plugin.name);
+          } else {
+            await this.togglePlugin(plugin, false);
+            await this.togglePlugin(plugin, true);
+          }
+          this.showToast(`Plugin "${plugin.name}" reloaded.`, "success");
+        } catch (err) {
+          this.showToast(`Reload failed: ${err.message}`, "error");
+        } finally {
+          this.inFlightActions.delete(plugin.name);
+          this.render();
+        }
+      });
+      reloadSection.appendChild(reloadBtn);
+      managePanel.appendChild(reloadSection);
+      panelsContainer.appendChild(managePanel);
+      content3.appendChild(panelsContainer);
       this.box.appendChild(content3);
       backBtn.focus();
     }
@@ -83588,6 +83842,7 @@ lucide/dist/esm/icons/book-open.mjs:
 lucide/dist/esm/icons/bot.mjs:
 lucide/dist/esm/icons/brain.mjs:
 lucide/dist/esm/icons/calendar-days.mjs:
+lucide/dist/esm/icons/check.mjs:
 lucide/dist/esm/icons/chevron-down.mjs:
 lucide/dist/esm/icons/chevron-right.mjs:
 lucide/dist/esm/icons/code-xml.mjs:
@@ -83598,7 +83853,9 @@ lucide/dist/esm/icons/folder-root.mjs:
 lucide/dist/esm/icons/folder-plus.mjs:
 lucide/dist/esm/icons/folder.mjs:
 lucide/dist/esm/icons/git-branch.mjs:
+lucide/dist/esm/icons/hard-drive.mjs:
 lucide/dist/esm/icons/layers.mjs:
+lucide/dist/esm/icons/layout-dashboard.mjs:
 lucide/dist/esm/icons/list-tree.mjs:
 lucide/dist/esm/icons/message-square.mjs:
 lucide/dist/esm/icons/network.mjs:
@@ -83610,6 +83867,7 @@ lucide/dist/esm/icons/refresh-cw.mjs:
 lucide/dist/esm/icons/rotate-cw.mjs:
 lucide/dist/esm/icons/search.mjs:
 lucide/dist/esm/icons/settings.mjs:
+lucide/dist/esm/icons/shield.mjs:
 lucide/dist/esm/icons/tags.mjs:
 lucide/dist/esm/icons/trash.mjs:
 lucide/dist/esm/icons/triangle-exclamation-point.mjs:
