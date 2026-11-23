@@ -82913,6 +82913,10 @@ ${error}`);
       this._root = null;
       this._resizeObserver = null;
     }
+    get estimatedHeight() {
+      const count2 = Array.isArray(this.spec?.entries) ? this.spec.entries.length : 1;
+      return Math.max(56, 40 + count2 * 34);
+    }
     eq(other) {
       return other instanceof _PropertiesCardWidget && this.spec.from === other.spec.from && this.spec.to === other.spec.to && this.spec.yaml === other.spec.yaml;
     }
@@ -83486,45 +83490,79 @@ ${error}`);
   }
 
   // src/editor.js
-  function normalizeClickCoords(view2, coords) {
+  function getPreciseLinePos(view2, coords) {
     if (!coords || typeof coords.x !== "number" || typeof coords.y !== "number" || !view2?.dom) {
-      return coords;
+      return null;
     }
     try {
       const doc2 = view2.dom.ownerDocument || document;
       const contentDOM = view2.contentDOM;
-      if (!contentDOM) return coords;
+      if (!contentDOM) return null;
       const contentRect = contentDOM.getBoundingClientRect();
-      const sampleX = Math.max(contentRect.left + 8, Math.min(coords.x, contentRect.right - 8));
-      const target = doc2.elementFromPoint(coords.x, coords.y) || doc2.elementFromPoint(sampleX, coords.y);
-      const lineEl = target?.closest?.(".cm-line");
-      if (!lineEl) return coords;
-      const rect = lineEl.getBoundingClientRect();
-      if (coords.y >= rect.top && coords.y <= rect.bottom) {
-        const linePos = view2.posAtDOM(lineEl);
-        const targetLine = view2.state.doc.lineAt(linePos);
-        const docTop = contentRect.top + (view2.viewState ? view2.viewState.paddingTop : 0);
-        const yOffset = coords.y - docTop;
-        const block3 = view2.elementAtHeight(yOffset);
-        if (block3 && block3.from > targetLine.to) {
-          const safeOffset = rect.height <= 36 ? rect.height / 2 : Math.max(rect.height / 2, rect.height - 6);
-          const safeY = Math.max(rect.top + 2, Math.min(coords.y, rect.top + safeOffset));
-          return { x: coords.x, y: safeY };
+      const clampedX = Math.max(contentRect.left + 24, Math.min(coords.x, contentRect.right - 24));
+      let hit = doc2.elementFromPoint(coords.x, coords.y);
+      let lineEl = hit?.closest?.(".cm-line");
+      if (!lineEl) {
+        hit = doc2.elementFromPoint(clampedX, coords.y);
+        lineEl = hit?.closest?.(".cm-line");
+      }
+      if (!lineEl) return null;
+      const lineRect = lineEl.getBoundingClientRect();
+      if (coords.y < lineRect.top || coords.y > lineRect.bottom) {
+        return null;
+      }
+      const startPos = view2.posAtDOM(lineEl, 0);
+      const targetLine = view2.state.doc.lineAt(startPos);
+      if (doc2.caretPositionFromPoint) {
+        const point = doc2.caretPositionFromPoint(coords.x, coords.y) || doc2.caretPositionFromPoint(clampedX, coords.y);
+        if (point && lineEl.contains(point.offsetNode)) {
+          const domPos = view2.posAtDOM(point.offsetNode, point.offset);
+          if (domPos != null) {
+            const clamped = Math.max(targetLine.from, Math.min(domPos, targetLine.to));
+            return { pos: clamped, assoc: -1, targetLine };
+          }
+        }
+      } else if (doc2.caretRangeFromPoint) {
+        const range = doc2.caretRangeFromPoint(coords.x, coords.y) || doc2.caretRangeFromPoint(clampedX, coords.y);
+        if (range && lineEl.contains(range.startContainer)) {
+          const domPos = view2.posAtDOM(range.startContainer, range.startOffset);
+          if (domPos != null) {
+            const clamped = Math.max(targetLine.from, Math.min(domPos, targetLine.to));
+            return { pos: clamped, assoc: -1, targetLine };
+          }
         }
       }
+      const safeY = lineRect.top + lineRect.height / 2;
+      return { fallbackCoords: { x: coords.x, y: safeY }, targetLine };
     } catch {
+      return null;
     }
-    return coords;
   }
   var origPosAndSideAtCoords = EditorView.prototype.posAndSideAtCoords;
   var origPosAtCoords = EditorView.prototype.posAtCoords;
   EditorView.prototype.posAndSideAtCoords = function(coords, precise) {
-    const norm = normalizeClickCoords(this, coords);
-    return origPosAndSideAtCoords.call(this, norm, precise);
+    const preciseResult = getPreciseLinePos(this, coords);
+    if (preciseResult && typeof preciseResult.pos === "number") {
+      return preciseResult;
+    }
+    const queryCoords = preciseResult?.fallbackCoords || coords;
+    const res = origPosAndSideAtCoords.call(this, queryCoords, precise);
+    if (res && preciseResult?.targetLine && res.pos > preciseResult.targetLine.to) {
+      return { pos: preciseResult.targetLine.to, assoc: -1 };
+    }
+    return res;
   };
   EditorView.prototype.posAtCoords = function(coords, precise) {
-    const norm = normalizeClickCoords(this, coords);
-    return origPosAtCoords.call(this, norm, precise);
+    const preciseResult = getPreciseLinePos(this, coords);
+    if (preciseResult && typeof preciseResult.pos === "number") {
+      return preciseResult.pos;
+    }
+    const queryCoords = preciseResult?.fallbackCoords || coords;
+    const res = origPosAtCoords.call(this, queryCoords, precise);
+    if (typeof res === "number" && preciseResult?.targetLine && res > preciseResult.targetLine.to) {
+      return preciseResult.targetLine.to;
+    }
+    return res;
   };
   var HIDE = Decoration.replace({});
   var refreshEffect = StateEffect.define();

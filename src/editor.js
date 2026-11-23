@@ -47,60 +47,100 @@ import {
 
 // ── Line-click boundary precision & coordinate normalization ───────────────
 //
-// When line-height is large (e.g. 1.9) or lines have asymmetric margins/paddings,
+// When line-height is large (e.g. 1.9), lines have custom indentation/padding,
+// or the document is scrolled with variable-height blocks (frontmatter/embeds),
 // clicking near the bottom half-leading of a .cm-line can cause CodeMirror's
-// HeightMap binary branch (yOffset >= block.bottom) to overshoot into the line below (N+1).
-// This normalizer detects when a click is physically inside a .cm-line DOM element
-// and clamps the Y coordinate so CodeMirror's height oracle accurately maps to that line.
+// HeightMap binary branch (yOffset >= block.bottom) to overshoot into line N+1.
+//
+// This normalizer maps the click directly to the clicked .cm-line DOM element using
+// the browser's layout caret (caretRangeFromPoint / caretPositionFromPoint), falling back
+// to the line's visual vertical center and clamping strictly to the clicked line's bounds.
 
-function normalizeClickCoords(view, coords) {
+function getPreciseLinePos(view, coords) {
   if (!coords || typeof coords.x !== 'number' || typeof coords.y !== 'number' || !view?.dom) {
-    return coords;
+    return null;
   }
   try {
     const doc = view.dom.ownerDocument || document;
     const contentDOM = view.contentDOM;
-    if (!contentDOM) return coords;
+    if (!contentDOM) return null;
 
     const contentRect = contentDOM.getBoundingClientRect();
-    const sampleX = Math.max(contentRect.left + 8, Math.min(coords.x, contentRect.right - 8));
-    const target = doc.elementFromPoint(coords.x, coords.y) || doc.elementFromPoint(sampleX, coords.y);
-    const lineEl = target?.closest?.('.cm-line');
-    if (!lineEl) return coords;
+    const clampedX = Math.max(contentRect.left + 24, Math.min(coords.x, contentRect.right - 24));
 
-    const rect = lineEl.getBoundingClientRect();
-    if (coords.y >= rect.top && coords.y <= rect.bottom) {
-      const linePos = view.posAtDOM(lineEl);
-      const targetLine = view.state.doc.lineAt(linePos);
+    let hit = doc.elementFromPoint(coords.x, coords.y);
+    let lineEl = hit?.closest?.('.cm-line');
+    if (!lineEl) {
+      hit = doc.elementFromPoint(clampedX, coords.y);
+      lineEl = hit?.closest?.('.cm-line');
+    }
+    if (!lineEl) return null;
 
-      const docTop = contentRect.top + (view.viewState ? view.viewState.paddingTop : 0);
-      const yOffset = coords.y - docTop;
-      const block = view.elementAtHeight(yOffset);
+    const lineRect = lineEl.getBoundingClientRect();
+    if (coords.y < lineRect.top || coords.y > lineRect.bottom) {
+      return null;
+    }
 
-      if (block && block.from > targetLine.to) {
-        // CodeMirror overshot into a subsequent line block
-        const safeOffset = rect.height <= 36 ? (rect.height / 2) : Math.max(rect.height / 2, rect.height - 6);
-        const safeY = Math.max(rect.top + 2, Math.min(coords.y, rect.top + safeOffset));
-        return { x: coords.x, y: safeY };
+    const startPos = view.posAtDOM(lineEl, 0);
+    const targetLine = view.state.doc.lineAt(startPos);
+
+    // 1. Try browser layout caret first for exact intra-line position
+    if (doc.caretPositionFromPoint) {
+      const point = doc.caretPositionFromPoint(coords.x, coords.y) || doc.caretPositionFromPoint(clampedX, coords.y);
+      if (point && lineEl.contains(point.offsetNode)) {
+        const domPos = view.posAtDOM(point.offsetNode, point.offset);
+        if (domPos != null) {
+          const clamped = Math.max(targetLine.from, Math.min(domPos, targetLine.to));
+          return { pos: clamped, assoc: -1, targetLine };
+        }
+      }
+    } else if (doc.caretRangeFromPoint) {
+      const range = doc.caretRangeFromPoint(coords.x, coords.y) || doc.caretRangeFromPoint(clampedX, coords.y);
+      if (range && lineEl.contains(range.startContainer)) {
+        const domPos = view.posAtDOM(range.startContainer, range.startOffset);
+        if (domPos != null) {
+          const clamped = Math.max(targetLine.from, Math.min(domPos, targetLine.to));
+          return { pos: clamped, assoc: -1, targetLine };
+        }
       }
     }
+
+    // 2. If browser caretRange didn't hit text (e.g. clicked in leading or trailing whitespace),
+    // sample at the vertical center of the clicked line so HeightMap evaluates inside line N:
+    const safeY = lineRect.top + lineRect.height / 2;
+    return { fallbackCoords: { x: coords.x, y: safeY }, targetLine };
   } catch {
-    // Fall back to raw coordinates on any measurement error
+    return null;
   }
-  return coords;
 }
 
 const origPosAndSideAtCoords = EditorView.prototype.posAndSideAtCoords;
 const origPosAtCoords = EditorView.prototype.posAtCoords;
 
 EditorView.prototype.posAndSideAtCoords = function(coords, precise) {
-  const norm = normalizeClickCoords(this, coords);
-  return origPosAndSideAtCoords.call(this, norm, precise);
+  const preciseResult = getPreciseLinePos(this, coords);
+  if (preciseResult && typeof preciseResult.pos === 'number') {
+    return preciseResult;
+  }
+  const queryCoords = preciseResult?.fallbackCoords || coords;
+  const res = origPosAndSideAtCoords.call(this, queryCoords, precise);
+  if (res && preciseResult?.targetLine && res.pos > preciseResult.targetLine.to) {
+    return { pos: preciseResult.targetLine.to, assoc: -1 };
+  }
+  return res;
 };
 
 EditorView.prototype.posAtCoords = function(coords, precise) {
-  const norm = normalizeClickCoords(this, coords);
-  return origPosAtCoords.call(this, norm, precise);
+  const preciseResult = getPreciseLinePos(this, coords);
+  if (preciseResult && typeof preciseResult.pos === 'number') {
+    return preciseResult.pos;
+  }
+  const queryCoords = preciseResult?.fallbackCoords || coords;
+  const res = origPosAtCoords.call(this, queryCoords, precise);
+  if (typeof res === 'number' && preciseResult?.targetLine && res > preciseResult.targetLine.to) {
+    return preciseResult.targetLine.to;
+  }
+  return res;
 };
 
 // ── Live-preview stability primitives ────────────────────────────────────────

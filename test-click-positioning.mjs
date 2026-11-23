@@ -2,11 +2,11 @@ import assert from 'assert';
 
 console.log('🧪 Testing Click Coordinate Normalization & Line Boundary Snapping:');
 
-// Mock line DOM rect and targetLine mock
 function createMockLine(lineNum, top, height) {
   return {
     className: 'cm-line',
     closest(sel) { return sel === '.cm-line' ? this : null; },
+    contains(child) { return child && child.parentElement === this; },
     getBoundingClientRect() {
       return {
         top,
@@ -20,50 +20,60 @@ function createMockLine(lineNum, top, height) {
   };
 }
 
-function normalizeClickCoords(view, coords) {
+function getPreciseLinePos(view, coords) {
   if (!coords || typeof coords.x !== 'number' || typeof coords.y !== 'number' || !view?.dom) {
-    return coords;
+    return null;
   }
   try {
     const doc = view.dom.ownerDocument || document;
     const contentDOM = view.contentDOM;
-    if (!contentDOM) return coords;
+    if (!contentDOM) return null;
 
     const contentRect = contentDOM.getBoundingClientRect();
-    const sampleX = Math.max(contentRect.left + 8, Math.min(coords.x, contentRect.right - 8));
-    const target = doc.elementFromPoint(coords.x, coords.y) || doc.elementFromPoint(sampleX, coords.y);
-    const lineEl = target?.closest?.('.cm-line');
-    if (!lineEl) return coords;
+    const clampedX = Math.max(contentRect.left + 24, Math.min(coords.x, contentRect.right - 24));
 
-    const rect = lineEl.getBoundingClientRect();
-    if (coords.y >= rect.top && coords.y <= rect.bottom) {
-      const linePos = view.posAtDOM(lineEl);
-      const targetLine = view.state.doc.lineAt(linePos);
+    let hit = doc.elementFromPoint(coords.x, coords.y);
+    let lineEl = hit?.closest?.('.cm-line');
+    if (!lineEl) {
+      hit = doc.elementFromPoint(clampedX, coords.y);
+      lineEl = hit?.closest?.('.cm-line');
+    }
+    if (!lineEl) return null;
 
-      const docTop = contentRect.top + (view.viewState ? view.viewState.paddingTop : 0);
-      const yOffset = coords.y - docTop;
-      const block = view.elementAtHeight(yOffset);
+    const lineRect = lineEl.getBoundingClientRect();
+    if (coords.y < lineRect.top || coords.y > lineRect.bottom) {
+      return null;
+    }
 
-      if (block && block.from > targetLine.to) {
-        // CodeMirror overshot into a subsequent line block
-        const safeOffset = rect.height <= 36 ? (rect.height / 2) : Math.max(rect.height / 2, rect.height - 6);
-        const safeY = Math.max(rect.top + 2, Math.min(coords.y, rect.top + safeOffset));
-        return { x: coords.x, y: safeY };
+    const startPos = view.posAtDOM(lineEl, 0);
+    const targetLine = view.state.doc.lineAt(startPos);
+
+    if (doc.caretRangeFromPoint) {
+      const range = doc.caretRangeFromPoint(coords.x, coords.y) || doc.caretRangeFromPoint(clampedX, coords.y);
+      if (range && lineEl.contains(range.startContainer)) {
+        const domPos = view.posAtDOM(range.startContainer, range.startOffset);
+        if (domPos != null) {
+          const clamped = Math.max(targetLine.from, Math.min(domPos, targetLine.to));
+          return { pos: clamped, assoc: -1, targetLine };
+        }
       }
     }
+
+    const safeY = lineRect.top + lineRect.height / 2;
+    return { fallbackCoords: { x: coords.x, y: safeY }, targetLine };
   } catch {
-    // Fall back to raw coordinates on any measurement error
+    return null;
   }
-  return coords;
 }
 
-// 1. Test standard click inside line without overshoot:
+// 1. Test click on text via browser caret range:
 {
   const lineEl = createMockLine(1, 100, 30);
+  const textNode = { parentElement: lineEl, length: 15 };
   const mockDoc = {
-    elementFromPoint(x, y) {
-      if (y >= 100 && y <= 130) return lineEl;
-      return null;
+    elementFromPoint(x, y) { return (y >= 100 && y <= 130) ? lineEl : null; },
+    caretRangeFromPoint(x, y) {
+      return { startContainer: textNode, startOffset: 7 };
     }
   };
   const mockView = {
@@ -71,97 +81,66 @@ function normalizeClickCoords(view, coords) {
     contentDOM: {
       getBoundingClientRect: () => ({ top: 100, bottom: 500, left: 50, right: 770 })
     },
-    viewState: { paddingTop: 0 },
-    posAtDOM: () => 0,
-    state: {
-      doc: {
-        lineAt: () => ({ number: 1, from: 0, to: 20 })
-      }
+    posAtDOM: (node, offset) => {
+      if (node === lineEl) return 0;
+      return offset; // 7
     },
-    elementAtHeight: (yOffset) => {
-      // Correctly resolved to line 1 block
-      return { from: 0, to: 20, top: 0, bottom: 30 };
+    state: {
+      doc: { lineAt: () => ({ number: 1, from: 0, to: 20 }) }
     }
   };
 
-  const coords = { x: 120, y: 110 };
-  const res = normalizeClickCoords(mockView, coords);
-  assert.strictEqual(res.y, 110, 'Normal click within line should remain unchanged');
-  console.log('  ✅ Standard click within line boundaries remains untouched');
+  const res = getPreciseLinePos(mockView, { x: 120, y: 129.5 });
+  assert.strictEqual(res.pos, 7, 'Resolves exact character position directly from browser layout caret');
+  console.log('  ✅ Resolves character position directly from layout caret without heightmap error');
 }
 
-// 2. Test click near the bottom margin where CodeMirror overshoots to next line:
+// 2. Test click in half-leading/margin where caretRange returns null:
 {
-  const lineEl = createMockLine(1, 100, 30);
+  const lineEl = createMockLine(2, 200, 30);
   const mockDoc = {
-    elementFromPoint(x, y) {
-      if (y >= 100 && y <= 130) return lineEl;
-      return null;
-    }
+    elementFromPoint(x, y) { return (y >= 200 && y <= 230) ? lineEl : null; },
+    caretRangeFromPoint: () => null
   };
   const mockView = {
     dom: { ownerDocument: mockDoc },
     contentDOM: {
       getBoundingClientRect: () => ({ top: 100, bottom: 500, left: 50, right: 770 })
     },
-    viewState: { paddingTop: 0 },
-    posAtDOM: () => 0,
-    state: {
-      doc: {
-        lineAt: () => ({ number: 1, from: 0, to: 20 })
-      }
-    },
-    elementAtHeight: (yOffset) => {
-      // Simulating CodeMirror height oracle overshooting to line 2 (starts at pos 21)
-      if (yOffset >= 28) {
-        return { from: 21, to: 45, top: 28, bottom: 58 };
-      }
-      return { from: 0, to: 20, top: 0, bottom: 28 };
-    }
-  };
-
-  const coords = { x: 120, y: 129.5 }; // Near bottom (29.5px into 30px line)
-  const res = normalizeClickCoords(mockView, coords);
-  assert.ok(res.y < 128, 'Should clamp Y inside line 1 boundaries');
-  assert.strictEqual(res.y, 115, 'Clamped Y to vertical center for single-line box');
-  console.log('  ✅ Near-bottom click overshooting to line below is clamped safely inside clicked line');
-}
-
-// 3. Test click in side padding (horizontal margin):
-{
-  const lineEl = createMockLine(2, 130, 30);
-  const mockDoc = {
-    elementFromPoint(x, y) {
-      // Outside .cm-content on the right (x = 800)
-      if (x > 770) return null;
-      if (y >= 130 && y <= 160) return lineEl;
-      return null;
-    }
-  };
-  const mockView = {
-    dom: { ownerDocument: mockDoc },
-    contentDOM: {
-      getBoundingClientRect: () => ({ top: 100, bottom: 500, left: 50, right: 770 })
-    },
-    viewState: { paddingTop: 0 },
     posAtDOM: () => 21,
     state: {
-      doc: {
-        lineAt: () => ({ number: 2, from: 21, to: 45 })
-      }
-    },
-    elementAtHeight: (yOffset) => {
-      if (yOffset >= 58) {
-        return { from: 46, to: 80, top: 58, bottom: 88 };
-      }
-      return { from: 21, to: 45, top: 30, bottom: 58 };
+      doc: { lineAt: () => ({ number: 2, from: 21, to: 45 }) }
     }
   };
 
-  const coords = { x: 800, y: 159 }; // In right padding, bottom of line 2
-  const res = normalizeClickCoords(mockView, coords);
-  assert.ok(res.y < 158, 'Should find line element via sampled X and clamp Y');
-  console.log('  ✅ Click in horizontal editor margin resolves line and clamps Y correctly');
+  const res = getPreciseLinePos(mockView, { x: 800, y: 229 }); // Bottom edge in margin
+  assert.ok(res.fallbackCoords, 'Should provide fallback coords');
+  assert.strictEqual(res.fallbackCoords.y, 215, 'Fallback coords Y is centered in line box');
+  console.log('  ✅ Fallback coordinates correctly center Y in line box to avoid boundary clipping');
+}
+
+// 3. Test clamping when position exceeds line end:
+{
+  const lineEl = createMockLine(3, 300, 30);
+  const textNode = { parentElement: lineEl, length: 10 };
+  const mockDoc = {
+    elementFromPoint: () => lineEl,
+    caretRangeFromPoint: () => ({ startContainer: textNode, startOffset: 25 })
+  };
+  const mockView = {
+    dom: { ownerDocument: mockDoc },
+    contentDOM: {
+      getBoundingClientRect: () => ({ top: 100, bottom: 500, left: 50, right: 770 })
+    },
+    posAtDOM: (node, offset) => (node === lineEl ? 50 : 75), // overshoots targetLine.to (60)
+    state: {
+      doc: { lineAt: () => ({ number: 3, from: 50, to: 60 }) }
+    }
+  };
+
+  const res = getPreciseLinePos(mockView, { x: 300, y: 320 });
+  assert.strictEqual(res.pos, 60, 'Should strictly clamp to targetLine.to');
+  console.log('  ✅ Clamps to line end and prevents leaking into next line');
 }
 
 console.log('\nAll click normalization tests passed!');

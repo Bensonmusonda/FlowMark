@@ -72,6 +72,11 @@ export class PropertiesCardWidget extends WidgetType {
     this._resizeObserver = null;
   }
 
+  get estimatedHeight() {
+    const count = Array.isArray(this.spec?.entries) ? this.spec.entries.length : 1;
+    return Math.max(56, 40 + count * 34);
+  }
+
   eq(other) {
     return (
       other instanceof PropertiesCardWidget &&
