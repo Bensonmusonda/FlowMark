@@ -45,6 +45,64 @@ import {
   resolveTableNavigation,
 } from './editor/table-navigation.js';
 
+// ── Line-click boundary precision & coordinate normalization ───────────────
+//
+// When line-height is large (e.g. 1.9) or lines have asymmetric margins/paddings,
+// clicking near the bottom half-leading of a .cm-line can cause CodeMirror's
+// HeightMap binary branch (yOffset >= block.bottom) to overshoot into the line below (N+1).
+// This normalizer detects when a click is physically inside a .cm-line DOM element
+// and clamps the Y coordinate so CodeMirror's height oracle accurately maps to that line.
+
+function normalizeClickCoords(view, coords) {
+  if (!coords || typeof coords.x !== 'number' || typeof coords.y !== 'number' || !view?.dom) {
+    return coords;
+  }
+  try {
+    const doc = view.dom.ownerDocument || document;
+    const contentDOM = view.contentDOM;
+    if (!contentDOM) return coords;
+
+    const contentRect = contentDOM.getBoundingClientRect();
+    const sampleX = Math.max(contentRect.left + 8, Math.min(coords.x, contentRect.right - 8));
+    const target = doc.elementFromPoint(coords.x, coords.y) || doc.elementFromPoint(sampleX, coords.y);
+    const lineEl = target?.closest?.('.cm-line');
+    if (!lineEl) return coords;
+
+    const rect = lineEl.getBoundingClientRect();
+    if (coords.y >= rect.top && coords.y <= rect.bottom) {
+      const linePos = view.posAtDOM(lineEl);
+      const targetLine = view.state.doc.lineAt(linePos);
+
+      const docTop = contentRect.top + (view.viewState ? view.viewState.paddingTop : 0);
+      const yOffset = coords.y - docTop;
+      const block = view.elementAtHeight(yOffset);
+
+      if (block && block.from > targetLine.to) {
+        // CodeMirror overshot into a subsequent line block
+        const safeOffset = rect.height <= 36 ? (rect.height / 2) : Math.max(rect.height / 2, rect.height - 6);
+        const safeY = Math.max(rect.top + 2, Math.min(coords.y, rect.top + safeOffset));
+        return { x: coords.x, y: safeY };
+      }
+    }
+  } catch {
+    // Fall back to raw coordinates on any measurement error
+  }
+  return coords;
+}
+
+const origPosAndSideAtCoords = EditorView.prototype.posAndSideAtCoords;
+const origPosAtCoords = EditorView.prototype.posAtCoords;
+
+EditorView.prototype.posAndSideAtCoords = function(coords, precise) {
+  const norm = normalizeClickCoords(this, coords);
+  return origPosAndSideAtCoords.call(this, norm, precise);
+};
+
+EditorView.prototype.posAtCoords = function(coords, precise) {
+  const norm = normalizeClickCoords(this, coords);
+  return origPosAtCoords.call(this, norm, precise);
+};
+
 // ── Live-preview stability primitives ────────────────────────────────────────
 //
 // Invariants (derived from obsidian_formatting_blueprint.md §2.1, §2.5, §3):

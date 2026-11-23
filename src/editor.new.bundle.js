@@ -83486,6 +83486,46 @@ ${error}`);
   }
 
   // src/editor.js
+  function normalizeClickCoords(view2, coords) {
+    if (!coords || typeof coords.x !== "number" || typeof coords.y !== "number" || !view2?.dom) {
+      return coords;
+    }
+    try {
+      const doc2 = view2.dom.ownerDocument || document;
+      const contentDOM = view2.contentDOM;
+      if (!contentDOM) return coords;
+      const contentRect = contentDOM.getBoundingClientRect();
+      const sampleX = Math.max(contentRect.left + 8, Math.min(coords.x, contentRect.right - 8));
+      const target = doc2.elementFromPoint(coords.x, coords.y) || doc2.elementFromPoint(sampleX, coords.y);
+      const lineEl = target?.closest?.(".cm-line");
+      if (!lineEl) return coords;
+      const rect = lineEl.getBoundingClientRect();
+      if (coords.y >= rect.top && coords.y <= rect.bottom) {
+        const linePos = view2.posAtDOM(lineEl);
+        const targetLine = view2.state.doc.lineAt(linePos);
+        const docTop = contentRect.top + (view2.viewState ? view2.viewState.paddingTop : 0);
+        const yOffset = coords.y - docTop;
+        const block3 = view2.elementAtHeight(yOffset);
+        if (block3 && block3.from > targetLine.to) {
+          const safeOffset = rect.height <= 36 ? rect.height / 2 : Math.max(rect.height / 2, rect.height - 6);
+          const safeY = Math.max(rect.top + 2, Math.min(coords.y, rect.top + safeOffset));
+          return { x: coords.x, y: safeY };
+        }
+      }
+    } catch {
+    }
+    return coords;
+  }
+  var origPosAndSideAtCoords = EditorView.prototype.posAndSideAtCoords;
+  var origPosAtCoords = EditorView.prototype.posAtCoords;
+  EditorView.prototype.posAndSideAtCoords = function(coords, precise) {
+    const norm = normalizeClickCoords(this, coords);
+    return origPosAndSideAtCoords.call(this, norm, precise);
+  };
+  EditorView.prototype.posAtCoords = function(coords, precise) {
+    const norm = normalizeClickCoords(this, coords);
+    return origPosAtCoords.call(this, norm, precise);
+  };
   var HIDE = Decoration.replace({});
   var refreshEffect = StateEffect.define();
   var interaction = { dragging: false, pointerDown: false };
