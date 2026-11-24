@@ -4990,7 +4990,7 @@ async function initPlugins() {
     shortcut: 'Ctrl+Shift+P',
     section: 'plugins',
     run: () => {
-      pluginManagerPanel.open();
+      settingsDialog.open('plugins');
     },
     enabled: () => true,
   });
@@ -5035,20 +5035,33 @@ function hideSlashMenu() {
   slashTriggerPos = null;
 }
 
-function showSlashMenu() {
-  hideSlashMenu();
-  if (!slashCommands.size) return;
-  // Capture the position of the '/' character (cursor is right after it)
-  slashTriggerPos = view.state.selection.main.head - 1;
-  slashMenu = document.createElement('div');
-  slashMenu.className = 'fm-slash-menu';
-  slashMenu.setAttribute('role', 'listbox');
-  for (const command of slashCommands.values()) {
+function renderSlashItems(query = '') {
+  if (!slashMenu) return;
+  const q = query.trim().toLowerCase();
+  const matches = Array.from(slashCommands.values()).filter(command => {
+    if (!q) return true;
+    const label = (command.label || '').toLowerCase();
+    const id = (command.id || '').toLowerCase();
+    return label.includes(q) || id.includes(q);
+  });
+
+  slashMenu.innerHTML = '';
+  if (matches.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'fm-slash-empty';
+    empty.textContent = 'No matching commands';
+    slashMenu.appendChild(empty);
+    return;
+  }
+
+  matches.forEach((command, idx) => {
     const item = document.createElement('button');
     item.type = 'button';
-    item.className = 'fm-slash-item';
+    item.className = `fm-slash-item ${idx === 0 ? 'active' : ''}`;
     item.textContent = command.label;
     item.setAttribute('role', 'option');
+    item.dataset.commandId = command.id;
+    item.dataset.pluginId = command.pluginId;
     item.addEventListener('mousedown', (event) => {
       event.preventDefault();
       const triggerPos = slashTriggerPos;
@@ -5057,13 +5070,53 @@ function showSlashMenu() {
       window.pluginManager?.invokeSlashCommand?.(command.pluginId, command.id, triggerPos);
     });
     slashMenu.appendChild(item);
-  }
-  document.body.appendChild(slashMenu);
-  const coords = view.coordsAtPos(view.state.selection.main.head);
+  });
+}
+
+function updateSlashPosition() {
+  if (!slashMenu) return;
+  const head = view.state.selection.main.head;
+  const coords = view.coordsAtPos(head);
   if (coords) {
     slashMenu.style.left = `${coords.left}px`;
     slashMenu.style.top = `${coords.bottom + 4}px`;
   }
+}
+
+function updateSlashFilter() {
+  if (!slashMenu || slashTriggerPos === null) return;
+  const head = view.state.selection.main.head;
+  if (head <= slashTriggerPos) {
+    hideSlashMenu();
+    return;
+  }
+  const triggerChar = view.state.doc.sliceString(slashTriggerPos, slashTriggerPos + 1);
+  if (triggerChar !== '/') {
+    hideSlashMenu();
+    return;
+  }
+  const query = view.state.doc.sliceString(slashTriggerPos + 1, head);
+  if (query.includes('\n') || query.includes(' ')) {
+    hideSlashMenu();
+    return;
+  }
+  renderSlashItems(query);
+  updateSlashPosition();
+}
+
+function showSlashMenu() {
+  hideSlashMenu();
+  if (!slashCommands.size) return;
+  // Capture the position of the '/' character (cursor is right after it)
+  slashTriggerPos = view.state.selection.main.head - 1;
+  slashMenu = document.createElement('div');
+  slashMenu.className = 'fm-slash-menu';
+  slashMenu.setAttribute('role', 'listbox');
+
+  renderSlashItems('');
+
+  document.body.appendChild(slashMenu);
+  updateSlashPosition();
 
   dismissSlashListener = (e) => {
     if (slashMenu && !slashMenu.contains(e.target)) {
@@ -5084,22 +5137,23 @@ view.contentDOM.addEventListener('keydown', (event) => {
       const items = slashMenu.querySelectorAll('.fm-slash-item');
       if (items.length) {
         event.preventDefault();
-        const active = slashMenu.querySelector('.fm-slash-item:focus');
+        const active = slashMenu.querySelector('.fm-slash-item.active') || slashMenu.querySelector('.fm-slash-item');
         let idx = Array.from(items).indexOf(active);
         if (event.key === 'ArrowDown') idx = (idx + 1) % items.length;
         else idx = (idx - 1 + items.length) % items.length;
-        items[idx]?.focus();
+        items.forEach((it, i) => it.classList.toggle('active', i === idx));
+        items[idx]?.scrollIntoView({ block: 'nearest' });
       }
-    } else if (event.key === 'Enter') {
-      const active = slashMenu.querySelector('.fm-slash-item:focus');
+    } else if (event.key === 'Enter' || event.key === 'Tab') {
+      const active = slashMenu.querySelector('.fm-slash-item.active') || slashMenu.querySelector('.fm-slash-item');
       if (active) {
         event.preventDefault();
-        active.click();
+        active.dispatchEvent(new MouseEvent('mousedown', { cancelable: true }));
       } else {
         hideSlashMenu();
       }
-    } else if (event.key === 'Backspace' || event.key === ' ') {
-      hideSlashMenu();
+    } else {
+      setTimeout(updateSlashFilter, 0);
     }
   }
 });

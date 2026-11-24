@@ -79733,12 +79733,14 @@ $$
      * @param {Object} options.pluginManager - window.pluginManager API
      * @param {Function} [options.showConfirm] - (message, okLabel) => Promise<boolean>
      * @param {Function} [options.onClose] - () => void
+     * @param {boolean} [options.embedded] - Whether mounted inside a parent container (e.g. Settings tab)
      */
-    constructor({ container, pluginManager, showConfirm: showConfirm2, onClose }) {
+    constructor({ container, pluginManager, showConfirm: showConfirm2, onClose, embedded = false }) {
       this.container = container;
       this.pluginManager = pluginManager;
       this.showConfirm = showConfirm2;
       this.onClose = onClose;
+      this.embedded = embedded;
       this.isOpen = false;
       this.plugins = [];
       this.settingsMap = /* @__PURE__ */ new Map();
@@ -79771,7 +79773,9 @@ $$
       `;
         document.head.appendChild(style2);
       }
-      this._bindOverlayEvents();
+      if (!this.embedded) {
+        this._bindOverlayEvents();
+      }
     }
     /**
      * Attach backdrop, keyboard trap, and drag-and-drop events to the container and modal box.
@@ -79867,7 +79871,9 @@ $$
       this.selectedPluginId = null;
       this.detailTab = "overview";
       this.previousActiveElement = document.activeElement;
-      this.container.classList.remove("hidden");
+      if (!this.embedded) {
+        this.container.classList.remove("hidden");
+      }
       this.loading = true;
       this.render();
       if (this.pluginManager?.onPluginsChanged) {
@@ -79893,7 +79899,9 @@ $$
       if (!this.isOpen) return;
       this.isOpen = false;
       this.selectedPluginId = null;
-      this.container.classList.add("hidden");
+      if (!this.embedded) {
+        this.container.classList.add("hidden");
+      }
       if (this.unsubscribePluginsChanged) {
         this.unsubscribePluginsChanged();
         this.unsubscribePluginsChanged = null;
@@ -80490,13 +80498,15 @@ ${error}`);
       installGithubBtn.appendChild(installGithubText);
       installGithubBtn.addEventListener("click", () => this.installFromGitHub());
       headerActions.appendChild(installGithubBtn);
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "plugins-close-btn";
-      closeBtn.title = "Close (Esc)";
-      closeBtn.setAttribute("aria-label", "Close dialog");
-      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-      closeBtn.addEventListener("click", () => this.close());
-      headerActions.appendChild(closeBtn);
+      if (!this.embedded) {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "plugins-close-btn";
+        closeBtn.title = "Close (Esc)";
+        closeBtn.setAttribute("aria-label", "Close dialog");
+        closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+        closeBtn.addEventListener("click", () => this.close());
+        headerActions.appendChild(closeBtn);
+      }
       header3.appendChild(headerActions);
       this.box.appendChild(header3);
       const toolbar = document.createElement("div");
@@ -80854,13 +80864,15 @@ ${error}`);
       header3.appendChild(leftWrap);
       const headerActions = document.createElement("div");
       headerActions.className = "plugins-header-actions";
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "plugins-close-btn";
-      closeBtn.title = "Close (Esc)";
-      closeBtn.setAttribute("aria-label", "Close dialog");
-      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-      closeBtn.addEventListener("click", () => this.close());
-      headerActions.appendChild(closeBtn);
+      if (!this.embedded) {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "plugins-close-btn";
+        closeBtn.title = "Close (Esc)";
+        closeBtn.setAttribute("aria-label", "Close dialog");
+        closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+        closeBtn.addEventListener("click", () => this.close());
+        headerActions.appendChild(closeBtn);
+      }
       header3.appendChild(headerActions);
       this.box.appendChild(header3);
       this._updateToast();
@@ -81685,12 +81697,14 @@ ${error}`);
       this.renderContentPane();
       return true;
     }
-    open() {
+    open(initialTabId = null) {
       this.previousFocus = document.activeElement;
       document.body.classList.add("settings-dialog-open");
       this.element.classList.remove("hidden");
       this.element.setAttribute("aria-hidden", "false");
-      if (!this.activeTabId && this.tabs.length > 0) {
+      if (initialTabId && this.tabs.some((t2) => t2.id === initialTabId)) {
+        this.activeTabId = initialTabId;
+      } else if (!this.activeTabId && this.tabs.length > 0) {
         this.activeTabId = this.tabs[0].id;
       }
       this.renderTabList();
@@ -81704,7 +81718,7 @@ ${error}`);
         }
       }
       this.trapFocus();
-      this.focusFirstTab();
+      this.focusTabButton(this.activeTabId) || this.focusFirstTab();
       document.addEventListener("keydown", this.boundHandleKeyDown);
       document.addEventListener("mousedown", this.boundHandleClickOutside);
       window.dispatchEvent(new CustomEvent("settings:open"));
@@ -82506,31 +82520,45 @@ ${error}`);
   var appearanceTab = new AppearanceTab();
 
   // src/ui/settingsTabs/pluginsTab.js
-  var pluginsTab = createSettingsTab(
-    "plugins",
-    "Plugins",
-    Plug,
-    () => {
-      const container = document.createElement("div");
-      container.className = "settings-tab-content";
-      container.innerHTML = `
-      <h3>Plugins</h3>
-      <p class="settings-placeholder">Plugin manager will be embedded here in Phase 3.</p>
-      <div class="settings-form">
-        <div class="plugin-manager-placeholder">
-          <p>This will contain the full plugin management UI:</p>
-          <ul>
-            <li>Plugin list with enable/disable toggles</li>
-            <li>Plugin detail view (Overview, Settings, Contributions, Permissions, Location, Manage, Registry)</li>
-            <li>Install from folder / GitHub</li>
-            <li>Hot reload for development</li>
-          </ul>
-        </div>
+  var PluginsTab = class extends SettingsTab {
+    constructor() {
+      super({
+        id: "plugins",
+        label: "Plugins",
+        icon: Plug
+      });
+      this.element = null;
+      this.panelInstance = null;
+    }
+    render() {
+      this.element = document.createElement("div");
+      this.element.className = "settings-tab-content settings-tab-plugins";
+      this.element.innerHTML = `
+      <div id="settings-plugins-container">
+        <div id="plugins-box"></div>
       </div>
     `;
-      return container;
+      const container = this.element.querySelector("#settings-plugins-container");
+      this.panelInstance = new PluginManagerPanel({
+        container,
+        pluginManager: window.pluginManager,
+        showConfirm: window.showConfirm,
+        embedded: true
+      });
+      return this.element;
     }
-  );
+    async onActivate() {
+      if (this.panelInstance) {
+        await this.panelInstance.open();
+      }
+    }
+    onDeactivate() {
+      if (this.panelInstance) {
+        this.panelInstance.close();
+      }
+    }
+  };
+  var pluginsTab = new PluginsTab();
 
   // src/ui/settingsTabs/shortcutsTab.js
   var shortcutsTab = createSettingsTab(
@@ -87877,7 +87905,7 @@ Just start writing.
       shortcut: "Ctrl+Shift+P",
       section: "plugins",
       run: () => {
-        pluginManagerPanel.open();
+        settingsDialog.open("plugins");
       },
       enabled: () => true
     });
@@ -87916,19 +87944,31 @@ Just start writing.
     slashMenu = null;
     slashTriggerPos = null;
   }
-  function showSlashMenu() {
-    hideSlashMenu();
-    if (!slashCommands.size) return;
-    slashTriggerPos = view.state.selection.main.head - 1;
-    slashMenu = document.createElement("div");
-    slashMenu.className = "fm-slash-menu";
-    slashMenu.setAttribute("role", "listbox");
-    for (const command3 of slashCommands.values()) {
+  function renderSlashItems(query = "") {
+    if (!slashMenu) return;
+    const q2 = query.trim().toLowerCase();
+    const matches = Array.from(slashCommands.values()).filter((command3) => {
+      if (!q2) return true;
+      const label = (command3.label || "").toLowerCase();
+      const id3 = (command3.id || "").toLowerCase();
+      return label.includes(q2) || id3.includes(q2);
+    });
+    slashMenu.innerHTML = "";
+    if (matches.length === 0) {
+      const empty2 = document.createElement("div");
+      empty2.className = "fm-slash-empty";
+      empty2.textContent = "No matching commands";
+      slashMenu.appendChild(empty2);
+      return;
+    }
+    matches.forEach((command3, idx) => {
       const item = document.createElement("button");
       item.type = "button";
-      item.className = "fm-slash-item";
+      item.className = `fm-slash-item ${idx === 0 ? "active" : ""}`;
       item.textContent = command3.label;
       item.setAttribute("role", "option");
+      item.dataset.commandId = command3.id;
+      item.dataset.pluginId = command3.pluginId;
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
         const triggerPos = slashTriggerPos;
@@ -87936,13 +87976,47 @@ Just start writing.
         window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id, triggerPos);
       });
       slashMenu.appendChild(item);
-    }
-    document.body.appendChild(slashMenu);
-    const coords = view.coordsAtPos(view.state.selection.main.head);
+    });
+  }
+  function updateSlashPosition() {
+    if (!slashMenu) return;
+    const head = view.state.selection.main.head;
+    const coords = view.coordsAtPos(head);
     if (coords) {
       slashMenu.style.left = `${coords.left}px`;
       slashMenu.style.top = `${coords.bottom + 4}px`;
     }
+  }
+  function updateSlashFilter() {
+    if (!slashMenu || slashTriggerPos === null) return;
+    const head = view.state.selection.main.head;
+    if (head <= slashTriggerPos) {
+      hideSlashMenu();
+      return;
+    }
+    const triggerChar = view.state.doc.sliceString(slashTriggerPos, slashTriggerPos + 1);
+    if (triggerChar !== "/") {
+      hideSlashMenu();
+      return;
+    }
+    const query = view.state.doc.sliceString(slashTriggerPos + 1, head);
+    if (query.includes("\n") || query.includes(" ")) {
+      hideSlashMenu();
+      return;
+    }
+    renderSlashItems(query);
+    updateSlashPosition();
+  }
+  function showSlashMenu() {
+    hideSlashMenu();
+    if (!slashCommands.size) return;
+    slashTriggerPos = view.state.selection.main.head - 1;
+    slashMenu = document.createElement("div");
+    slashMenu.className = "fm-slash-menu";
+    slashMenu.setAttribute("role", "listbox");
+    renderSlashItems("");
+    document.body.appendChild(slashMenu);
+    updateSlashPosition();
     dismissSlashListener = (e) => {
       if (slashMenu && !slashMenu.contains(e.target)) {
         hideSlashMenu();
@@ -87961,22 +88035,23 @@ Just start writing.
         const items = slashMenu.querySelectorAll(".fm-slash-item");
         if (items.length) {
           event.preventDefault();
-          const active = slashMenu.querySelector(".fm-slash-item:focus");
+          const active = slashMenu.querySelector(".fm-slash-item.active") || slashMenu.querySelector(".fm-slash-item");
           let idx = Array.from(items).indexOf(active);
           if (event.key === "ArrowDown") idx = (idx + 1) % items.length;
           else idx = (idx - 1 + items.length) % items.length;
-          items[idx]?.focus();
+          items.forEach((it, i) => it.classList.toggle("active", i === idx));
+          items[idx]?.scrollIntoView({ block: "nearest" });
         }
-      } else if (event.key === "Enter") {
-        const active = slashMenu.querySelector(".fm-slash-item:focus");
+      } else if (event.key === "Enter" || event.key === "Tab") {
+        const active = slashMenu.querySelector(".fm-slash-item.active") || slashMenu.querySelector(".fm-slash-item");
         if (active) {
           event.preventDefault();
-          active.click();
+          active.dispatchEvent(new MouseEvent("mousedown", { cancelable: true }));
         } else {
           hideSlashMenu();
         }
-      } else if (event.key === "Backspace" || event.key === " ") {
-        hideSlashMenu();
+      } else {
+        setTimeout(updateSlashFilter, 0);
       }
     }
   });

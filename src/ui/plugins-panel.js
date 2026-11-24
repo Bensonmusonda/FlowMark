@@ -62,12 +62,14 @@ export class PluginManagerPanel {
    * @param {Object} options.pluginManager - window.pluginManager API
    * @param {Function} [options.showConfirm] - (message, okLabel) => Promise<boolean>
    * @param {Function} [options.onClose] - () => void
+   * @param {boolean} [options.embedded] - Whether mounted inside a parent container (e.g. Settings tab)
    */
-  constructor({ container, pluginManager, showConfirm, onClose }) {
+  constructor({ container, pluginManager, showConfirm, onClose, embedded = false }) {
     this.container = container;
     this.pluginManager = pluginManager;
     this.showConfirm = showConfirm;
     this.onClose = onClose;
+    this.embedded = embedded;
 
     this.isOpen = false;
     this.plugins = [];
@@ -105,7 +107,9 @@ export class PluginManagerPanel {
       document.head.appendChild(style);
     }
 
-    this._bindOverlayEvents();
+    if (!this.embedded) {
+      this._bindOverlayEvents();
+    }
   }
 
   /**
@@ -218,7 +222,9 @@ export class PluginManagerPanel {
     this.selectedPluginId = null;
     this.detailTab = 'overview';
     this.previousActiveElement = document.activeElement;
-    this.container.classList.remove('hidden');
+    if (!this.embedded) {
+      this.container.classList.remove('hidden');
+    }
     this.loading = true;
 
     // Render initial state
@@ -253,7 +259,9 @@ export class PluginManagerPanel {
     if (!this.isOpen) return;
     this.isOpen = false;
     this.selectedPluginId = null;
-    this.container.classList.add('hidden');
+    if (!this.embedded) {
+      this.container.classList.add('hidden');
+    }
 
     if (this.unsubscribePluginsChanged) {
       this.unsubscribePluginsChanged();
@@ -945,13 +953,15 @@ export class PluginManagerPanel {
     installGithubBtn.addEventListener('click', () => this.installFromGitHub());
     headerActions.appendChild(installGithubBtn);
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'plugins-close-btn';
-    closeBtn.title = 'Close (Esc)';
-    closeBtn.setAttribute('aria-label', 'Close dialog');
-    closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-    closeBtn.addEventListener('click', () => this.close());
-    headerActions.appendChild(closeBtn);
+    if (!this.embedded) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'plugins-close-btn';
+      closeBtn.title = 'Close (Esc)';
+      closeBtn.setAttribute('aria-label', 'Close dialog');
+      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+      closeBtn.addEventListener('click', () => this.close());
+      headerActions.appendChild(closeBtn);
+    }
 
     header.appendChild(headerActions);
     this.box.appendChild(header);
@@ -1411,13 +1421,15 @@ export class PluginManagerPanel {
     const headerActions = document.createElement('div');
     headerActions.className = 'plugins-header-actions';
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'plugins-close-btn';
-    closeBtn.title = 'Close (Esc)';
-    closeBtn.setAttribute('aria-label', 'Close dialog');
-    closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-    closeBtn.addEventListener('click', () => this.close());
-    headerActions.appendChild(closeBtn);
+    if (!this.embedded) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'plugins-close-btn';
+      closeBtn.title = 'Close (Esc)';
+      closeBtn.setAttribute('aria-label', 'Close dialog');
+      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+      closeBtn.addEventListener('click', () => this.close());
+      headerActions.appendChild(closeBtn);
+    }
 
     header.appendChild(headerActions);
     this.box.appendChild(header);
