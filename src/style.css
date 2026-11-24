@@ -3717,11 +3717,17 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
 .plugin-detail-tabs {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 8px 20px 0;
+  gap: 4px;
+  padding: 8px 12px 0;
   border-bottom: 1px solid var(--border);
   margin-bottom: 0;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.plugin-detail-tabs::-webkit-scrollbar {
+  display: none;
 }
 .plugin-tab-btn {
   display: inline-flex;
@@ -3739,6 +3745,7 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
   cursor: pointer;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
+  flex-shrink: 0;
   margin-bottom: -1px;
 }
 .plugin-tab-btn:hover {

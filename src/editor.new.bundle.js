@@ -79757,6 +79757,8 @@ $$
       this.previousActiveElement = null;
       this.unsubscribePluginsChanged = null;
       this.unsubscribeSettingsChanged = null;
+      this._renderSeq = 0;
+      this._isDevMode = null;
       this.box = this.container.querySelector("#plugins-box");
       if (!this.box) {
         this.box = document.createElement("div");
@@ -80444,20 +80446,31 @@ ${error}`);
       closeBtn.focus();
     }
     /**
+     * Cached check for developer mode.
+     */
+    async getDevMode() {
+      if (this._isDevMode === null) {
+        this._isDevMode = window.appAPI?.isDevMode ? await window.appAPI.isDevMode() : false;
+      }
+      return this._isDevMode;
+    }
+    /**
      * Main render method. Renders either the plugin list or dedicated plugin detail section.
      */
     async render() {
+      const seq = ++this._renderSeq;
       if (this.selectedPluginId) {
-        await this._renderDetailView();
+        await this._renderDetailView(seq);
       } else {
-        this._renderListView();
+        this._renderListView(seq);
       }
     }
     /**
      * Render the main plugins list view.
      * @private
      */
-    _renderListView() {
+    _renderListView(seq) {
+      if (seq !== void 0 && seq !== this._renderSeq) return;
       const contentEl = this.box.querySelector(".plugins-content");
       const prevScrollTop = contentEl ? contentEl.scrollTop : 0;
       const isSearchFocused = document.activeElement?.classList?.contains("plugins-search-input");
@@ -80826,12 +80839,13 @@ ${error}`);
      * Render the dedicated detail section for this.selectedPluginId.
      * @private
      */
-    async _renderDetailView() {
+    async _renderDetailView(seq) {
+      if (seq !== void 0 && seq !== this._renderSeq) return;
       this.box.replaceChildren();
       const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
       if (!plugin) {
         this.selectedPluginId = null;
-        this._renderListView();
+        this._renderListView(seq);
         return;
       }
       const inFlight = this.inFlightActions.has(plugin.name);
@@ -80879,7 +80893,7 @@ ${error}`);
       const tabBar = document.createElement("div");
       tabBar.className = "plugin-detail-tabs";
       tabBar.setAttribute("role", "tablist");
-      tabBar.style.cssText = "display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;";
+      tabBar.style.cssText = "display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;";
       const tabs = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "settings", label: "Settings", icon: Settings2 },
@@ -81506,7 +81520,8 @@ ${error}`);
       reloadSection.appendChild(reloadBtn);
       managePanel.appendChild(reloadSection);
       if (window.appAPI?.isDevMode) {
-        const isDev = await window.appAPI.isDevMode();
+        const isDev = await this.getDevMode();
+        if (seq !== void 0 && seq !== this._renderSeq) return;
         if (isDev) {
           const devReloadSection = document.createElement("div");
           devReloadSection.className = "plugin-detail-section";
@@ -81556,7 +81571,13 @@ ${error}`);
       this._renderRegistryPanel(registryPanel);
       panelsContainer.appendChild(registryPanel);
       content3.appendChild(panelsContainer);
-      this.box.appendChild(content3);
+      if (seq !== void 0 && seq !== this._renderSeq) return;
+      const existingContent = this.box.querySelector(".plugins-content");
+      if (existingContent) {
+        existingContent.replaceWith(content3);
+      } else {
+        this.box.appendChild(content3);
+      }
       backBtn.focus();
     }
     /**
@@ -82531,6 +82552,9 @@ ${error}`);
       this.panelInstance = null;
     }
     render() {
+      if (this.element) {
+        return this.element;
+      }
       this.element = document.createElement("div");
       this.element.className = "settings-tab-content settings-tab-plugins";
       this.element.innerHTML = `

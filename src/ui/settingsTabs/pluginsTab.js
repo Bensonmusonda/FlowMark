@@ -14,6 +14,9 @@ export class PluginsTab extends SettingsTab {
   }
 
   render() {
+    if (this.element) {
+      return this.element;
+    }
     this.element = document.createElement('div');
     this.element.className = 'settings-tab-content settings-tab-plugins';
     this.element.innerHTML = `
