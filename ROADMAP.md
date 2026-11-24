@@ -55,6 +55,7 @@ To rival top-tier editors (Obsidian, Typora, MarkText), FlowMark needs the follo
 
 | Gap Area | Missing Capability | Impact & Urgency |
 | :--- | :--- | :--- |
+| **OS & Desktop** | **"Open With" & Standalone File Mode** | **High**: Associate FlowMark with `.md`/`.markdown` files in OS Explorer; handle CLI arguments on launch and `second-instance` IPC so double-clicking any file opens it directly in a new tab without forcing a rigid workspace/vault container. |
 | **Navigation** | **Document Outline / TOC** | **High**: Long documents require a live `# Headings` tree in the utility pane with active scroll tracking. |
 | **Search** | **Global Workspace Search** | **High**: Ripgrep-style multi-file search across all `.md` files in the open folder. |
 | **Media** | **Image Drag & Drop / Paste** | **High**: Auto-saving clipboard images to `./assets/` and auto-generating markdown links. |
@@ -76,9 +77,13 @@ To rival top-tier editors (Obsidian, Typora, MarkText), FlowMark needs the follo
 
 ## 5. Prioritized Development Roadmap
 
-### Phase 1: Floating Reference Plugin & Writing Ergonomics
+### Phase 1: Floating Reference Plugin, OS Integration & Writing Ergonomics
 1. **Quick-Insert Symbol Palette Plugin**: Build the reference vertical symbol palette plugin to validate the floating toolbar platform APIs.
-2. **Clipboard Image Paste & Drag-and-Drop**: Intercept paste/drop events, persist image files to `assets/`, and insert markdown syntax.
+2. **"Open With" & Standalone File Launching**:
+   - Register `fileAssociations` in `package.json` for `.md`, `.markdown`, and `.txt`.
+   - Parse `process.argv` on launch in `src/main.js` to open target files directly in tabs.
+   - Implement `app.requestSingleInstanceLock()` and `second-instance` event so launching another file appends a tab in the active window rather than opening redundant instances.
+3. **Clipboard Image Paste & Drag-and-Drop**: Intercept paste/drop events, persist image files to `assets/`, and insert markdown syntax.
 
 ### Phase 2: Navigation & Multi-File Discovery
 1. **Document Outline Panel (TOC)**: Parse document headings via Lezer syntax tree, display hierarchical list in the right Utility Pane, and support click-to-scroll.
