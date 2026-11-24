@@ -114,6 +114,16 @@ body {
   -webkit-app-region: drag;
 }
 
+#titlebar-app-icon {
+  width: 16px;
+  height: 16px;
+  margin: 0 8px 0 4px;
+  flex-shrink: 0;
+  pointer-events: none;
+  user-select: none;
+  object-fit: contain;
+}
+
 /* ── Topbar Menus (File, Edit, Insert) ── */
 #titlebar-menus {
   display: flex;
@@ -993,6 +1003,29 @@ body.sidebar-collapsed .sidebar-nav {
 }
 
 /* ── About Tab ── */
+.about-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.about-header-text h3 {
+  margin-bottom: 2px;
+}
+
+.about-header-text .settings-desc {
+  margin-bottom: 0;
+}
+
+.about-app-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  object-fit: contain;
+  user-select: none;
+}
+
 .about-grid {
   display: flex;
   flex-direction: column;
@@ -2801,7 +2834,7 @@ body.zen #statusbar { display: none; }
 #welcome {
   display: flex;
   justify-content: center;
-  padding: 80px 40px 0;
+  padding: 48px 40px 0;
   width: 100%;
   height: 100%;
   overflow-y: auto;
@@ -2813,13 +2846,34 @@ body.zen #statusbar { display: none; }
   max-width: 480px;
 }
 
+#welcome-hero {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
 #welcome-logo {
   font-family: var(--font-prose);
   font-size: 28px;
   font-weight: 700;
   color: var(--heading);
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   letter-spacing: -0.01em;
+}
+
+#welcome-icon {
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 24px rgba(255, 42, 109, 0.20));
+}
+
+body.theme-light #welcome-icon,
+body.theme-sepia #welcome-icon {
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.12));
 }
 
 #welcome-actions {
@@ -5114,3 +5168,246 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
 }
 
 
+
+/* ── Extensions Sidebar View ───────────────────────────────────────────────── */
+.sidebar-extensions-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar-extensions-view[hidden] {
+  display: none !important;
+}
+
+.ext-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 10px 8px;
+  padding: 5px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.ext-search-wrap:focus-within {
+  border-color: var(--accent);
+}
+
+.ext-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  outline: none;
+}
+
+.ext-search-input::placeholder {
+  color: var(--muted);
+}
+
+.ext-status-banner {
+  margin: 0 10px 8px;
+  padding: 6px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.ext-status-banner.error {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.ext-status-banner.hidden {
+  display: none;
+}
+
+.ext-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ext-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+  padding: 0 2px;
+}
+
+.ext-empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 4px;
+}
+
+.ext-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 9px 10px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color 0.12s ease;
+}
+
+.ext-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.ext-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ext-card-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ext-card-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ext-card-version {
+  font-size: 10.5px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.ext-state-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+  opacity: 0.45;
+}
+
+.ext-state-dot.active {
+  background: #22c55e;
+  opacity: 1;
+}
+
+.ext-state-dot.error {
+  background: #ef4444;
+  opacity: 1;
+}
+
+.ext-card-author {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.ext-card-desc {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text);
+  opacity: 0.85;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ext-perms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.ext-perm-pill {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.ext-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.ext-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: var(--font-ui);
+  font-weight: 500;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.ext-btn:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: var(--muted);
+}
+
+.ext-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ext-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.ext-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.ext-btn-icon {
+  padding: 4px 6px;
+  margin-left: auto;
+}
+
+.ext-installed-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #22c55e;
+  font-weight: 500;
+}
