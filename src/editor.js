@@ -2854,30 +2854,76 @@ function makeTheme(accentColor) {
 const THEMES = ['theme-dark', 'theme-light', 'theme-sepia'];
 let currentTheme = localStorage.getItem('fm-theme') || 'theme-dark';
 
-const ACCENTS = {
-  // Blues
-  blue:       { dark: '#7cb8f0', light: '#2970c8' },
-  steel:      { dark: '#90aac8', light: '#3a5878' },
-  sky:        { dark: '#80d0e8', light: '#1888a8' },
-  // Greens
-  sage:       { dark: '#90c8a0', light: '#2a7a48' },
-  mint:       { dark: '#80e0c0', light: '#0a8060' },
-  olive:      { dark: '#b0c880', light: '#506820' },
-  // Reds / Pinks
-  rose:       { dark: '#f0a0b0', light: '#b83050' },
-  coral:      { dark: '#f0907a', light: '#c04030' },
-  blush:      { dark: '#e8b0c8', light: '#a03870' },
-  // Purples
-  lavender:   { dark: '#b8a8f0', light: '#5040b8' },
-  mauve:      { dark: '#d0a0d0', light: '#883888' },
-  violet:     { dark: '#c0a0e8', light: '#6030b0' },
-  // Warm neutrals
-  peach:      { dark: '#f0b890', light: '#b05820' },
-  sand:       { dark: '#d4b896', light: '#7a5030' },
-  amber:      { dark: '#e8c870', light: '#987010' },
-  // Cool neutral
-  slate:      { dark: '#a0b8c8', light: '#305068' },
+const PALETTES = {
+  pastel: {
+    label: 'Pastel',
+    accents: {
+      blue:       { label: 'Blue', dark: '#7cb8f0', light: '#2970c8' },
+      steel:      { label: 'Steel', dark: '#90aac8', light: '#3a5878' },
+      sky:        { label: 'Sky', dark: '#80d0e8', light: '#1888a8' },
+      sage:       { label: 'Sage', dark: '#90c8a0', light: '#2a7a48' },
+      mint:       { label: 'Mint', dark: '#80e0c0', light: '#0a8060' },
+      olive:      { label: 'Olive', dark: '#b0c880', light: '#506820' },
+      rose:       { label: 'Rose', dark: '#f0a0b0', light: '#b83050' },
+      coral:      { label: 'Coral', dark: '#f0907a', light: '#c04030' },
+      blush:      { label: 'Blush', dark: '#e8b0c8', light: '#a03870' },
+      lavender:   { label: 'Lavender', dark: '#b8a8f0', light: '#5040b8' },
+      mauve:      { label: 'Mauve', dark: '#d0a0d0', light: '#883888' },
+      violet:     { label: 'Violet', dark: '#c0a0e8', light: '#6030b0' },
+      peach:      { label: 'Peach', dark: '#f0b890', light: '#b05820' },
+      sand:       { label: 'Sand', dark: '#d4b896', light: '#7a5030' },
+      amber:      { label: 'Amber', dark: '#e8c870', light: '#987010' },
+      slate:      { label: 'Slate', dark: '#a0b8c8', light: '#305068' },
+    }
+  },
+  vibrant: {
+    label: 'Vibrant',
+    accents: {
+      electric:   { label: 'Electric Blue', dark: '#3b82f6', light: '#1d4ed8' },
+      emerald:    { label: 'Emerald', dark: '#10b981', light: '#047857' },
+      crimson:    { label: 'Crimson', dark: '#ef4444', light: '#b91c1c' },
+      sunset:     { label: 'Sunset Orange', dark: '#f97316', light: '#c2410c' },
+      royal:      { label: 'Royal Purple', dark: '#a855f7', light: '#7e22ce' },
+      cyan:       { label: 'Vibrant Cyan', dark: '#06b6d4', light: '#0e7490' },
+      fuchsia:    { label: 'Fuchsia', dark: '#d946ef', light: '#a21caf' },
+      gold:       { label: 'Goldenrod', dark: '#eab308', light: '#a16207' },
+    }
+  },
+  earth: {
+    label: 'Earth & Warm',
+    accents: {
+      terracotta: { label: 'Terracotta', dark: '#d97757', light: '#9a3412' },
+      moss:       { label: 'Forest Moss', dark: '#709775', light: '#3b5a3e' },
+      ochre:      { label: 'Ochre Clay', dark: '#c68b59', light: '#78350f' },
+      copper:     { label: 'Rustic Copper', dark: '#b86b53', light: '#7c2d12' },
+      clay:       { label: 'Warm Clay', dark: '#b4846c', light: '#6d4c41' },
+      forest:     { label: 'Deep Forest', dark: '#588157', light: '#2d4a2d' },
+    }
+  },
+  neon: {
+    label: 'Cyber & Neon',
+    accents: {
+      neonGreen:  { label: 'Neon Green', dark: '#39ff14', light: '#15803d' },
+      laserPink:  { label: 'Laser Pink', dark: '#ff007f', light: '#be123c' },
+      cyberCyan:  { label: 'Cyber Cyan', dark: '#00f0ff', light: '#0369a1' },
+      neonAmber:  { label: 'Neon Amber', dark: '#ffb703', light: '#b45309' },
+      neonViolet: { label: 'Electric Violet', dark: '#bf00ff', light: '#6b21a8' },
+    }
+  },
+  minimal: {
+    label: 'Monochrome',
+    accents: {
+      graphite:   { label: 'Graphite', dark: '#888888', light: '#444444' },
+      silver:     { label: 'Cool Silver', dark: '#b0b0b0', light: '#555555' },
+      charcoal:   { label: 'Charcoal', dark: '#666666', light: '#222222' },
+      pearl:      { label: 'Pearl White', dark: '#d0d0d0', light: '#666666' },
+    }
+  }
 };
+
+const ACCENTS = Object.values(PALETTES).reduce((acc, pal) => {
+  return { ...acc, ...pal.accents };
+}, {});
 
 let currentAccent = localStorage.getItem('fm-accent') || 'blue';
 
@@ -3777,6 +3823,7 @@ window.themeControls = {
   getAccent: () => currentAccent,
   setAccent: (name) => applyAccent(name),
   getAccents: () => ACCENTS,
+  getPalettes: () => PALETTES,
   getThemes: () => THEMES,
   applyCustomColor: (key, value) => document.documentElement.style.setProperty(key, value),
 };
