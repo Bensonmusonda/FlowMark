@@ -78845,6 +78845,14 @@ $$
       this.onNewTab = onNewTab;
       this.getWorkspacePath = getWorkspacePath;
       this.draggedIndex = null;
+      if (this.container) {
+        this.container.addEventListener("wheel", (e) => {
+          if (e.deltaY !== 0) {
+            e.preventDefault();
+            this.container.scrollLeft += e.deltaY;
+          }
+        }, { passive: false });
+      }
       this.tabManager.onChange(() => this.render());
       this.render();
     }
