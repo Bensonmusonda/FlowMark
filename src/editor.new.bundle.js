@@ -88111,8 +88111,7 @@ Just start writing.
   var dropdownMenus = [
     { btn: document.getElementById("file-menu-btn"), menu: document.getElementById("file-dropdown") },
     { btn: document.getElementById("edit-menu-btn"), menu: document.getElementById("edit-dropdown") },
-    { btn: document.getElementById("insert-menu-btn"), menu: document.getElementById("insert-dropdown") },
-    { btn: document.getElementById("plugins-menu-btn"), menu: document.getElementById("plugins-dropdown") }
+    { btn: document.getElementById("insert-menu-btn"), menu: document.getElementById("insert-dropdown") }
   ];
   function closeAllDropdowns() {
     dropdownMenus.forEach(({ menu }) => menu?.classList.add("hidden"));

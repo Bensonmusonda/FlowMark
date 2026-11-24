@@ -64,16 +64,13 @@ test('Plugins can open only their registered custom views', () => {
   assert.match(editor, /if \(!active \|\| active\.viewType === 'markdown'/);
 });
 
-test('Plugin installation is exposed as a folder-picking menu action', () => {
-  const html = fs.readFileSync(new URL('./src/index.html', import.meta.url), 'utf8');
+test('Plugin installation is exposed as a folder-picking action', () => {
+  const panel = fs.readFileSync(new URL('./src/ui/plugins-panel.js', import.meta.url), 'utf8');
   const main = fs.readFileSync(new URL('./src/main.js', import.meta.url), 'utf8');
   const preload = fs.readFileSync(new URL('./src/preload.js', import.meta.url), 'utf8');
   const editor = fs.readFileSync(new URL('./src/editor.js', import.meta.url), 'utf8');
-  const manageIndex = html.indexOf('data-action="plugins:manage"');
-  const installIndex = html.indexOf('data-action="plugins:install"');
-  const listIndex = html.indexOf('id="plugins-menu-items"');
 
-  assert.ok(manageIndex >= 0 && manageIndex < installIndex && installIndex < listIndex);
+  assert.match(panel, /installFromFolder/);
   assert.match(main, /ipcMain\.handle\('plugins:installFromFolder'/);
   assert.match(main, /properties:\s*\['openDirectory'\]/);
   assert.match(main, /pluginHost\.installPlugin\(filePaths\[0\]\)/);
