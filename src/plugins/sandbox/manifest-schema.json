@@ -35,6 +35,7 @@
           "clipboard.write",
           "ui.panels",
           "ui.customViews",
+          "ui.floatingWidgets",
           "editor.slashCommands",
           "clipboard.smartPaste",
           "network.request",

@@ -9,7 +9,7 @@ const PERMISSIONS_ENUM = [
   'settings.read', 'settings.write',
   'ui.menus', 'ui.statusbar', 'ui.notifications',
   'clipboard.read', 'clipboard.write',
-  'ui.panels', 'ui.customViews',
+  'ui.panels', 'ui.customViews', 'ui.floatingWidgets',
   'editor.slashCommands',
   'clipboard.smartPaste',
   'network.request', 'network.request:write',

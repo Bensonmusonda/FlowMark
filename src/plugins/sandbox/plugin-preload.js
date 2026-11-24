@@ -303,6 +303,16 @@ const pluginAPI = {
       return sendRequest('ui:registerSidebarPanel', { panel });
     },
     removeSidebarPanel: (panelId) => sendRequest('ui:removeSidebarPanel', { panelId }),
+    registerFloatingWidget: (widget) => {
+      if (!hasPermission('ui.floatingWidgets')) return Promise.reject(new Error('Permission denied: ui.floatingWidgets'));
+      return sendRequest('ui:registerFloatingWidget', { widget });
+    },
+    registerFloatingToolbar: (toolbar) => {
+      if (!hasPermission('ui.floatingWidgets')) return Promise.reject(new Error('Permission denied: ui.floatingWidgets'));
+      return sendRequest('ui:registerFloatingToolbar', { toolbar });
+    },
+    removeFloatingWidget: (widgetId) => sendRequest('ui:removeFloatingWidget', { widgetId }),
+    toggleFloatingWidget: (widgetId, visible) => sendRequest('ui:toggleFloatingWidget', { widgetId, visible }),
   },
 
   // Custom tab views

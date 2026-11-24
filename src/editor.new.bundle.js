@@ -78658,6 +78658,863 @@ $$
     }
   };
 
+  // node_modules/lucide/dist/esm/defaultAttributes.mjs
+  var defaultAttributes = {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": 2,
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round"
+  };
+
+  // node_modules/lucide/dist/esm/createElement.mjs
+  var createSVGElement = ([tag2, attrs2, children]) => {
+    const element2 = document.createElementNS("http://www.w3.org/2000/svg", tag2);
+    Object.keys(attrs2).forEach((name2) => {
+      element2.setAttribute(name2, String(attrs2[name2]));
+    });
+    if (children?.length) {
+      children.forEach((child) => {
+        const childElement = createSVGElement(child);
+        element2.appendChild(childElement);
+      });
+    }
+    return element2;
+  };
+  var createElement = (iconNode, customAttrs = {}) => {
+    const tag2 = "svg";
+    const attrs2 = {
+      ...defaultAttributes,
+      ...customAttrs
+    };
+    return createSVGElement([tag2, attrs2, iconNode]);
+  };
+
+  // node_modules/lucide/dist/esm/icons/arrow-left.mjs
+  var ArrowLeft = [
+    ["path", { d: "m12 19-7-7 7-7" }],
+    ["path", { d: "M19 12H5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/book-open.mjs
+  var BookOpen = [
+    ["path", { d: "M12 5v16" }],
+    [
+      "path",
+      {
+        d: "M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/bot.mjs
+  var Bot = [
+    ["path", { d: "M12 8V4H8" }],
+    ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2" }],
+    ["path", { d: "M2 14h2" }],
+    ["path", { d: "M20 14h2" }],
+    ["path", { d: "M15 13v2" }],
+    ["path", { d: "M9 13v2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/brain.mjs
+  var Brain = [
+    ["path", { d: "M12 18V5" }],
+    ["path", { d: "M15 13a4.17 4.17 0 01-3-4 4.17 4.17 0 01-3 4" }],
+    ["path", { d: "M17.707 6.294A3 3 0 1012 5a3 3 0 10-5.707 1.294" }],
+    ["path", { d: "M17.996 5.125a4 4 0 012.526 5.77" }],
+    ["path", { d: "M18 18a4 4 0 002-7.465" }],
+    ["path", { d: "M19.967 17.482a4 4 0 11-7.967.517 4 4 0 11-7.967-.517" }],
+    ["path", { d: "M6 18a4 4 0 01-2-7.465" }],
+    ["path", { d: "M6.004 5.125a4 4 0 00-2.526 5.77" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/calendar-days.mjs
+  var CalendarDays = [
+    ["path", { d: "M8 2v3" }],
+    ["path", { d: "M16 2v3" }],
+    ["rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }],
+    ["path", { d: "M3 9h18" }],
+    ["path", { d: "M8 13h.01" }],
+    ["path", { d: "M12 13h.01" }],
+    ["path", { d: "M16 13h.01" }],
+    ["path", { d: "M8 17h.01" }],
+    ["path", { d: "M12 17h.01" }],
+    ["path", { d: "M16 17h.01" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/check.mjs
+  var Check = [["path", { d: "M20 6 9 17l-5-5" }]];
+
+  // node_modules/lucide/dist/esm/icons/chevron-down.mjs
+  var ChevronDown = [["path", { d: "m6 9 6 6 6-6" }]];
+
+  // node_modules/lucide/dist/esm/icons/chevron-left.mjs
+  var ChevronLeft = [["path", { d: "m15 18-6-6 6-6" }]];
+
+  // node_modules/lucide/dist/esm/icons/chevron-right.mjs
+  var ChevronRight = [["path", { d: "m9 18 6-6-6-6" }]];
+
+  // node_modules/lucide/dist/esm/icons/circle-exclamation-point.mjs
+  var CircleExclamationPoint = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["line", { x1: "12", x2: "12", y1: "8", y2: "12" }],
+    ["line", { x1: "12", x2: "12.01", y1: "16", y2: "16" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/circle-x.mjs
+  var CircleX = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "m15 9-6 6" }],
+    ["path", { d: "m9 9 6 6" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/code-xml.mjs
+  var CodeXml = [
+    ["path", { d: "m18 16 4-4-4-4" }],
+    ["path", { d: "m6 8-4 4 4 4" }],
+    ["path", { d: "m14.5 4-5 16" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/code.mjs
+  var Code = [
+    ["path", { d: "m16 18 6-6-6-6" }],
+    ["path", { d: "m8 6-6 6 6 6" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/copy.mjs
+  var Copy = [
+    ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2" }],
+    ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/file-plus-corner.mjs
+  var FilePlusCorner = [
+    [
+      "path",
+      {
+        d: "M11.35 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v5.35"
+      }
+    ],
+    ["path", { d: "M14 2v5a1 1 0 0 0 1 1h5" }],
+    ["path", { d: "M14 19h6" }],
+    ["path", { d: "M17 16v6" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/file.mjs
+  var File = [
+    [
+      "path",
+      {
+        d: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
+      }
+    ],
+    ["path", { d: "M14 2v5a1 1 0 0 0 1 1h5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/folder-open.mjs
+  var FolderOpen = [
+    [
+      "path",
+      {
+        d: "m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/folder-root.mjs
+  var FolderRoot = [
+    [
+      "path",
+      {
+        d: "M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"
+      }
+    ],
+    ["circle", { cx: "12", cy: "13", r: "2" }],
+    ["path", { d: "M12 15v5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/folder-plus.mjs
+  var FolderPlus = [
+    ["path", { d: "M12 10v6" }],
+    ["path", { d: "M9 13h6" }],
+    [
+      "path",
+      {
+        d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/folder.mjs
+  var Folder = [
+    [
+      "path",
+      {
+        d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/git-branch.mjs
+  var GitBranch = [
+    ["path", { d: "M15 6a9 9 0 0 0-9 9V3" }],
+    ["circle", { cx: "18", cy: "6", r: "3" }],
+    ["circle", { cx: "6", cy: "18", r: "3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/globe.mjs
+  var Globe = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" }],
+    ["path", { d: "M2 12h20" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/grip-vertical.mjs
+  var GripVertical = [
+    ["circle", { cx: "9", cy: "12", r: "1" }],
+    ["circle", { cx: "9", cy: "5", r: "1" }],
+    ["circle", { cx: "9", cy: "19", r: "1" }],
+    ["circle", { cx: "15", cy: "12", r: "1" }],
+    ["circle", { cx: "15", cy: "5", r: "1" }],
+    ["circle", { cx: "15", cy: "19", r: "1" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/hard-drive.mjs
+  var HardDrive = [
+    ["path", { d: "M10 16h.01" }],
+    [
+      "path",
+      {
+        d: "M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+      }
+    ],
+    ["path", { d: "M21.946 12.013H2.054" }],
+    ["path", { d: "M6 16h.01" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/heading-1.mjs
+  var Heading1 = [
+    ["path", { d: "M4 12h8" }],
+    ["path", { d: "M4 18V6" }],
+    ["path", { d: "M12 18V6" }],
+    ["path", { d: "m17 12 3-2v8" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/heading-2.mjs
+  var Heading2 = [
+    ["path", { d: "M4 12h8" }],
+    ["path", { d: "M4 18V6" }],
+    ["path", { d: "M12 18V6" }],
+    ["path", { d: "M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/heading-3.mjs
+  var Heading3 = [
+    ["path", { d: "M4 12h8" }],
+    ["path", { d: "M4 18V6" }],
+    ["path", { d: "M12 18V6" }],
+    ["path", { d: "M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2" }],
+    ["path", { d: "M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/image.mjs
+  var Image = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2" }],
+    ["circle", { cx: "9", cy: "9", r: "2" }],
+    ["path", { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/info.mjs
+  var Info = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "M12 16v-4" }],
+    ["path", { d: "M12 8h.01" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/keyboard.mjs
+  var Keyboard = [
+    ["path", { d: "M10 8h.01" }],
+    ["path", { d: "M12 12h.01" }],
+    ["path", { d: "M14 8h.01" }],
+    ["path", { d: "M16 12h.01" }],
+    ["path", { d: "M18 8h.01" }],
+    ["path", { d: "M6 8h.01" }],
+    ["path", { d: "M7 16h10" }],
+    ["path", { d: "M8 12h.01" }],
+    ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/layers.mjs
+  var Layers = [
+    [
+      "path",
+      {
+        d: "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"
+      }
+    ],
+    ["path", { d: "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" }],
+    ["path", { d: "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/layout-dashboard.mjs
+  var LayoutDashboard = [
+    ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1" }],
+    ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1" }],
+    ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1" }],
+    ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/link.mjs
+  var Link = [
+    ["path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" }],
+    ["path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/list-tree.mjs
+  var ListTree = [
+    ["path", { d: "M8 5h13" }],
+    ["path", { d: "M13 12h8" }],
+    ["path", { d: "M13 19h8" }],
+    ["path", { d: "M3 10a2 2 0 0 0 2 2h3" }],
+    ["path", { d: "M3 5v12a2 2 0 0 0 2 2h3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/message-square.mjs
+  var MessageSquare = [
+    [
+      "path",
+      {
+        d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/minus.mjs
+  var Minus2 = [["path", { d: "M5 12h14" }]];
+
+  // node_modules/lucide/dist/esm/icons/network.mjs
+  var Network = [
+    ["rect", { x: "16", y: "16", width: "6", height: "6", rx: "1" }],
+    ["rect", { x: "2", y: "16", width: "6", height: "6", rx: "1" }],
+    ["rect", { x: "9", y: "2", width: "6", height: "6", rx: "1" }],
+    ["path", { d: "M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" }],
+    ["path", { d: "M12 12V8" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/palette.mjs
+  var Palette = [
+    [
+      "path",
+      {
+        d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
+      }
+    ],
+    ["circle", { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }],
+    ["circle", { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }],
+    ["circle", { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }],
+    ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/panel-left.mjs
+  var PanelLeft = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M9 3v18" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/panel-right.mjs
+  var PanelRight = [
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M15 3v18" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/pencil.mjs
+  var Pencil = [
+    [
+      "path",
+      {
+        d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
+      }
+    ],
+    ["path", { d: "m15 5 4 4" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/plug.mjs
+  var Plug = [
+    ["path", { d: "M12 22v-5" }],
+    ["path", { d: "M15 8V2" }],
+    ["path", { d: "M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" }],
+    ["path", { d: "M9 8V2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/puzzle.mjs
+  var Puzzle = [
+    [
+      "path",
+      {
+        d: "M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/quote.mjs
+  var Quote3 = [
+    [
+      "path",
+      {
+        d: "M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"
+      }
+    ],
+    [
+      "path",
+      {
+        d: "M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/refresh-cw.mjs
+  var RefreshCw = [
+    ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" }],
+    ["path", { d: "M21 3v5h-5" }],
+    ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" }],
+    ["path", { d: "M8 16H3v5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/rotate-cw.mjs
+  var RotateCw = [
+    ["path", { d: "M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" }],
+    ["path", { d: "M21 3v5h-5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/search.mjs
+  var Search = [
+    ["path", { d: "m21 21-4.34-4.34" }],
+    ["circle", { cx: "11", cy: "11", r: "8" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/settings.mjs
+  var Settings2 = [
+    [
+      "path",
+      {
+        d: "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
+      }
+    ],
+    ["circle", { cx: "12", cy: "12", r: "3" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/shield.mjs
+  var Shield = [
+    [
+      "path",
+      {
+        d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/sigma.mjs
+  var Sigma = [
+    [
+      "path",
+      {
+        d: "M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"
+      }
+    ]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/sparkles.mjs
+  var Sparkles = [
+    [
+      "path",
+      {
+        d: "M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"
+      }
+    ],
+    ["path", { d: "M20 2v4" }],
+    ["path", { d: "M22 4h-4" }],
+    ["circle", { cx: "4", cy: "20", r: "2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/square-check-big.mjs
+  var SquareCheckBig = [
+    ["path", { d: "M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344" }],
+    ["path", { d: "m9 11 3 3L22 4" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/table.mjs
+  var Table2 = [
+    ["path", { d: "M12 3v18" }],
+    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
+    ["path", { d: "M3 9h18" }],
+    ["path", { d: "M3 15h18" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/tags.mjs
+  var Tags4 = [
+    [
+      "path",
+      {
+        d: "M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-4.592 4.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 6 9.172V3a1 1 0 0 1 1-1z"
+      }
+    ],
+    ["path", { d: "M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193" }],
+    ["circle", { cx: "10.5", cy: "6.5", r: ".5", fill: "currentColor" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/trash.mjs
+  var Trash = [
+    ["path", { d: "M10 11v6" }],
+    ["path", { d: "M14 11v6" }],
+    ["path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" }],
+    ["path", { d: "M3 6h18" }],
+    ["path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/triangle-exclamation-point.mjs
+  var TriangleExclamationPoint = [
+    ["path", { d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" }],
+    ["path", { d: "M12 9v4" }],
+    ["path", { d: "M12 17h.01" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/x.mjs
+  var X = [
+    ["path", { d: "M18 6 6 18" }],
+    ["path", { d: "m6 6 12 12" }]
+  ];
+
+  // src/ui/pluginPanelIcons.js
+  var PANEL_ICONS = {
+    "book-open": BookOpen,
+    bot: Bot,
+    brain: Brain,
+    "calendar-days": CalendarDays,
+    "code-xml": CodeXml,
+    file: File,
+    "folder-root": FolderRoot,
+    "git-branch": GitBranch,
+    layers: Layers,
+    "list-tree": ListTree,
+    "message-square": MessageSquare,
+    network: Network,
+    "panel-left": PanelLeft,
+    "panel-right": PanelRight,
+    puzzle: Puzzle,
+    search: Search,
+    settings: Settings2,
+    tags: Tags4
+  };
+  function resolvePluginPanelIcon(name2, fallback2 = PanelRight) {
+    return Object.prototype.hasOwnProperty.call(PANEL_ICONS, name2) ? PANEL_ICONS[name2] : fallback2;
+  }
+
+  // src/ui/floatingWidgets.js
+  var TOOLBAR_ICONS = {
+    table: Table2,
+    callout: CircleExclamationPoint,
+    alert: CircleExclamationPoint,
+    "alert-circle": CircleExclamationPoint,
+    code: Code,
+    "code-xml": CodeXml,
+    math: Sigma,
+    sigma: Sigma,
+    task: SquareCheckBig,
+    "check-square": SquareCheckBig,
+    link: Link,
+    image: Image,
+    quote: Quote3,
+    heading: Heading1,
+    h1: Heading1,
+    h2: Heading2,
+    h3: Heading3,
+    hr: Minus2,
+    minus: Minus2,
+    sparkles: Sparkles,
+    chevronLeft: ChevronLeft,
+    chevronRight: ChevronRight,
+    close: X,
+    grip: GripVertical
+  };
+  function createIconEl(iconDef, size = 16) {
+    let iconComponent = typeof iconDef === "string" ? TOOLBAR_ICONS[iconDef.toLowerCase()] : null;
+    if (!iconComponent && typeof iconDef === "string") {
+      iconComponent = resolvePluginPanelIcon(iconDef, Sparkles);
+    }
+    if (!iconComponent) iconComponent = Sparkles;
+    return createElement(iconComponent, {
+      width: size,
+      height: size,
+      "aria-hidden": "true",
+      focusable: "false",
+      class: "fm-floating-icon"
+    });
+  }
+  var FloatingWidgetManager = class {
+    /**
+     * @param {Object} options
+     * @param {HTMLElement} options.container - The #floating-widget-layer element
+     * @param {Object} [options.commandRegistry] - FlowMark CommandRegistry
+     * @param {Function} [options.onAction] - Action callback for plugin event dispatch
+     */
+    constructor({ container, commandRegistry, onAction }) {
+      this.container = container;
+      this.commandRegistry = commandRegistry;
+      this.onAction = onAction;
+      this.widgets = /* @__PURE__ */ new Map();
+    }
+    /**
+     * Register a vertical floating toolbar strip.
+     * @param {Object} toolbar
+     * @param {string} toolbar.id
+     * @param {string} [toolbar.title]
+     * @param {string} [toolbar.position='right'] - 'right' | 'left' | 'float'
+     * @param {boolean} [toolbar.collapsible=true]
+     * @param {Array<Object>} toolbar.items - Array of tool buttons
+     * @param {string} [toolbar.pluginId]
+     */
+    registerToolbar(toolbar) {
+      if (!toolbar?.id) return false;
+      this.removeWidget(toolbar.id);
+      const position = toolbar.position || "right";
+      const collapsible = toolbar.collapsible !== false;
+      const widgetEl = document.createElement("div");
+      widgetEl.className = `fm-floating-widget dock-${position} fm-floating-toolbar`;
+      widgetEl.dataset.widgetId = toolbar.id;
+      if (toolbar.pluginId) widgetEl.dataset.pluginId = toolbar.pluginId;
+      let toggleBtn = null;
+      if (collapsible) {
+        toggleBtn = document.createElement("button");
+        toggleBtn.type = "button";
+        toggleBtn.className = "fm-floating-toggle-btn";
+        toggleBtn.title = "Collapse / Expand toolbar";
+        toggleBtn.setAttribute("aria-label", "Collapse / Expand toolbar");
+        const chevronIcon = position === "left" ? createIconEl("chevronLeft", 14) : createIconEl("chevronRight", 14);
+        toggleBtn.appendChild(chevronIcon);
+        toggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.toggleCollapse(toolbar.id);
+        });
+        widgetEl.appendChild(toggleBtn);
+      }
+      const content3 = document.createElement("div");
+      content3.className = "fm-floating-content";
+      const header3 = document.createElement("div");
+      header3.className = "fm-floating-header";
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "fm-floating-close-btn";
+      closeBtn.title = "Hide toolbar (Reopen via View / Command menu)";
+      closeBtn.setAttribute("aria-label", "Hide toolbar");
+      closeBtn.appendChild(createIconEl("close", 12));
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.toggleWidget(toolbar.id, false);
+      });
+      header3.appendChild(closeBtn);
+      content3.appendChild(header3);
+      const items = Array.isArray(toolbar.items) ? toolbar.items : [];
+      items.forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "fm-floating-tool-btn";
+        if (item.tooltip) {
+          btn.dataset.tooltip = item.tooltip;
+          btn.setAttribute("aria-label", item.tooltip);
+        }
+        if (item.id) btn.dataset.itemId = item.id;
+        if (typeof item.icon === "string" && (item.icon.startsWith("<svg") || item.icon.length <= 3)) {
+          const span = document.createElement("span");
+          span.innerHTML = item.icon;
+          btn.appendChild(span);
+        } else {
+          btn.appendChild(createIconEl(item.icon || "sparkles", 16));
+        }
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (item.command && this.commandRegistry) {
+            this.commandRegistry.execute(item.command);
+          } else if (typeof item.action === "function") {
+            item.action();
+          } else if (toolbar.pluginId) {
+            this.onAction?.("plugin:floatingToolbarAction", {
+              pluginId: toolbar.pluginId,
+              toolbarId: toolbar.id,
+              itemId: item.id
+            });
+          }
+        });
+        content3.appendChild(btn);
+      });
+      widgetEl.appendChild(content3);
+      this.container.appendChild(widgetEl);
+      const commandId = `view:toggleWidget:${toolbar.id}`;
+      if (this.commandRegistry?.registerCommand) {
+        try {
+          this.commandRegistry.registerCommand(commandId, {
+            label: `Toggle ${toolbar.title || "Floating Toolbar"}`,
+            section: "view",
+            run: () => this.toggleWidget(toolbar.id),
+            enabled: () => true
+          });
+        } catch (err) {
+          console.warn("Failed to register floating widget command:", err);
+        }
+      }
+      this.widgets.set(toolbar.id, {
+        element: widgetEl,
+        config: toolbar,
+        commandId,
+        collapsed: false,
+        visible: true
+      });
+      return true;
+    }
+    /**
+     * Register a custom iframe floating widget.
+     * @param {Object} widget
+     */
+    registerWidget(widget) {
+      if (!widget?.id) return false;
+      this.removeWidget(widget.id);
+      const position = widget.position || "right";
+      const collapsible = widget.collapsible !== false;
+      const widgetEl = document.createElement("div");
+      widgetEl.className = `fm-floating-widget dock-${position} fm-floating-pane`;
+      widgetEl.dataset.widgetId = widget.id;
+      if (widget.pluginId) widgetEl.dataset.pluginId = widget.pluginId;
+      if (widget.width) widgetEl.style.width = `${widget.width}px`;
+      if (widget.height) widgetEl.style.height = `${widget.height}px`;
+      if (collapsible) {
+        const toggleBtn = document.createElement("button");
+        toggleBtn.type = "button";
+        toggleBtn.className = "fm-floating-toggle-btn";
+        toggleBtn.title = "Collapse / Expand";
+        toggleBtn.appendChild(
+          position === "left" ? createIconEl("chevronLeft", 14) : createIconEl("chevronRight", 14)
+        );
+        toggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.toggleCollapse(widget.id);
+        });
+        widgetEl.appendChild(toggleBtn);
+      }
+      const content3 = document.createElement("div");
+      content3.className = "fm-floating-content";
+      const header3 = document.createElement("div");
+      header3.className = "fm-floating-header";
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "fm-floating-title";
+      titleSpan.textContent = widget.title || "Widget";
+      header3.appendChild(titleSpan);
+      const closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "fm-floating-close-btn";
+      closeBtn.title = "Close";
+      closeBtn.appendChild(createIconEl("close", 12));
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.toggleWidget(widget.id, false);
+      });
+      header3.appendChild(closeBtn);
+      content3.appendChild(header3);
+      if (widget.entryUrl) {
+        const frame = document.createElement("iframe");
+        frame.className = "fm-floating-frame";
+        frame.title = widget.title || "Floating widget";
+        frame.sandbox = "allow-scripts";
+        frame.src = widget.entryUrl;
+        content3.appendChild(frame);
+      }
+      widgetEl.appendChild(content3);
+      this.container.appendChild(widgetEl);
+      const commandId = `view:toggleWidget:${widget.id}`;
+      if (this.commandRegistry?.registerCommand) {
+        try {
+          this.commandRegistry.registerCommand(commandId, {
+            label: `Toggle ${widget.title || "Floating Widget"}`,
+            section: "view",
+            run: () => this.toggleWidget(widget.id),
+            enabled: () => true
+          });
+        } catch (err) {
+          console.warn("Failed to register floating widget command:", err);
+        }
+      }
+      this.widgets.set(widget.id, {
+        element: widgetEl,
+        config: widget,
+        commandId,
+        collapsed: false,
+        visible: true
+      });
+      return true;
+    }
+    /**
+     * Remove a widget and clean up DOM and commands.
+     * @param {string} id
+     */
+    removeWidget(id3) {
+      const record = this.widgets.get(id3);
+      if (!record) return false;
+      if (record.commandId && this.commandRegistry?.unregisterCommand) {
+        try {
+          this.commandRegistry.unregisterCommand(record.commandId);
+        } catch (_) {
+        }
+      }
+      record.element.remove();
+      this.widgets.delete(id3);
+      return true;
+    }
+    /**
+     * Toggle visibility of a widget.
+     * @param {string} id
+     * @param {boolean} [force]
+     */
+    toggleWidget(id3, force) {
+      const record = this.widgets.get(id3);
+      if (!record) return false;
+      const nextVisible = typeof force === "boolean" ? force : !record.visible;
+      record.visible = nextVisible;
+      record.element.classList.toggle("hidden", !nextVisible);
+      return nextVisible;
+    }
+    /**
+     * Toggle collapsed state of a widget.
+     * @param {string} id
+     * @param {boolean} [force]
+     */
+    toggleCollapse(id3, force) {
+      const record = this.widgets.get(id3);
+      if (!record) return false;
+      const nextCollapsed = typeof force === "boolean" ? force : !record.collapsed;
+      record.collapsed = nextCollapsed;
+      record.element.classList.toggle("collapsed", nextCollapsed);
+      return nextCollapsed;
+    }
+    /**
+     * Get a registered widget by ID.
+     * @param {string} id
+     */
+    getWidget(id3) {
+      return this.widgets.get(id3) || null;
+    }
+    /**
+     * Clear all widgets.
+     */
+    clear() {
+      for (const id3 of Array.from(this.widgets.keys())) {
+        this.removeWidget(id3);
+      }
+    }
+  };
+
   // src/ui/contextMenu.js
   var ContextMenuService = class {
     constructor() {
@@ -79035,442 +79892,6 @@ $$
     }
   };
   var tabs_default = TabBarUI;
-
-  // node_modules/lucide/dist/esm/defaultAttributes.mjs
-  var defaultAttributes = {
-    xmlns: "http://www.w3.org/2000/svg",
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-width": 2,
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round"
-  };
-
-  // node_modules/lucide/dist/esm/createElement.mjs
-  var createSVGElement = ([tag2, attrs2, children]) => {
-    const element2 = document.createElementNS("http://www.w3.org/2000/svg", tag2);
-    Object.keys(attrs2).forEach((name2) => {
-      element2.setAttribute(name2, String(attrs2[name2]));
-    });
-    if (children?.length) {
-      children.forEach((child) => {
-        const childElement = createSVGElement(child);
-        element2.appendChild(childElement);
-      });
-    }
-    return element2;
-  };
-  var createElement = (iconNode, customAttrs = {}) => {
-    const tag2 = "svg";
-    const attrs2 = {
-      ...defaultAttributes,
-      ...customAttrs
-    };
-    return createSVGElement([tag2, attrs2, iconNode]);
-  };
-
-  // node_modules/lucide/dist/esm/icons/arrow-left.mjs
-  var ArrowLeft = [
-    ["path", { d: "m12 19-7-7 7-7" }],
-    ["path", { d: "M19 12H5" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/book-open.mjs
-  var BookOpen = [
-    ["path", { d: "M12 5v16" }],
-    [
-      "path",
-      {
-        d: "M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/bot.mjs
-  var Bot = [
-    ["path", { d: "M12 8V4H8" }],
-    ["rect", { width: "16", height: "12", x: "4", y: "8", rx: "2" }],
-    ["path", { d: "M2 14h2" }],
-    ["path", { d: "M20 14h2" }],
-    ["path", { d: "M15 13v2" }],
-    ["path", { d: "M9 13v2" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/brain.mjs
-  var Brain = [
-    ["path", { d: "M12 18V5" }],
-    ["path", { d: "M15 13a4.17 4.17 0 01-3-4 4.17 4.17 0 01-3 4" }],
-    ["path", { d: "M17.707 6.294A3 3 0 1012 5a3 3 0 10-5.707 1.294" }],
-    ["path", { d: "M17.996 5.125a4 4 0 012.526 5.77" }],
-    ["path", { d: "M18 18a4 4 0 002-7.465" }],
-    ["path", { d: "M19.967 17.482a4 4 0 11-7.967.517 4 4 0 11-7.967-.517" }],
-    ["path", { d: "M6 18a4 4 0 01-2-7.465" }],
-    ["path", { d: "M6.004 5.125a4 4 0 00-2.526 5.77" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/calendar-days.mjs
-  var CalendarDays = [
-    ["path", { d: "M8 2v3" }],
-    ["path", { d: "M16 2v3" }],
-    ["rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }],
-    ["path", { d: "M3 9h18" }],
-    ["path", { d: "M8 13h.01" }],
-    ["path", { d: "M12 13h.01" }],
-    ["path", { d: "M16 13h.01" }],
-    ["path", { d: "M8 17h.01" }],
-    ["path", { d: "M12 17h.01" }],
-    ["path", { d: "M16 17h.01" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/check.mjs
-  var Check = [["path", { d: "M20 6 9 17l-5-5" }]];
-
-  // node_modules/lucide/dist/esm/icons/chevron-down.mjs
-  var ChevronDown = [["path", { d: "m6 9 6 6 6-6" }]];
-
-  // node_modules/lucide/dist/esm/icons/chevron-right.mjs
-  var ChevronRight = [["path", { d: "m9 18 6-6-6-6" }]];
-
-  // node_modules/lucide/dist/esm/icons/circle-x.mjs
-  var CircleX = [
-    ["circle", { cx: "12", cy: "12", r: "10" }],
-    ["path", { d: "m15 9-6 6" }],
-    ["path", { d: "m9 9 6 6" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/code-xml.mjs
-  var CodeXml = [
-    ["path", { d: "m18 16 4-4-4-4" }],
-    ["path", { d: "m6 8-4 4 4 4" }],
-    ["path", { d: "m14.5 4-5 16" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/copy.mjs
-  var Copy = [
-    ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2" }],
-    ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/file-plus-corner.mjs
-  var FilePlusCorner = [
-    [
-      "path",
-      {
-        d: "M11.35 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v5.35"
-      }
-    ],
-    ["path", { d: "M14 2v5a1 1 0 0 0 1 1h5" }],
-    ["path", { d: "M14 19h6" }],
-    ["path", { d: "M17 16v6" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/file.mjs
-  var File = [
-    [
-      "path",
-      {
-        d: "M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"
-      }
-    ],
-    ["path", { d: "M14 2v5a1 1 0 0 0 1 1h5" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/folder-open.mjs
-  var FolderOpen = [
-    [
-      "path",
-      {
-        d: "m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/folder-root.mjs
-  var FolderRoot = [
-    [
-      "path",
-      {
-        d: "M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"
-      }
-    ],
-    ["circle", { cx: "12", cy: "13", r: "2" }],
-    ["path", { d: "M12 15v5" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/folder-plus.mjs
-  var FolderPlus = [
-    ["path", { d: "M12 10v6" }],
-    ["path", { d: "M9 13h6" }],
-    [
-      "path",
-      {
-        d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/folder.mjs
-  var Folder = [
-    [
-      "path",
-      {
-        d: "M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/git-branch.mjs
-  var GitBranch = [
-    ["path", { d: "M15 6a9 9 0 0 0-9 9V3" }],
-    ["circle", { cx: "18", cy: "6", r: "3" }],
-    ["circle", { cx: "6", cy: "18", r: "3" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/globe.mjs
-  var Globe = [
-    ["circle", { cx: "12", cy: "12", r: "10" }],
-    ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" }],
-    ["path", { d: "M2 12h20" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/hard-drive.mjs
-  var HardDrive = [
-    ["path", { d: "M10 16h.01" }],
-    [
-      "path",
-      {
-        d: "M2.212 11.577a2 2 0 0 0-.212.896V18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.527a2 2 0 0 0-.212-.896L18.55 5.11A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
-      }
-    ],
-    ["path", { d: "M21.946 12.013H2.054" }],
-    ["path", { d: "M6 16h.01" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/info.mjs
-  var Info = [
-    ["circle", { cx: "12", cy: "12", r: "10" }],
-    ["path", { d: "M12 16v-4" }],
-    ["path", { d: "M12 8h.01" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/keyboard.mjs
-  var Keyboard = [
-    ["path", { d: "M10 8h.01" }],
-    ["path", { d: "M12 12h.01" }],
-    ["path", { d: "M14 8h.01" }],
-    ["path", { d: "M16 12h.01" }],
-    ["path", { d: "M18 8h.01" }],
-    ["path", { d: "M6 8h.01" }],
-    ["path", { d: "M7 16h10" }],
-    ["path", { d: "M8 12h.01" }],
-    ["rect", { width: "20", height: "16", x: "2", y: "4", rx: "2" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/layers.mjs
-  var Layers = [
-    [
-      "path",
-      {
-        d: "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"
-      }
-    ],
-    ["path", { d: "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" }],
-    ["path", { d: "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/layout-dashboard.mjs
-  var LayoutDashboard = [
-    ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1" }],
-    ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1" }],
-    ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1" }],
-    ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/list-tree.mjs
-  var ListTree = [
-    ["path", { d: "M8 5h13" }],
-    ["path", { d: "M13 12h8" }],
-    ["path", { d: "M13 19h8" }],
-    ["path", { d: "M3 10a2 2 0 0 0 2 2h3" }],
-    ["path", { d: "M3 5v12a2 2 0 0 0 2 2h3" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/message-square.mjs
-  var MessageSquare = [
-    [
-      "path",
-      {
-        d: "M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/network.mjs
-  var Network = [
-    ["rect", { x: "16", y: "16", width: "6", height: "6", rx: "1" }],
-    ["rect", { x: "2", y: "16", width: "6", height: "6", rx: "1" }],
-    ["rect", { x: "9", y: "2", width: "6", height: "6", rx: "1" }],
-    ["path", { d: "M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" }],
-    ["path", { d: "M12 12V8" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/palette.mjs
-  var Palette = [
-    [
-      "path",
-      {
-        d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z"
-      }
-    ],
-    ["circle", { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor" }],
-    ["circle", { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor" }],
-    ["circle", { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor" }],
-    ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/panel-left.mjs
-  var PanelLeft = [
-    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
-    ["path", { d: "M9 3v18" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/panel-right.mjs
-  var PanelRight = [
-    ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2" }],
-    ["path", { d: "M15 3v18" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/pencil.mjs
-  var Pencil = [
-    [
-      "path",
-      {
-        d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"
-      }
-    ],
-    ["path", { d: "m15 5 4 4" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/plug.mjs
-  var Plug = [
-    ["path", { d: "M12 22v-5" }],
-    ["path", { d: "M15 8V2" }],
-    ["path", { d: "M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" }],
-    ["path", { d: "M9 8V2" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/puzzle.mjs
-  var Puzzle = [
-    [
-      "path",
-      {
-        d: "M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/refresh-cw.mjs
-  var RefreshCw = [
-    ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" }],
-    ["path", { d: "M21 3v5h-5" }],
-    ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" }],
-    ["path", { d: "M8 16H3v5" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/rotate-cw.mjs
-  var RotateCw = [
-    ["path", { d: "M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" }],
-    ["path", { d: "M21 3v5h-5" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/search.mjs
-  var Search = [
-    ["path", { d: "m21 21-4.34-4.34" }],
-    ["circle", { cx: "11", cy: "11", r: "8" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/settings.mjs
-  var Settings2 = [
-    [
-      "path",
-      {
-        d: "M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"
-      }
-    ],
-    ["circle", { cx: "12", cy: "12", r: "3" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/shield.mjs
-  var Shield = [
-    [
-      "path",
-      {
-        d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
-      }
-    ]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/tags.mjs
-  var Tags4 = [
-    [
-      "path",
-      {
-        d: "M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-4.592 4.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 6 9.172V3a1 1 0 0 1 1-1z"
-      }
-    ],
-    ["path", { d: "M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193" }],
-    ["circle", { cx: "10.5", cy: "6.5", r: ".5", fill: "currentColor" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/trash.mjs
-  var Trash = [
-    ["path", { d: "M10 11v6" }],
-    ["path", { d: "M14 11v6" }],
-    ["path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" }],
-    ["path", { d: "M3 6h18" }],
-    ["path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/triangle-exclamation-point.mjs
-  var TriangleExclamationPoint = [
-    ["path", { d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" }],
-    ["path", { d: "M12 9v4" }],
-    ["path", { d: "M12 17h.01" }]
-  ];
-
-  // node_modules/lucide/dist/esm/icons/x.mjs
-  var X = [
-    ["path", { d: "M18 6 6 18" }],
-    ["path", { d: "m6 6 12 12" }]
-  ];
-
-  // src/ui/pluginPanelIcons.js
-  var PANEL_ICONS = {
-    "book-open": BookOpen,
-    bot: Bot,
-    brain: Brain,
-    "calendar-days": CalendarDays,
-    "code-xml": CodeXml,
-    file: File,
-    "folder-root": FolderRoot,
-    "git-branch": GitBranch,
-    layers: Layers,
-    "list-tree": ListTree,
-    "message-square": MessageSquare,
-    network: Network,
-    "panel-left": PanelLeft,
-    "panel-right": PanelRight,
-    puzzle: Puzzle,
-    search: Search,
-    settings: Settings2,
-    tags: Tags4
-  };
-  function resolvePluginPanelIcon(name2, fallback2 = PanelRight) {
-    return Object.prototype.hasOwnProperty.call(PANEL_ICONS, name2) ? PANEL_ICONS[name2] : fallback2;
-  }
 
   // src/ui/fileTree.js
   function normalizedPath(value) {
@@ -87755,6 +88176,14 @@ Just start writing.
     splitter: document.getElementById("utility-pane-splitter"),
     activityBar: document.getElementById("utility-activity-bar")
   });
+  var floatingWidgetManager = new FloatingWidgetManager({
+    container: document.getElementById("floating-widget-layer"),
+    commandRegistry: registry_default,
+    onAction: (channel, data2) => {
+      window.pluginManager?.emit?.(channel, data2);
+    }
+  });
+  window.floatingWidgetManager = floatingWidgetManager;
   var settingsDialog = new SettingsDialog();
   settingsDialog.registerTab(generalTab);
   settingsDialog.registerTab(appearanceTab);
@@ -88666,6 +89095,18 @@ Just start writing.
       console.log(`[editor] Removed slash command: ${commandId}`);
       slashCommands.delete(commandId);
     });
+    window.uiAPI?.onRegisterFloatingWidget?.((widget) => {
+      floatingWidgetManager.registerWidget(widget);
+    });
+    window.uiAPI?.onRegisterFloatingToolbar?.((toolbar) => {
+      floatingWidgetManager.registerToolbar(toolbar);
+    });
+    window.uiAPI?.onRemoveFloatingWidget?.(({ widgetId }) => {
+      floatingWidgetManager.removeWidget(widgetId);
+    });
+    window.uiAPI?.onToggleFloatingWidget?.(({ widgetId, visible }) => {
+      floatingWidgetManager.toggleWidget(widgetId, visible);
+    });
     const originalSave = window.fileAPI.save;
     window.fileAPI.save = async function(contentOrOpts, maybeContent) {
       let content3, opts;
@@ -88763,7 +89204,8 @@ Just start writing.
       commands: commands2,
       sidebarPanels,
       customViews,
-      slashCommands: pluginSlashCommands
+      slashCommands: pluginSlashCommands,
+      floatingWidgets
     }) => {
       const statusEl = document.getElementById("status-bar-text");
       if (statusEl && statusEl.textContent.startsWith(`[${pluginId}]`)) {
@@ -88791,6 +89233,16 @@ Just start writing.
         if (command3.pluginId === pluginId) slashCommands.delete(commandId);
       }
       if (Array.isArray(pluginSlashCommands) && pluginSlashCommands.length) hideSlashMenu();
+      if (Array.isArray(floatingWidgets)) {
+        for (const id3 of floatingWidgets) {
+          floatingWidgetManager.removeWidget(id3);
+        }
+      }
+      for (const [id3, record] of floatingWidgetManager.widgets) {
+        if (record.config?.pluginId === pluginId) {
+          floatingWidgetManager.removeWidget(id3);
+        }
+      }
     });
     window.settingsAPI?.onChange((key, value, options = {}) => {
       console.log("[editor] Plugin setting changed:", key, value, options);
@@ -89021,9 +89473,12 @@ lucide/dist/esm/icons/brain.mjs:
 lucide/dist/esm/icons/calendar-days.mjs:
 lucide/dist/esm/icons/check.mjs:
 lucide/dist/esm/icons/chevron-down.mjs:
+lucide/dist/esm/icons/chevron-left.mjs:
 lucide/dist/esm/icons/chevron-right.mjs:
+lucide/dist/esm/icons/circle-exclamation-point.mjs:
 lucide/dist/esm/icons/circle-x.mjs:
 lucide/dist/esm/icons/code-xml.mjs:
+lucide/dist/esm/icons/code.mjs:
 lucide/dist/esm/icons/copy.mjs:
 lucide/dist/esm/icons/file-plus-corner.mjs:
 lucide/dist/esm/icons/file.mjs:
@@ -89033,13 +89488,20 @@ lucide/dist/esm/icons/folder-plus.mjs:
 lucide/dist/esm/icons/folder.mjs:
 lucide/dist/esm/icons/git-branch.mjs:
 lucide/dist/esm/icons/globe.mjs:
+lucide/dist/esm/icons/grip-vertical.mjs:
 lucide/dist/esm/icons/hard-drive.mjs:
+lucide/dist/esm/icons/heading-1.mjs:
+lucide/dist/esm/icons/heading-2.mjs:
+lucide/dist/esm/icons/heading-3.mjs:
+lucide/dist/esm/icons/image.mjs:
 lucide/dist/esm/icons/info.mjs:
 lucide/dist/esm/icons/keyboard.mjs:
 lucide/dist/esm/icons/layers.mjs:
 lucide/dist/esm/icons/layout-dashboard.mjs:
+lucide/dist/esm/icons/link.mjs:
 lucide/dist/esm/icons/list-tree.mjs:
 lucide/dist/esm/icons/message-square.mjs:
+lucide/dist/esm/icons/minus.mjs:
 lucide/dist/esm/icons/network.mjs:
 lucide/dist/esm/icons/palette.mjs:
 lucide/dist/esm/icons/panel-left.mjs:
@@ -89047,11 +89509,16 @@ lucide/dist/esm/icons/panel-right.mjs:
 lucide/dist/esm/icons/pencil.mjs:
 lucide/dist/esm/icons/plug.mjs:
 lucide/dist/esm/icons/puzzle.mjs:
+lucide/dist/esm/icons/quote.mjs:
 lucide/dist/esm/icons/refresh-cw.mjs:
 lucide/dist/esm/icons/rotate-cw.mjs:
 lucide/dist/esm/icons/search.mjs:
 lucide/dist/esm/icons/settings.mjs:
 lucide/dist/esm/icons/shield.mjs:
+lucide/dist/esm/icons/sigma.mjs:
+lucide/dist/esm/icons/sparkles.mjs:
+lucide/dist/esm/icons/square-check-big.mjs:
+lucide/dist/esm/icons/table.mjs:
 lucide/dist/esm/icons/tags.mjs:
 lucide/dist/esm/icons/trash.mjs:
 lucide/dist/esm/icons/triangle-exclamation-point.mjs:

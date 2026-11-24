@@ -25,6 +25,7 @@ import { appendInlineMarkdown } from './commands/inlineRenderer.js';
 import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './commands/completion.js';
 import { Document, TabManager } from './model/document.js';
+import { FloatingWidgetManager } from './ui/floatingWidgets.js';
 import { contextMenu } from './ui/contextMenu.js';
 import TabBarUI from './ui/tabs.js';
 import FileTreeUI from './ui/fileTree.js';
@@ -4050,6 +4051,15 @@ const utilityPane = new UtilityPane({
   activityBar: document.getElementById('utility-activity-bar'),
 });
 
+const floatingWidgetManager = new FloatingWidgetManager({
+  container: document.getElementById('floating-widget-layer'),
+  commandRegistry: CommandRegistry,
+  onAction: (channel, data) => {
+    window.pluginManager?.emit?.(channel, data);
+  },
+});
+window.floatingWidgetManager = floatingWidgetManager;
+
 // Settings Dialog
 const settingsDialog = new SettingsDialog();
 settingsDialog.registerTab(generalTab);
@@ -5079,6 +5089,18 @@ async function initPlugins() {
     console.log(`[editor] Removed slash command: ${commandId}`);
     slashCommands.delete(commandId);
   });
+  window.uiAPI?.onRegisterFloatingWidget?.((widget) => {
+    floatingWidgetManager.registerWidget(widget);
+  });
+  window.uiAPI?.onRegisterFloatingToolbar?.((toolbar) => {
+    floatingWidgetManager.registerToolbar(toolbar);
+  });
+  window.uiAPI?.onRemoveFloatingWidget?.(({ widgetId }) => {
+    floatingWidgetManager.removeWidget(widgetId);
+  });
+  window.uiAPI?.onToggleFloatingWidget?.(({ widgetId, visible }) => {
+    floatingWidgetManager.toggleWidget(widgetId, visible);
+  });
 
   // Apply markdown transforms before save
   const originalSave = window.fileAPI.save;
@@ -5191,6 +5213,7 @@ async function initPlugins() {
 
   window.uiAPI?.onPluginDisabled?.(({
     pluginId, commands, sidebarPanels, customViews, slashCommands: pluginSlashCommands,
+    floatingWidgets,
   }) => {
     // Clear status bar if this plugin set it
     const statusEl = document.getElementById('status-bar-text');
@@ -5221,6 +5244,18 @@ async function initPlugins() {
       if (command.pluginId === pluginId) slashCommands.delete(commandId);
     }
     if (Array.isArray(pluginSlashCommands) && pluginSlashCommands.length) hideSlashMenu();
+
+    // Clean up floating widgets
+    if (Array.isArray(floatingWidgets)) {
+      for (const id of floatingWidgets) {
+        floatingWidgetManager.removeWidget(id);
+      }
+    }
+    for (const [id, record] of floatingWidgetManager.widgets) {
+      if (record.config?.pluginId === pluginId) {
+        floatingWidgetManager.removeWidget(id);
+      }
+    }
   });
 
   window.settingsAPI?.onChange((key, value, options = {}) => {

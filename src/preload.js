@@ -156,6 +156,26 @@ contextBridge.exposeInMainWorld('uiAPI', {
     ipcRenderer.on('ui:removeSidebarPanel', handler);
     return () => ipcRenderer.removeListener('ui:removeSidebarPanel', handler);
   },
+  onRegisterFloatingWidget: (callback) => {
+    const handler = (_, widget) => callback(widget);
+    ipcRenderer.on('ui:registerFloatingWidget', handler);
+    return () => ipcRenderer.removeListener('ui:registerFloatingWidget', handler);
+  },
+  onRegisterFloatingToolbar: (callback) => {
+    const handler = (_, toolbar) => callback(toolbar);
+    ipcRenderer.on('ui:registerFloatingToolbar', handler);
+    return () => ipcRenderer.removeListener('ui:registerFloatingToolbar', handler);
+  },
+  onRemoveFloatingWidget: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('ui:removeFloatingWidget', handler);
+    return () => ipcRenderer.removeListener('ui:removeFloatingWidget', handler);
+  },
+  onToggleFloatingWidget: (callback) => {
+    const handler = (_, data) => callback(data);
+    ipcRenderer.on('ui:toggleFloatingWidget', handler);
+    return () => ipcRenderer.removeListener('ui:toggleFloatingWidget', handler);
+  },
   onRegisterCustomView: (callback) => {
     const handler = (_, view) => callback(view);
     ipcRenderer.on('ui:registerCustomView', handler);

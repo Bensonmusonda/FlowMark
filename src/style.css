@@ -4895,3 +4895,222 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
   color: #ff6b6b;
 }
 
+/* ── Floating Widget Layer ── */
+#floating-widget-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.fm-floating-widget {
+  position: absolute;
+  pointer-events: auto;
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+  user-select: none;
+}
+
+.fm-floating-widget.hidden {
+  display: none !important;
+}
+
+/* Right Docked */
+.fm-floating-widget.dock-right {
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row;
+}
+
+.fm-floating-widget.dock-right.collapsed {
+  transform: translateY(-50%) translateX(calc(100% - 24px));
+}
+
+/* Left Docked */
+.fm-floating-widget.dock-left {
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: row-reverse;
+}
+
+.fm-floating-widget.dock-left.collapsed {
+  transform: translateY(-50%) translateX(calc(-100% + 24px));
+}
+
+/* Toggle handle */
+.fm-floating-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  min-height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.12s, background 0.12s;
+}
+
+.fm-floating-toggle-btn:hover {
+  color: var(--text);
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.fm-floating-widget.dock-right .fm-floating-toggle-btn {
+  border-right: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
+}
+
+.fm-floating-widget.dock-left .fm-floating-toggle-btn {
+  border-left: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  border-top-right-radius: 7px;
+  border-bottom-right-radius: 7px;
+}
+
+.fm-floating-toggle-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.2s ease;
+}
+
+.fm-floating-widget.dock-right.collapsed .fm-floating-toggle-btn svg {
+  transform: rotate(180deg);
+}
+
+.fm-floating-widget.dock-left.collapsed .fm-floating-toggle-btn svg {
+  transform: rotate(180deg);
+}
+
+/* Toolbar content column */
+.fm-floating-content {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  gap: 3px;
+  min-width: 32px;
+}
+
+.fm-floating-tool-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.fm-floating-tool-btn:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--heading);
+}
+
+.fm-floating-tool-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Tooltip on hover */
+.fm-floating-tool-btn::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.95);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 100;
+}
+
+.fm-floating-widget.dock-left .fm-floating-tool-btn::after {
+  right: auto;
+  left: calc(100% + 8px);
+}
+
+.fm-floating-tool-btn:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+/* Header / close row */
+.fm-floating-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 2px 2px 4px 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  margin-bottom: 2px;
+}
+
+.fm-floating-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.fm-floating-close-btn:hover {
+  background: rgba(240, 122, 122, 0.18);
+  color: #ff6b6b;
+}
+
+.fm-floating-close-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Iframe pane */
+.fm-floating-pane {
+  min-width: 200px;
+  min-height: 160px;
+}
+
+.fm-floating-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+
+.fm-floating-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+}
+
+

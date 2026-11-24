@@ -149,6 +149,7 @@ class PluginSandboxHost {
       commands: [...plugin.uiCommands],
       menuItems: [...plugin.uiMenuItems],
       sidebarPanels: [...(plugin.uiSidebarPanels || [])],
+      floatingWidgets: [...(plugin.uiFloatingWidgets || [])],
       customViews: [...(plugin.uiCustomViews || [])],
       slashCommands: [...(plugin.uiSlashCommands || [])],
     });
@@ -539,6 +540,81 @@ class PluginSandboxHost {
       return { success: true };
     });
 
+    this.registerHandler('ui:registerFloatingWidget', async ({ widget }, _event, plugin) => {
+      if (!widget || typeof widget.id !== 'string' || !/^[a-z0-9-:]+$/.test(widget.id)
+        || typeof widget.title !== 'string' || widget.title.length > 200) {
+        throw new Error('Invalid floating widget');
+      }
+      const position = widget.position ?? 'right';
+      if (position !== 'left' && position !== 'right' && position !== 'float') {
+        throw new Error('Floating widget position must be "left", "right", or "float"');
+      }
+      let entryUrl = null;
+      if (typeof widget.entry === 'string') {
+        const entryPath = path.resolve(plugin.path, widget.entry);
+        if (!entryPath.startsWith(path.resolve(plugin.path) + path.sep)) {
+          throw new Error('Floating widget entry must remain inside the plugin directory');
+        }
+        if (!fs.existsSync(entryPath)) throw new Error('Floating widget entry not found');
+        entryUrl = pathToFileURL(entryPath).href;
+      }
+      plugin.uiFloatingWidgets.add(widget.id);
+      const registered = {
+        id: widget.id,
+        title: widget.title,
+        position,
+        collapsible: widget.collapsible !== false,
+        entryUrl,
+        width: typeof widget.width === 'number' ? widget.width : undefined,
+        height: typeof widget.height === 'number' ? widget.height : undefined,
+        pluginId: plugin.manifest.name,
+      };
+      this.mainWindow.webContents.send('ui:registerFloatingWidget', registered);
+      return { success: true };
+    });
+
+    this.registerHandler('ui:registerFloatingToolbar', async ({ toolbar }, _event, plugin) => {
+      if (!toolbar || typeof toolbar.id !== 'string' || !/^[a-z0-9-:]+$/.test(toolbar.id)
+        || !Array.isArray(toolbar.items)) {
+        throw new Error('Invalid floating toolbar');
+      }
+      const position = toolbar.position ?? 'right';
+      if (position !== 'left' && position !== 'right' && position !== 'float') {
+        throw new Error('Floating toolbar position must be "left", "right", or "float"');
+      }
+      plugin.uiFloatingWidgets.add(toolbar.id);
+      const registered = {
+        id: toolbar.id,
+        title: toolbar.title || 'Toolbar',
+        position,
+        collapsible: toolbar.collapsible !== false,
+        items: toolbar.items,
+        pluginId: plugin.manifest.name,
+      };
+      this.mainWindow.webContents.send('ui:registerFloatingToolbar', registered);
+      return { success: true };
+    });
+
+    this.registerHandler('ui:removeFloatingWidget', async ({ widgetId }, _event, plugin) => {
+      if (!plugin.uiFloatingWidgets.has(widgetId)) throw new Error('Plugin does not own this floating widget');
+      plugin.uiFloatingWidgets.delete(widgetId);
+      this.mainWindow.webContents.send('ui:removeFloatingWidget', {
+        widgetId,
+        pluginId: plugin.manifest.name,
+      });
+      return { success: true };
+    });
+
+    this.registerHandler('ui:toggleFloatingWidget', async ({ widgetId, visible }, _event, plugin) => {
+      if (!plugin.uiFloatingWidgets.has(widgetId)) throw new Error('Plugin does not own this floating widget');
+      this.mainWindow.webContents.send('ui:toggleFloatingWidget', {
+        widgetId,
+        visible,
+        pluginId: plugin.manifest.name,
+      });
+      return { success: true };
+    });
+
     this.registerHandler('ui:registerCustomView', async ({ view }, _event, plugin) => {
       if (!view || typeof view.id !== 'string' || !/^[a-z0-9-:]+$/.test(view.id)
         || typeof view.name !== 'string' || !Array.isArray(view.extensions)
@@ -861,6 +937,7 @@ class PluginSandboxHost {
       uiCommands: new Set((manifest.commands || []).map(command => command.id)),
       uiMenuItems: new Set((manifest.menu_items || []).map(item => item.id)),
       uiSidebarPanels: new Set(),
+      uiFloatingWidgets: new Set(),
       uiCustomViews: new Set(),
       uiSlashCommands: new Set(),
       stylesheet: manifest.stylesheet || '',
@@ -966,6 +1043,7 @@ class PluginSandboxHost {
         commands: plugin.manifest.commands || [],
         menuItems: plugin.manifest.menu_items || [],
         sidebarPanels: [...(plugin.uiSidebarPanels || [])],
+        floatingWidgets: [...(plugin.uiFloatingWidgets || [])],
         customViews: [...(plugin.uiCustomViews || [])],
         slashCommands: [...(plugin.uiSlashCommands || [])],
         path: plugin.path,
