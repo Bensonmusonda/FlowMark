@@ -89,6 +89,7 @@ export class PluginManagerPanel {
     this.unsubscribeSettingsChanged = null;
     this._renderSeq = 0;
     this._isDevMode = null;
+    this._detailViewMounted = false;
 
     this.box = this.container.querySelector('#plugins-box');
     if (!this.box) {
@@ -222,6 +223,7 @@ export class PluginManagerPanel {
     if (this.isOpen) return;
     this.isOpen = true;
     this.selectedPluginId = null;
+    this._detailViewMounted = false;
     this.detailTab = 'overview';
     this.previousActiveElement = document.activeElement;
     if (!this.embedded) {
@@ -261,6 +263,7 @@ export class PluginManagerPanel {
     if (!this.isOpen) return;
     this.isOpen = false;
     this.selectedPluginId = null;
+    this._detailViewMounted = false;
     if (!this.embedded) {
       this.container.classList.add('hidden');
     }
@@ -332,7 +335,9 @@ export class PluginManagerPanel {
   handlePluginsChanged(updatedPlugins) {
     if (Array.isArray(updatedPlugins)) {
       this.plugins = updatedPlugins;
-      this.render();
+      if (this.inFlightActions.size === 0) {
+        this.render();
+      }
     }
   }
 
@@ -471,7 +476,6 @@ export class PluginManagerPanel {
     const prevEnabled = plugin.enabled;
     const prevActive = plugin.active;
     const prevError = plugin.error;
-    const wasInDetailView = this.selectedPluginId === plugin.name;
 
     // Optimistic UI state
     plugin.enabled = enable;
@@ -482,8 +486,19 @@ export class PluginManagerPanel {
       plugin.active = false;
     }
 
-    // Update whichever view is currently visible
-    this.render();
+    // Update switch element in-place to prevent layout jitter
+    const activeSwitch = this.box.querySelector(
+      this.selectedPluginId
+        ? '.plugin-detail-hero .plugin-toggle-switch'
+        : `.plugin-row[data-plugin-id="${plugin.name}"] .plugin-toggle-switch`
+    );
+    if (activeSwitch) {
+      activeSwitch.setAttribute('aria-checked', String(enable));
+      activeSwitch.title = enable ? 'Click to disable' : 'Click to enable';
+      activeSwitch.disabled = true;
+    } else {
+      await this.render();
+    }
 
     try {
       const res = enable
@@ -496,26 +511,20 @@ export class PluginManagerPanel {
         plugin.active = prevActive;
         plugin.error = res.error || prevError;
         this.showToast(`Failed to ${enable ? 'enable' : 'disable'} ${plugin.name}: ${res.error}`, 'error');
-        this.render();
       } else {
         this.showToast(`Plugin "${plugin.name}" ${enable ? 'enabled' : 'disabled'}.`, 'success');
         if (enable) {
           await this.loadSettings();
         }
-        // On successful disable, navigate back to list view
-        if (!enable) {
-          this.selectedPluginId = null;
-        }
-        this.render();
       }
     } catch (err) {
       plugin.enabled = prevEnabled;
       plugin.active = prevActive;
       plugin.error = err.message;
       this.showToast(`Action failed: ${err.message}`, 'error');
-      this.render();
     } finally {
       this.inFlightActions.delete(plugin.name);
+      await this.render();
     }
   }
 
@@ -1386,11 +1395,16 @@ export class PluginManagerPanel {
    */
   async _renderDetailView(seq) {
     if (seq !== undefined && seq !== this._renderSeq) return;
+    const prevScrollTop = this.box.querySelector('.plugins-content')?.scrollTop || 0;
+    const wasDetailAlreadyOpen = this._detailViewMounted;
+    this._detailViewMounted = true;
+
     this.box.replaceChildren();
 
     const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
     if (!plugin) {
       this.selectedPluginId = null;
+      this._detailViewMounted = false;
       this._renderListView(seq);
       return;
     }
@@ -1416,6 +1430,7 @@ export class PluginManagerPanel {
     backBtn.title = 'Back to plugin list (Esc)';
     backBtn.addEventListener('click', () => {
       this.selectedPluginId = null;
+      this._detailViewMounted = false;
       this.render();
     });
     leftWrap.appendChild(backBtn);
@@ -2271,8 +2286,14 @@ export class PluginManagerPanel {
       this.box.appendChild(content);
     }
 
-    // Focus back button on entering detail view
-    backBtn.focus();
+    if (prevScrollTop) {
+      content.scrollTop = prevScrollTop;
+    }
+
+    // Only focus back button on initial entry into detail view
+    if (!wasDetailAlreadyOpen) {
+      backBtn.focus();
+    }
   }
 
   /**

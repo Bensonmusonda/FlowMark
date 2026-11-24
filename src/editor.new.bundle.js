@@ -79759,6 +79759,7 @@ $$
       this.unsubscribeSettingsChanged = null;
       this._renderSeq = 0;
       this._isDevMode = null;
+      this._detailViewMounted = false;
       this.box = this.container.querySelector("#plugins-box");
       if (!this.box) {
         this.box = document.createElement("div");
@@ -79871,6 +79872,7 @@ $$
       if (this.isOpen) return;
       this.isOpen = true;
       this.selectedPluginId = null;
+      this._detailViewMounted = false;
       this.detailTab = "overview";
       this.previousActiveElement = document.activeElement;
       if (!this.embedded) {
@@ -79901,6 +79903,7 @@ $$
       if (!this.isOpen) return;
       this.isOpen = false;
       this.selectedPluginId = null;
+      this._detailViewMounted = false;
       if (!this.embedded) {
         this.container.classList.add("hidden");
       }
@@ -79965,7 +79968,9 @@ $$
     handlePluginsChanged(updatedPlugins) {
       if (Array.isArray(updatedPlugins)) {
         this.plugins = updatedPlugins;
-        this.render();
+        if (this.inFlightActions.size === 0) {
+          this.render();
+        }
       }
     }
     /**
@@ -80085,7 +80090,6 @@ $$
       const prevEnabled = plugin.enabled;
       const prevActive = plugin.active;
       const prevError = plugin.error;
-      const wasInDetailView = this.selectedPluginId === plugin.name;
       plugin.enabled = enable;
       if (enable) {
         plugin.active = true;
@@ -80093,7 +80097,16 @@ $$
       } else {
         plugin.active = false;
       }
-      this.render();
+      const activeSwitch = this.box.querySelector(
+        this.selectedPluginId ? ".plugin-detail-hero .plugin-toggle-switch" : `.plugin-row[data-plugin-id="${plugin.name}"] .plugin-toggle-switch`
+      );
+      if (activeSwitch) {
+        activeSwitch.setAttribute("aria-checked", String(enable));
+        activeSwitch.title = enable ? "Click to disable" : "Click to enable";
+        activeSwitch.disabled = true;
+      } else {
+        await this.render();
+      }
       try {
         const res = enable ? await this.pluginManager.enable(plugin.name) : await this.pluginManager.disable(plugin.name);
         if (res && res.success === false) {
@@ -80101,25 +80114,20 @@ $$
           plugin.active = prevActive;
           plugin.error = res.error || prevError;
           this.showToast(`Failed to ${enable ? "enable" : "disable"} ${plugin.name}: ${res.error}`, "error");
-          this.render();
         } else {
           this.showToast(`Plugin "${plugin.name}" ${enable ? "enabled" : "disabled"}.`, "success");
           if (enable) {
             await this.loadSettings();
           }
-          if (!enable) {
-            this.selectedPluginId = null;
-          }
-          this.render();
         }
       } catch (err) {
         plugin.enabled = prevEnabled;
         plugin.active = prevActive;
         plugin.error = err.message;
         this.showToast(`Action failed: ${err.message}`, "error");
-        this.render();
       } finally {
         this.inFlightActions.delete(plugin.name);
+        await this.render();
       }
     }
     /**
@@ -80841,10 +80849,14 @@ ${error}`);
      */
     async _renderDetailView(seq) {
       if (seq !== void 0 && seq !== this._renderSeq) return;
+      const prevScrollTop = this.box.querySelector(".plugins-content")?.scrollTop || 0;
+      const wasDetailAlreadyOpen = this._detailViewMounted;
+      this._detailViewMounted = true;
       this.box.replaceChildren();
       const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
       if (!plugin) {
         this.selectedPluginId = null;
+        this._detailViewMounted = false;
         this._renderListView(seq);
         return;
       }
@@ -80863,6 +80875,7 @@ ${error}`);
       backBtn.title = "Back to plugin list (Esc)";
       backBtn.addEventListener("click", () => {
         this.selectedPluginId = null;
+        this._detailViewMounted = false;
         this.render();
       });
       leftWrap.appendChild(backBtn);
@@ -81578,7 +81591,12 @@ ${error}`);
       } else {
         this.box.appendChild(content3);
       }
-      backBtn.focus();
+      if (prevScrollTop) {
+        content3.scrollTop = prevScrollTop;
+      }
+      if (!wasDetailAlreadyOpen) {
+        backBtn.focus();
+      }
     }
     /**
      * Render the Registry panel with available plugins from registry index.
