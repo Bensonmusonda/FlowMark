@@ -186,6 +186,7 @@ contextBridge.exposeInMainWorld('uiAPI', {
 contextBridge.exposeInMainWorld('shellAPI', {
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   openPath: (targetPath) => ipcRenderer.invoke('shell:openPath', targetPath),
+  showItemInFolder: (targetPath) => ipcRenderer.invoke('shell:showItemInFolder', targetPath),
 });
 
 contextBridge.exposeInMainWorld('settingsAPI', {

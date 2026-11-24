@@ -215,6 +215,57 @@ export class TabManager {
   }
 
   /**
+   * Remove all documents except keepId.
+   * @param {string} keepId
+   * @returns {Document[]} Array of removed documents
+   */
+  removeOthers(keepId) {
+    const keepDoc = this.get(keepId);
+    if (!keepDoc) return [];
+    const removed = this.documents.filter(d => d.id !== keepId);
+    this.documents = [keepDoc];
+    this.activeId = keepId;
+    this._notify();
+    return removed;
+  }
+
+  /**
+   * Remove all documents to the right of targetId.
+   * @param {string} targetId
+   * @returns {Document[]} Array of removed documents
+   */
+  removeToRight(targetId) {
+    const index = this.indexOf(targetId);
+    if (index === -1 || index >= this.documents.length - 1) return [];
+    const removed = this.documents.splice(index + 1);
+    if (!this.documents.some(d => d.id === this.activeId)) {
+      this.activeId = targetId;
+    }
+    this._notify();
+    return removed;
+  }
+
+  /**
+   * Remove all saved (non-dirty) documents.
+   * @returns {Document[]} Array of removed documents
+   */
+  removeSaved() {
+    const dirtyDocs = this.documents.filter(d => d.dirty);
+    if (dirtyDocs.length === this.documents.length) return [];
+    const removed = this.documents.filter(d => !d.dirty);
+    this.documents = dirtyDocs;
+    if (this.documents.length > 0) {
+      if (!this.documents.some(d => d.id === this.activeId)) {
+        this.activeId = this.documents[0].id;
+      }
+    } else {
+      this.activeId = null;
+    }
+    this._notify();
+    return removed;
+  }
+
+  /**
    * Set active document by ID.
    * @param {string} id
    */

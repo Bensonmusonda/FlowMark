@@ -13,19 +13,22 @@ import {
   Settings,
 } from 'lucide';
 import { resolvePluginPanelIcon } from './pluginPanelIcons.js';
+import { contextMenu } from './contextMenu.js';
 
 function normalizedPath(value) {
   return String(value || '').replace(/\\/g, '/').toLowerCase();
 }
 
 export class FileTreeUI {
-  constructor({ container, onOpenFolder, onOpenFile, onCreate, onRename, onDelete, onToggleSidebar }) {
+  constructor({ container, onOpenFolder, onOpenFile, onCreate, onRename, onDelete, onDuplicate, onRefresh, onToggleSidebar }) {
     this.container = container;
     this.onOpenFolder = onOpenFolder;
     this.onOpenFile = onOpenFile;
     this.onCreate = onCreate;
     this.onRename = onRename;
     this.onDelete = onDelete;
+    this.onDuplicate = onDuplicate;
+    this.onRefresh = onRefresh;
     this.onToggleSidebar = onToggleSidebar;
     this.rootPath = null;
     this.tree = [];
@@ -43,6 +46,11 @@ export class FileTreeUI {
     this.viewContainer.className = 'sidebar-view-container';
     this.workspaceView = document.createElement('div');
     this.workspaceView.className = 'sidebar-panel sidebar-workspace-view';
+    this.workspaceView.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('.tree-row') || e.target.closest('.sidebar-heading')) return;
+      e.preventDefault();
+      this.showBackgroundContextMenu(e);
+    });
     this.viewContainer.appendChild(this.workspaceView);
     this.container.replaceChildren(this.nav, this.viewContainer);
     this.renderNavigation();
@@ -67,6 +75,140 @@ export class FileTreeUI {
     return entries.some(entry =>
       (entry.type === 'directory' && entry.relativePath === relativePath) ||
       this.hasDirectory(entry.children || [], relativePath));
+  }
+
+  hasEntry(relativePath) {
+    const norm = (p) => String(p || '').replace(/\\/g, '/').toLowerCase();
+    const target = norm(relativePath);
+    const search = (nodes) => nodes.some(n => norm(n.relativePath) === target || (n.children && search(n.children)));
+    return search(this.tree);
+  }
+
+  showFileContextMenu(entry, absolutePath, e) {
+    const items = [
+      {
+        label: 'Open',
+        action: () => this.onOpenFile(entry.relativePath),
+      },
+      {
+        label: 'Rename...',
+        shortcut: 'F2',
+        action: () => this.beginRename(entry),
+      },
+      {
+        label: 'Duplicate',
+        action: () => this.onDuplicate?.(entry),
+      },
+      {
+        label: 'Delete',
+        danger: true,
+        action: () => this.onDelete(entry),
+      },
+      { divider: true },
+      {
+        label: 'Copy Path',
+        action: () => navigator.clipboard.writeText(absolutePath),
+      },
+      {
+        label: 'Copy Relative Path',
+        action: () => navigator.clipboard.writeText(entry.relativePath),
+      },
+      {
+        label: 'Reveal in File Explorer',
+        action: () => window.shellAPI?.showItemInFolder?.(absolutePath),
+      },
+    ];
+
+    contextMenu.show({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      target: 'file-tree:file',
+      contextData: { entry, absolutePath },
+    });
+  }
+
+  showFolderContextMenu(entry, absolutePath, e) {
+    const items = [
+      {
+        label: 'New Note',
+        action: () => this.beginCreate(entry.relativePath, 'file'),
+      },
+      {
+        label: 'New Folder',
+        action: () => this.beginCreate(entry.relativePath, 'directory'),
+      },
+      { divider: true },
+      {
+        label: 'Rename...',
+        shortcut: 'F2',
+        action: () => this.beginRename(entry),
+      },
+      {
+        label: 'Delete',
+        danger: true,
+        action: () => this.onDelete(entry),
+      },
+      { divider: true },
+      {
+        label: 'Copy Path',
+        action: () => navigator.clipboard.writeText(absolutePath),
+      },
+      {
+        label: 'Copy Relative Path',
+        action: () => navigator.clipboard.writeText(entry.relativePath),
+      },
+      {
+        label: 'Reveal in File Explorer',
+        action: () => window.shellAPI?.showItemInFolder?.(absolutePath),
+      },
+    ];
+
+    contextMenu.show({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      target: 'file-tree:folder',
+      contextData: { entry, absolutePath },
+    });
+  }
+
+  showBackgroundContextMenu(e) {
+    const hasRoot = Boolean(this.rootPath);
+    const items = [
+      {
+        label: 'New Note',
+        disabled: !hasRoot,
+        action: () => this.beginCreate('', 'file'),
+      },
+      {
+        label: 'New Folder',
+        disabled: !hasRoot,
+        action: () => this.beginCreate('', 'directory'),
+      },
+      { divider: true },
+      {
+        label: 'Refresh',
+        disabled: !hasRoot,
+        action: () => this.onRefresh?.(),
+      },
+      {
+        label: 'Collapse All Folders',
+        disabled: !hasRoot || this.expanded.size <= 1,
+        action: () => {
+          this.expanded = new Set(['']);
+          this.render();
+        },
+      },
+    ];
+
+    contextMenu.show({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      target: 'file-tree:empty',
+      contextData: { rootPath: this.rootPath },
+    });
   }
 
   setActivePath(filePath) {
@@ -407,6 +549,17 @@ export class FileTreeUI {
       remove.setAttribute('aria-label', `Delete ${entry.name}`);
       remove.addEventListener('click', () => this.onDelete(entry));
       row.appendChild(remove);
+
+      row.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (entry.type === 'directory') {
+          this.showFolderContextMenu(entry, absolutePath, e);
+        } else {
+          this.showFileContextMenu(entry, absolutePath, e);
+        }
+      });
+
       item.appendChild(row);
 
       if (entry.type === 'directory' && isExpanded) {

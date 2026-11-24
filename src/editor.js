@@ -25,6 +25,7 @@ import { appendInlineMarkdown } from './commands/inlineRenderer.js';
 import { closeBrackets, closeBracketsKeymap, autocompletion, completionKeymap } from '@codemirror/autocomplete';
 import { calloutCompletion, fenceLanguageCompletion, emojiCompletion } from './commands/completion.js';
 import { Document, TabManager } from './model/document.js';
+import { contextMenu } from './ui/contextMenu.js';
 import TabBarUI from './ui/tabs.js';
 import FileTreeUI from './ui/fileTree.js';
 import { UtilityPane } from './ui/utilityPane.js';
@@ -3112,6 +3113,40 @@ async function closeTab(docId) {
   sessionManager.scheduleSave();
 }
 
+async function closeOthers(keepId) {
+  const docsToClose = tabManager.documents.filter(d => d.id !== keepId);
+  for (const doc of docsToClose) {
+    if (doc.dirty) {
+      const discard = await showConfirm(`"${doc.name}" has unsaved changes. Discard them?`, 'Discard');
+      if (!discard) continue;
+    }
+    tabManager.remove(doc.id);
+  }
+  sessionManager.scheduleSave();
+}
+
+async function closeToRight(targetId) {
+  const targetIndex = tabManager.indexOf(targetId);
+  if (targetIndex === -1) return;
+  const docsToClose = tabManager.documents.slice(targetIndex + 1);
+  for (const doc of docsToClose) {
+    if (doc.dirty) {
+      const discard = await showConfirm(`"${doc.name}" has unsaved changes. Discard them?`, 'Discard');
+      if (!discard) continue;
+    }
+    tabManager.remove(doc.id);
+  }
+  sessionManager.scheduleSave();
+}
+
+async function closeSaved() {
+  const docsToClose = tabManager.documents.filter(d => !d.dirty);
+  for (const doc of docsToClose) {
+    tabManager.remove(doc.id);
+  }
+  sessionManager.scheduleSave();
+}
+
 function newFile(initialContent = '') {
   hideWelcome();
   const state = createEditorState(initialContent);
@@ -3584,12 +3619,203 @@ view.dom.addEventListener('keydown', (e) => {
   }
 });
 
+// ── Context Menu Integration ───────────────────────────────────────────────
+window.contextMenuAPI = contextMenu;
+
+function resolveMarkdownLinkAtPos(targetView, pos) {
+  if (pos == null) return null;
+  const doc = targetView.state.doc;
+  const tree = syntaxTree(targetView.state);
+  let url = null;
+  if (tree) {
+    let node = tree.resolveInner(pos, 1);
+    while (node) {
+      if (node.name === 'Link' || node.name === 'Autolink') {
+        if (node.name === 'Autolink') {
+          url = doc.sliceString(node.from, node.to).replace(/^<|>$/g, '').trim();
+        } else {
+          const urlNode = node.getChild('URL');
+          if (urlNode) {
+            url = doc.sliceString(urlNode.from, urlNode.to).trim();
+          } else {
+            const raw = doc.sliceString(node.from, node.to);
+            const m = raw.match(/\((https?:\/\/[^\s)]+)\)/);
+            if (m) url = m[1].trim();
+          }
+        }
+        break;
+      }
+      node = node.parent;
+    }
+  }
+  return url;
+}
+
+view.dom.addEventListener('contextmenu', (e) => {
+  if (e.defaultPrevented) return;
+  // Let specialized component menus handle their own events
+  if (e.target.closest('.fm-properties-card') || e.target.closest('.fm-prop-context-menu') || e.target.closest('.fm-table-menu')) {
+    return;
+  }
+
+  const clickPos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+  const { from, to, empty } = view.state.selection.main;
+
+  // If clicked outside current selection, update caret position to click pos
+  if (clickPos != null && (empty || clickPos < from || clickPos > to)) {
+    view.dispatch({ selection: { anchor: clickPos } });
+  }
+
+  const currentSel = view.state.selection.main;
+  const hasSelection = !currentSel.empty;
+  const selText = hasSelection ? view.state.sliceDoc(currentSel.from, currentSel.to) : '';
+
+  const linkUrl = clickPos != null ? resolveMarkdownLinkAtPos(view, clickPos) : null;
+
+  const items = [];
+
+  // Markdown link actions
+  if (linkUrl) {
+    items.push({
+      label: 'Open Link',
+      action: () => window.shellAPI?.openExternal?.(linkUrl),
+    });
+    items.push({
+      label: 'Copy Link Address',
+      action: () => navigator.clipboard.writeText(linkUrl),
+    });
+    items.push({ divider: true });
+  }
+
+  // Clipboard actions
+  items.push({
+    label: 'Cut',
+    shortcut: 'Ctrl+X',
+    disabled: !hasSelection,
+    action: async () => {
+      if (!hasSelection) return;
+      await navigator.clipboard.writeText(selText);
+      view.dispatch({
+        changes: { from: currentSel.from, to: currentSel.to, insert: '' },
+        selection: { anchor: currentSel.from }
+      });
+      view.focus();
+    },
+  });
+  items.push({
+    label: 'Copy',
+    shortcut: 'Ctrl+C',
+    disabled: !hasSelection,
+    action: async () => {
+      if (!hasSelection) return;
+      await navigator.clipboard.writeText(selText);
+    },
+  });
+  items.push({
+    label: 'Paste',
+    shortcut: 'Ctrl+V',
+    action: async () => {
+      try {
+        const clipText = await navigator.clipboard.readText();
+        if (clipText) {
+          const activeSel = view.state.selection.main;
+          view.dispatch({
+            changes: { from: activeSel.from, to: activeSel.to, insert: clipText },
+            selection: { anchor: activeSel.from + clipText.length }
+          });
+          view.focus();
+        }
+      } catch (err) {
+        console.warn('Paste failed:', err);
+      }
+    },
+  });
+
+  items.push({ divider: true });
+
+  // Formatting actions (when text is selected)
+  if (hasSelection) {
+    items.push({
+      label: 'Bold',
+      shortcut: 'Ctrl+B',
+      action: () => wrapSelection(view, '**'),
+    });
+    items.push({
+      label: 'Italic',
+      shortcut: 'Ctrl+I',
+      action: () => wrapSelection(view, '*'),
+    });
+    items.push({
+      label: 'Strikethrough',
+      shortcut: 'Alt+Shift+5',
+      action: () => wrapSelection(view, '~~'),
+    });
+    items.push({
+      label: 'Inline Code',
+      shortcut: 'Ctrl+`',
+      action: () => wrapSelection(view, '`'),
+    });
+    items.push({
+      label: 'Create Link',
+      shortcut: 'Ctrl+K',
+      action: () => insertLink(view),
+    });
+    items.push({ divider: true });
+  } else {
+    // Insert blocks (when no text is selected)
+    items.push({
+      label: 'Insert Table',
+      action: () => insertTable(view),
+    });
+    items.push({
+      label: 'Insert Callout',
+      action: () => insertCallout(view),
+    });
+    items.push({
+      label: 'Insert Code Block',
+      action: () => insertCodeBlock(view),
+    });
+    items.push({
+      label: 'Insert Math Block',
+      action: () => insertMathBlock(view),
+    });
+    items.push({
+      label: 'Insert Horizontal Rule',
+      action: () => insertHorizontalRule(view),
+    });
+    items.push({ divider: true });
+  }
+
+  // Document selection
+  items.push({
+    label: 'Select All',
+    shortcut: 'Ctrl+A',
+    action: () => {
+      selectAll(view);
+      view.focus();
+    },
+  });
+
+  e.preventDefault();
+  contextMenu.show({
+    x: e.clientX,
+    y: e.clientY,
+    items,
+    target: 'editor',
+    contextData: { view, hasSelection, selText, linkUrl, pos: clickPos },
+  });
+});
+
 const tabBarUI = new TabBarUI({
   container: document.getElementById('tabbar'),
   tabManager,
   onSelect: (id) => tabManager.setActive(id),
   onClose: (id) => closeTab(id),
+  onCloseOthers: (id) => closeOthers(id),
+  onCloseToRight: (id) => closeToRight(id),
+  onCloseSaved: () => closeSaved(),
   onNewTab: () => newFile(),
+  getWorkspacePath: () => workspacePath,
 });
 
 const sessionManager = new SessionManager({
@@ -3779,6 +4005,34 @@ async function handleWorkspaceChange(change) {
   }
 }
 
+async function duplicateWorkspaceItem(entry) {
+  if (entry.type !== 'file') return;
+  try {
+    const fileRes = await window.fileAPI.openWorkspaceFile(entry.relativePath);
+    if (!fileRes || fileRes.canceled) return;
+    const dir = entry.relativePath.includes('/') || entry.relativePath.includes('\\')
+      ? entry.relativePath.replace(/[\\/][^\\/]+$/, '')
+      : '';
+    const baseName = entry.name.replace(/\.md$/i, '');
+    let copyName = `${baseName} copy.md`;
+    let counter = 2;
+    const separator = workspacePath?.includes('\\') ? '\\' : '/';
+    while (fileTreeUI?.hasEntry(dir ? `${dir}${separator}${copyName}` : copyName)) {
+      copyName = `${baseName} copy ${counter}.md`;
+      counter++;
+    }
+    const newRelPath = dir ? `${dir}${separator}${copyName}` : copyName;
+    const createRes = await window.fileAPI.createWorkspaceItem(newRelPath, 'file');
+    if (createRes && createRes.path) {
+      await window.fileAPI.save({ filePath: createRes.path, content: fileRes.content });
+      await refreshWorkspaceTree();
+      openFilePath(createRes.path, fileRes.content);
+    }
+  } catch (error) {
+    alert(`Unable to duplicate file: ${error.message}`);
+  }
+}
+
 fileTreeUI = new FileTreeUI({
   container: document.getElementById('sidebar'),
   onOpenFolder: openWorkspaceFolder,
@@ -3786,6 +4040,8 @@ fileTreeUI = new FileTreeUI({
   onCreate: createWorkspaceItem,
   onRename: renameWorkspaceItem,
   onDelete: deleteWorkspaceItem,
+  onDuplicate: duplicateWorkspaceItem,
+  onRefresh: refreshWorkspaceTree,
   onToggleSidebar: toggleSidebar,
 });
 const utilityPane = new UtilityPane({

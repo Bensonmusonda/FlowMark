@@ -514,6 +514,12 @@ ipcMain.handle('shell:openPath', async (_, targetPath) => {
   return shell.openPath(targetPath);
 });
 
+ipcMain.handle('shell:showItemInFolder', async (_, targetPath) => {
+  if (!targetPath || typeof targetPath !== 'string') return false;
+  shell.showItemInFolder(targetPath);
+  return true;
+});
+
 // ── Plugin Sandbox IPC ──────────────────────────────────────────────────────
 
 ipcMain.handle('plugins:get', () => {

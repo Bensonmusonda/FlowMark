@@ -78555,6 +78555,54 @@ $$
       return removed;
     }
     /**
+     * Remove all documents except keepId.
+     * @param {string} keepId
+     * @returns {Document[]} Array of removed documents
+     */
+    removeOthers(keepId) {
+      const keepDoc = this.get(keepId);
+      if (!keepDoc) return [];
+      const removed = this.documents.filter((d3) => d3.id !== keepId);
+      this.documents = [keepDoc];
+      this.activeId = keepId;
+      this._notify();
+      return removed;
+    }
+    /**
+     * Remove all documents to the right of targetId.
+     * @param {string} targetId
+     * @returns {Document[]} Array of removed documents
+     */
+    removeToRight(targetId) {
+      const index = this.indexOf(targetId);
+      if (index === -1 || index >= this.documents.length - 1) return [];
+      const removed = this.documents.splice(index + 1);
+      if (!this.documents.some((d3) => d3.id === this.activeId)) {
+        this.activeId = targetId;
+      }
+      this._notify();
+      return removed;
+    }
+    /**
+     * Remove all saved (non-dirty) documents.
+     * @returns {Document[]} Array of removed documents
+     */
+    removeSaved() {
+      const dirtyDocs = this.documents.filter((d3) => d3.dirty);
+      if (dirtyDocs.length === this.documents.length) return [];
+      const removed = this.documents.filter((d3) => !d3.dirty);
+      this.documents = dirtyDocs;
+      if (this.documents.length > 0) {
+        if (!this.documents.some((d3) => d3.id === this.activeId)) {
+          this.activeId = this.documents[0].id;
+        }
+      } else {
+        this.activeId = null;
+      }
+      this._notify();
+      return removed;
+    }
+    /**
      * Set active document by ID.
      * @param {string} id
      */
@@ -78610,6 +78658,168 @@ $$
     }
   };
 
+  // src/ui/contextMenu.js
+  var ContextMenuService = class {
+    constructor() {
+      this.activeMenu = null;
+      this.dismissListener = null;
+      this.keyListener = null;
+      this.pluginItems = /* @__PURE__ */ new Map();
+    }
+    /**
+     * Register a custom item for a context menu target (used by plugins/extensions).
+     * @param {string} target - 'editor' | 'tab' | 'file-tree:file' | 'file-tree:folder' | 'file-tree:empty'
+     * @param {Object} item
+     * @returns {Function} Unregister callback
+     */
+    registerItem(target, item) {
+      if (!this.pluginItems.has(target)) {
+        this.pluginItems.set(target, /* @__PURE__ */ new Set());
+      }
+      this.pluginItems.get(target).add(item);
+      return () => this.pluginItems.get(target)?.delete(item);
+    }
+    /**
+     * Show a context menu at (x, y) with the provided items.
+     * @param {Object} options
+     * @param {number} options.x - Click clientX
+     * @param {number} options.y - Click clientY
+     * @param {Array<Object>} options.items - Menu items definition
+     * @param {string} [options.target] - Target identifier to query registered plugin items
+     * @param {*} [options.contextData] - Context data passed into item action/disabled/hidden callbacks
+     */
+    show({ x, y, items = [], target = null, contextData = null }) {
+      this.close();
+      const allItems = [...items];
+      if (target && this.pluginItems.has(target)) {
+        const extra = Array.from(this.pluginItems.get(target));
+        if (extra.length > 0) {
+          allItems.push({ divider: true });
+          allItems.push(...extra);
+        }
+      }
+      const visibleItems = allItems.filter((item) => {
+        if (!item) return false;
+        if (item.divider) return true;
+        if (typeof item.hidden === "function") return !item.hidden(contextData);
+        return !item.hidden;
+      });
+      if (visibleItems.length === 0) return;
+      const menu = document.createElement("div");
+      menu.className = "fm-context-menu";
+      menu.setAttribute("role", "menu");
+      menu.tabIndex = -1;
+      visibleItems.forEach((item) => {
+        if (item.divider) {
+          const div = document.createElement("div");
+          div.className = "fm-context-divider";
+          div.setAttribute("role", "separator");
+          menu.appendChild(div);
+          return;
+        }
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `fm-context-item${item.danger ? " danger" : ""}`;
+        btn.setAttribute("role", "menuitem");
+        const isDisabled = typeof item.disabled === "function" ? item.disabled(contextData) : !!item.disabled;
+        if (isDisabled) {
+          btn.disabled = true;
+        }
+        const left = document.createElement("div");
+        left.className = "fm-context-item-left";
+        if (item.icon) {
+          const iconSpan = document.createElement("span");
+          iconSpan.className = "fm-context-icon";
+          if (typeof item.icon === "string") {
+            iconSpan.innerHTML = item.icon;
+          } else if (item.icon instanceof HTMLElement || item.icon instanceof SVGElement) {
+            iconSpan.appendChild(item.icon.cloneNode(true));
+          }
+          left.appendChild(iconSpan);
+        }
+        const label = document.createElement("span");
+        label.className = "fm-context-label";
+        label.textContent = item.label;
+        left.appendChild(label);
+        btn.appendChild(left);
+        if (item.shortcut) {
+          const shortcut = document.createElement("span");
+          shortcut.className = "fm-context-shortcut";
+          shortcut.textContent = item.shortcut;
+          btn.appendChild(shortcut);
+        }
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          this.close();
+          try {
+            await item.action?.(contextData);
+          } catch (err) {
+            console.error("[ContextMenu] Action error:", err);
+          }
+        });
+        menu.appendChild(btn);
+      });
+      document.body.appendChild(menu);
+      this.activeMenu = menu;
+      const menuRect = menu.getBoundingClientRect();
+      const maxX = window.innerWidth - menuRect.width - 8;
+      const maxY = window.innerHeight - menuRect.height - 8;
+      const posX = Math.max(8, Math.min(x, maxX));
+      const posY = Math.max(8, Math.min(y, maxY));
+      menu.style.left = `${posX}px`;
+      menu.style.top = `${posY}px`;
+      this.keyListener = (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          this.close();
+          return;
+        }
+        const buttons = Array.from(menu.querySelectorAll(".fm-context-item:not(:disabled)"));
+        if (buttons.length === 0) return;
+        const activeIndex = buttons.indexOf(document.activeElement);
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          const next2 = activeIndex < buttons.length - 1 ? activeIndex + 1 : 0;
+          buttons[next2]?.focus();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          const prev = activeIndex > 0 ? activeIndex - 1 : buttons.length - 1;
+          buttons[prev]?.focus();
+        }
+      };
+      document.addEventListener("keydown", this.keyListener);
+      this.dismissListener = (e) => {
+        if (this.activeMenu && !this.activeMenu.contains(e.target)) {
+          this.close();
+        }
+      };
+      setTimeout(() => {
+        document.addEventListener("mousedown", this.dismissListener, true);
+        document.addEventListener("contextmenu", this.dismissListener, true);
+        window.addEventListener("blur", this.close);
+        window.addEventListener("resize", this.close);
+      }, 0);
+    }
+    close = () => {
+      if (this.dismissListener) {
+        document.removeEventListener("mousedown", this.dismissListener, true);
+        document.removeEventListener("contextmenu", this.dismissListener, true);
+        window.removeEventListener("blur", this.close);
+        window.removeEventListener("resize", this.close);
+        this.dismissListener = null;
+      }
+      if (this.keyListener) {
+        document.removeEventListener("keydown", this.keyListener);
+        this.keyListener = null;
+      }
+      if (this.activeMenu) {
+        this.activeMenu.remove();
+        this.activeMenu = null;
+      }
+    };
+  };
+  var contextMenu = new ContextMenuService();
+
   // src/ui/tabs.js
   var TabBarUI = class {
     /**
@@ -78618,17 +78828,119 @@ $$
      * @param {import('../model/document.js').TabManager} options.tabManager
      * @param {Function} options.onSelect - (docId) => void
      * @param {Function} options.onClose - (docId) => void
+     * @param {Function} [options.onCloseOthers] - (docId) => void
+     * @param {Function} [options.onCloseToRight] - (docId) => void
+     * @param {Function} [options.onCloseSaved] - () => void
      * @param {Function} options.onNewTab - () => void
+     * @param {Function} [options.getWorkspacePath] - () => string|null
      */
-    constructor({ container, tabManager: tabManager2, onSelect, onClose, onNewTab }) {
+    constructor({ container, tabManager: tabManager2, onSelect, onClose, onCloseOthers, onCloseToRight, onCloseSaved, onNewTab, getWorkspacePath }) {
       this.container = container;
       this.tabManager = tabManager2;
       this.onSelect = onSelect;
       this.onClose = onClose;
+      this.onCloseOthers = onCloseOthers;
+      this.onCloseToRight = onCloseToRight;
+      this.onCloseSaved = onCloseSaved;
       this.onNewTab = onNewTab;
+      this.getWorkspacePath = getWorkspacePath;
       this.draggedIndex = null;
       this.tabManager.onChange(() => this.render());
       this.render();
+    }
+    showTabContextMenu(doc2, index, e) {
+      let relPath = null;
+      const wsPath = this.getWorkspacePath ? this.getWorkspacePath() : null;
+      if (doc2.path && wsPath) {
+        const normDoc = doc2.path.replace(/\\/g, "/").toLowerCase();
+        const normWs = wsPath.replace(/\\/g, "/").toLowerCase().replace(/\/+$/, "");
+        if (normDoc.startsWith(normWs + "/")) {
+          relPath = doc2.path.slice(wsPath.length).replace(/^[\\/]+/, "");
+        }
+      }
+      const items = [
+        {
+          label: "Close Tab",
+          shortcut: "Ctrl+W",
+          action: () => this.onClose(doc2.id)
+        },
+        {
+          label: "Close Others",
+          disabled: this.tabManager.documents.length <= 1,
+          action: () => {
+            if (this.onCloseOthers) this.onCloseOthers(doc2.id);
+            else this.tabManager.removeOthers(doc2.id);
+          }
+        },
+        {
+          label: "Close to the Right",
+          disabled: index >= this.tabManager.documents.length - 1,
+          action: () => {
+            if (this.onCloseToRight) this.onCloseToRight(doc2.id);
+            else this.tabManager.removeToRight(doc2.id);
+          }
+        },
+        {
+          label: "Close Saved",
+          disabled: !this.tabManager.documents.some((d3) => !d3.dirty),
+          action: () => {
+            if (this.onCloseSaved) this.onCloseSaved();
+            else this.tabManager.removeSaved();
+          }
+        },
+        { divider: true },
+        {
+          label: "Copy Path",
+          disabled: !doc2.path,
+          action: () => {
+            if (doc2.path) navigator.clipboard.writeText(doc2.path);
+          }
+        },
+        {
+          label: "Copy Relative Path",
+          disabled: !relPath,
+          action: () => {
+            if (relPath) navigator.clipboard.writeText(relPath);
+          }
+        },
+        {
+          label: "Reveal in File Explorer",
+          disabled: !doc2.path,
+          action: () => {
+            if (doc2.path) window.shellAPI?.showItemInFolder?.(doc2.path);
+          }
+        }
+      ];
+      contextMenu.show({
+        x: e.clientX,
+        y: e.clientY,
+        items,
+        target: "tab",
+        contextData: { doc: doc2, index }
+      });
+    }
+    showBackgroundContextMenu(e) {
+      const items = [
+        {
+          label: "New Tab",
+          shortcut: "Ctrl+N",
+          action: () => this.onNewTab()
+        },
+        {
+          label: "Close Saved",
+          disabled: !this.tabManager.documents.some((d3) => !d3.dirty),
+          action: () => {
+            if (this.onCloseSaved) this.onCloseSaved();
+            else this.tabManager.removeSaved();
+          }
+        }
+      ];
+      contextMenu.show({
+        x: e.clientX,
+        y: e.clientY,
+        items,
+        target: "tabbar:empty"
+      });
     }
     render() {
       this.container.innerHTML = "";
@@ -78687,7 +78999,17 @@ $$
         tabEl.addEventListener("click", () => {
           this.onSelect(doc2.id);
         });
+        tabEl.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.showTabContextMenu(doc2, index, e);
+        });
         tabList.appendChild(tabEl);
+      });
+      tabList.addEventListener("contextmenu", (e) => {
+        if (e.target.closest(".tab-item")) return;
+        e.preventDefault();
+        this.showBackgroundContextMenu(e);
       });
       const addTabBtn = document.createElement("button");
       addTabBtn.className = "tab-new-btn";
@@ -79147,13 +79469,15 @@ $$
     return String(value || "").replace(/\\/g, "/").toLowerCase();
   }
   var FileTreeUI = class {
-    constructor({ container, onOpenFolder, onOpenFile, onCreate, onRename, onDelete, onToggleSidebar }) {
+    constructor({ container, onOpenFolder, onOpenFile, onCreate, onRename, onDelete, onDuplicate, onRefresh, onToggleSidebar }) {
       this.container = container;
       this.onOpenFolder = onOpenFolder;
       this.onOpenFile = onOpenFile;
       this.onCreate = onCreate;
       this.onRename = onRename;
       this.onDelete = onDelete;
+      this.onDuplicate = onDuplicate;
+      this.onRefresh = onRefresh;
       this.onToggleSidebar = onToggleSidebar;
       this.rootPath = null;
       this.tree = [];
@@ -79171,6 +79495,11 @@ $$
       this.viewContainer.className = "sidebar-view-container";
       this.workspaceView = document.createElement("div");
       this.workspaceView.className = "sidebar-panel sidebar-workspace-view";
+      this.workspaceView.addEventListener("contextmenu", (e) => {
+        if (e.target.closest(".tree-row") || e.target.closest(".sidebar-heading")) return;
+        e.preventDefault();
+        this.showBackgroundContextMenu(e);
+      });
       this.viewContainer.appendChild(this.workspaceView);
       this.container.replaceChildren(this.nav, this.viewContainer);
       this.renderNavigation();
@@ -79191,6 +79520,133 @@ $$
     }
     hasDirectory(entries, relativePath) {
       return entries.some((entry) => entry.type === "directory" && entry.relativePath === relativePath || this.hasDirectory(entry.children || [], relativePath));
+    }
+    hasEntry(relativePath) {
+      const norm = (p) => String(p || "").replace(/\\/g, "/").toLowerCase();
+      const target = norm(relativePath);
+      const search2 = (nodes) => nodes.some((n) => norm(n.relativePath) === target || n.children && search2(n.children));
+      return search2(this.tree);
+    }
+    showFileContextMenu(entry, absolutePath, e) {
+      const items = [
+        {
+          label: "Open",
+          action: () => this.onOpenFile(entry.relativePath)
+        },
+        {
+          label: "Rename...",
+          shortcut: "F2",
+          action: () => this.beginRename(entry)
+        },
+        {
+          label: "Duplicate",
+          action: () => this.onDuplicate?.(entry)
+        },
+        {
+          label: "Delete",
+          danger: true,
+          action: () => this.onDelete(entry)
+        },
+        { divider: true },
+        {
+          label: "Copy Path",
+          action: () => navigator.clipboard.writeText(absolutePath)
+        },
+        {
+          label: "Copy Relative Path",
+          action: () => navigator.clipboard.writeText(entry.relativePath)
+        },
+        {
+          label: "Reveal in File Explorer",
+          action: () => window.shellAPI?.showItemInFolder?.(absolutePath)
+        }
+      ];
+      contextMenu.show({
+        x: e.clientX,
+        y: e.clientY,
+        items,
+        target: "file-tree:file",
+        contextData: { entry, absolutePath }
+      });
+    }
+    showFolderContextMenu(entry, absolutePath, e) {
+      const items = [
+        {
+          label: "New Note",
+          action: () => this.beginCreate(entry.relativePath, "file")
+        },
+        {
+          label: "New Folder",
+          action: () => this.beginCreate(entry.relativePath, "directory")
+        },
+        { divider: true },
+        {
+          label: "Rename...",
+          shortcut: "F2",
+          action: () => this.beginRename(entry)
+        },
+        {
+          label: "Delete",
+          danger: true,
+          action: () => this.onDelete(entry)
+        },
+        { divider: true },
+        {
+          label: "Copy Path",
+          action: () => navigator.clipboard.writeText(absolutePath)
+        },
+        {
+          label: "Copy Relative Path",
+          action: () => navigator.clipboard.writeText(entry.relativePath)
+        },
+        {
+          label: "Reveal in File Explorer",
+          action: () => window.shellAPI?.showItemInFolder?.(absolutePath)
+        }
+      ];
+      contextMenu.show({
+        x: e.clientX,
+        y: e.clientY,
+        items,
+        target: "file-tree:folder",
+        contextData: { entry, absolutePath }
+      });
+    }
+    showBackgroundContextMenu(e) {
+      const hasRoot = Boolean(this.rootPath);
+      const items = [
+        {
+          label: "New Note",
+          disabled: !hasRoot,
+          action: () => this.beginCreate("", "file")
+        },
+        {
+          label: "New Folder",
+          disabled: !hasRoot,
+          action: () => this.beginCreate("", "directory")
+        },
+        { divider: true },
+        {
+          label: "Refresh",
+          disabled: !hasRoot,
+          action: () => this.onRefresh?.()
+        },
+        {
+          label: "Collapse All Folders",
+          disabled: !hasRoot || this.expanded.size <= 1,
+          action: () => {
+            this.expanded = /* @__PURE__ */ new Set([""]);
+            this.render();
+          }
+        }
+      ];
+      contextMenu.show({
+        x: e.clientX,
+        y: e.clientY,
+        items,
+        target: "file-tree:empty",
+        contextData: { rootPath: this.rootPath }
+      });
     }
     setActivePath(filePath) {
       this.activePath = filePath || null;
@@ -79489,6 +79945,15 @@ $$
         remove2.setAttribute("aria-label", `Delete ${entry.name}`);
         remove2.addEventListener("click", () => this.onDelete(entry));
         row.appendChild(remove2);
+        row.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (entry.type === "directory") {
+            this.showFolderContextMenu(entry, absolutePath, e);
+          } else {
+            this.showFileContextMenu(entry, absolutePath, e);
+          }
+        });
         item.appendChild(row);
         if (entry.type === "directory" && isExpanded) {
           const children = document.createElement("ul");
@@ -86245,6 +86710,37 @@ ${error}`);
     tabManager.remove(docId);
     sessionManager.scheduleSave();
   }
+  async function closeOthers(keepId) {
+    const docsToClose = tabManager.documents.filter((d3) => d3.id !== keepId);
+    for (const doc2 of docsToClose) {
+      if (doc2.dirty) {
+        const discard = await showConfirm(`"${doc2.name}" has unsaved changes. Discard them?`, "Discard");
+        if (!discard) continue;
+      }
+      tabManager.remove(doc2.id);
+    }
+    sessionManager.scheduleSave();
+  }
+  async function closeToRight(targetId) {
+    const targetIndex = tabManager.indexOf(targetId);
+    if (targetIndex === -1) return;
+    const docsToClose = tabManager.documents.slice(targetIndex + 1);
+    for (const doc2 of docsToClose) {
+      if (doc2.dirty) {
+        const discard = await showConfirm(`"${doc2.name}" has unsaved changes. Discard them?`, "Discard");
+        if (!discard) continue;
+      }
+      tabManager.remove(doc2.id);
+    }
+    sessionManager.scheduleSave();
+  }
+  async function closeSaved() {
+    const docsToClose = tabManager.documents.filter((d3) => !d3.dirty);
+    for (const doc2 of docsToClose) {
+      tabManager.remove(doc2.id);
+    }
+    sessionManager.scheduleSave();
+  }
   function newFile(initialContent = "") {
     hideWelcome();
     const state = createEditorState(initialContent);
@@ -86706,12 +87202,181 @@ Just start writing.
       }
     }
   });
+  window.contextMenuAPI = contextMenu;
+  function resolveMarkdownLinkAtPos(targetView, pos) {
+    if (pos == null) return null;
+    const doc2 = targetView.state.doc;
+    const tree = syntaxTree(targetView.state);
+    let url = null;
+    if (tree) {
+      let node = tree.resolveInner(pos, 1);
+      while (node) {
+        if (node.name === "Link" || node.name === "Autolink") {
+          if (node.name === "Autolink") {
+            url = doc2.sliceString(node.from, node.to).replace(/^<|>$/g, "").trim();
+          } else {
+            const urlNode = node.getChild("URL");
+            if (urlNode) {
+              url = doc2.sliceString(urlNode.from, urlNode.to).trim();
+            } else {
+              const raw3 = doc2.sliceString(node.from, node.to);
+              const m = raw3.match(/\((https?:\/\/[^\s)]+)\)/);
+              if (m) url = m[1].trim();
+            }
+          }
+          break;
+        }
+        node = node.parent;
+      }
+    }
+    return url;
+  }
+  view.dom.addEventListener("contextmenu", (e) => {
+    if (e.defaultPrevented) return;
+    if (e.target.closest(".fm-properties-card") || e.target.closest(".fm-prop-context-menu") || e.target.closest(".fm-table-menu")) {
+      return;
+    }
+    const clickPos = view.posAtCoords({ x: e.clientX, y: e.clientY });
+    const { from: from3, to, empty: empty2 } = view.state.selection.main;
+    if (clickPos != null && (empty2 || clickPos < from3 || clickPos > to)) {
+      view.dispatch({ selection: { anchor: clickPos } });
+    }
+    const currentSel = view.state.selection.main;
+    const hasSelection2 = !currentSel.empty;
+    const selText = hasSelection2 ? view.state.sliceDoc(currentSel.from, currentSel.to) : "";
+    const linkUrl = clickPos != null ? resolveMarkdownLinkAtPos(view, clickPos) : null;
+    const items = [];
+    if (linkUrl) {
+      items.push({
+        label: "Open Link",
+        action: () => window.shellAPI?.openExternal?.(linkUrl)
+      });
+      items.push({
+        label: "Copy Link Address",
+        action: () => navigator.clipboard.writeText(linkUrl)
+      });
+      items.push({ divider: true });
+    }
+    items.push({
+      label: "Cut",
+      shortcut: "Ctrl+X",
+      disabled: !hasSelection2,
+      action: async () => {
+        if (!hasSelection2) return;
+        await navigator.clipboard.writeText(selText);
+        view.dispatch({
+          changes: { from: currentSel.from, to: currentSel.to, insert: "" },
+          selection: { anchor: currentSel.from }
+        });
+        view.focus();
+      }
+    });
+    items.push({
+      label: "Copy",
+      shortcut: "Ctrl+C",
+      disabled: !hasSelection2,
+      action: async () => {
+        if (!hasSelection2) return;
+        await navigator.clipboard.writeText(selText);
+      }
+    });
+    items.push({
+      label: "Paste",
+      shortcut: "Ctrl+V",
+      action: async () => {
+        try {
+          const clipText = await navigator.clipboard.readText();
+          if (clipText) {
+            const activeSel = view.state.selection.main;
+            view.dispatch({
+              changes: { from: activeSel.from, to: activeSel.to, insert: clipText },
+              selection: { anchor: activeSel.from + clipText.length }
+            });
+            view.focus();
+          }
+        } catch (err) {
+          console.warn("Paste failed:", err);
+        }
+      }
+    });
+    items.push({ divider: true });
+    if (hasSelection2) {
+      items.push({
+        label: "Bold",
+        shortcut: "Ctrl+B",
+        action: () => wrapSelection(view, "**")
+      });
+      items.push({
+        label: "Italic",
+        shortcut: "Ctrl+I",
+        action: () => wrapSelection(view, "*")
+      });
+      items.push({
+        label: "Strikethrough",
+        shortcut: "Alt+Shift+5",
+        action: () => wrapSelection(view, "~~")
+      });
+      items.push({
+        label: "Inline Code",
+        shortcut: "Ctrl+`",
+        action: () => wrapSelection(view, "`")
+      });
+      items.push({
+        label: "Create Link",
+        shortcut: "Ctrl+K",
+        action: () => insertLink(view)
+      });
+      items.push({ divider: true });
+    } else {
+      items.push({
+        label: "Insert Table",
+        action: () => insertTable(view)
+      });
+      items.push({
+        label: "Insert Callout",
+        action: () => insertCallout(view)
+      });
+      items.push({
+        label: "Insert Code Block",
+        action: () => insertCodeBlock(view)
+      });
+      items.push({
+        label: "Insert Math Block",
+        action: () => insertMathBlock(view)
+      });
+      items.push({
+        label: "Insert Horizontal Rule",
+        action: () => insertHorizontalRule(view)
+      });
+      items.push({ divider: true });
+    }
+    items.push({
+      label: "Select All",
+      shortcut: "Ctrl+A",
+      action: () => {
+        selectAll(view);
+        view.focus();
+      }
+    });
+    e.preventDefault();
+    contextMenu.show({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      target: "editor",
+      contextData: { view, hasSelection: hasSelection2, selText, linkUrl, pos: clickPos }
+    });
+  });
   var tabBarUI = new tabs_default({
     container: document.getElementById("tabbar"),
     tabManager,
     onSelect: (id3) => tabManager.setActive(id3),
     onClose: (id3) => closeTab(id3),
-    onNewTab: () => newFile()
+    onCloseOthers: (id3) => closeOthers(id3),
+    onCloseToRight: (id3) => closeToRight(id3),
+    onCloseSaved: () => closeSaved(),
+    onNewTab: () => newFile(),
+    getWorkspacePath: () => workspacePath
   });
   var sessionManager = new sessionManager_default({
     tabManager,
@@ -86877,6 +87542,31 @@ Just start writing.
       }
     }
   }
+  async function duplicateWorkspaceItem(entry) {
+    if (entry.type !== "file") return;
+    try {
+      const fileRes = await window.fileAPI.openWorkspaceFile(entry.relativePath);
+      if (!fileRes || fileRes.canceled) return;
+      const dir = entry.relativePath.includes("/") || entry.relativePath.includes("\\") ? entry.relativePath.replace(/[\\/][^\\/]+$/, "") : "";
+      const baseName = entry.name.replace(/\.md$/i, "");
+      let copyName = `${baseName} copy.md`;
+      let counter = 2;
+      const separator2 = workspacePath?.includes("\\") ? "\\" : "/";
+      while (fileTreeUI?.hasEntry(dir ? `${dir}${separator2}${copyName}` : copyName)) {
+        copyName = `${baseName} copy ${counter}.md`;
+        counter++;
+      }
+      const newRelPath = dir ? `${dir}${separator2}${copyName}` : copyName;
+      const createRes = await window.fileAPI.createWorkspaceItem(newRelPath, "file");
+      if (createRes && createRes.path) {
+        await window.fileAPI.save({ filePath: createRes.path, content: fileRes.content });
+        await refreshWorkspaceTree();
+        openFilePath(createRes.path, fileRes.content);
+      }
+    } catch (error) {
+      alert(`Unable to duplicate file: ${error.message}`);
+    }
+  }
   fileTreeUI = new fileTree_default({
     container: document.getElementById("sidebar"),
     onOpenFolder: openWorkspaceFolder,
@@ -86884,6 +87574,8 @@ Just start writing.
     onCreate: createWorkspaceItem,
     onRename: renameWorkspaceItem,
     onDelete: deleteWorkspaceItem,
+    onDuplicate: duplicateWorkspaceItem,
+    onRefresh: refreshWorkspaceTree,
     onToggleSidebar: toggleSidebar
   });
   var utilityPane = new UtilityPane({

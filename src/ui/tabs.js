@@ -3,6 +3,8 @@
  * Handles rendering the tab strip, drag-to-reorder, and tab action events.
  */
 
+import { contextMenu } from './contextMenu.js';
+
 export class TabBarUI {
   /**
    * @param {Object} options
@@ -10,19 +12,126 @@ export class TabBarUI {
    * @param {import('../model/document.js').TabManager} options.tabManager
    * @param {Function} options.onSelect - (docId) => void
    * @param {Function} options.onClose - (docId) => void
+   * @param {Function} [options.onCloseOthers] - (docId) => void
+   * @param {Function} [options.onCloseToRight] - (docId) => void
+   * @param {Function} [options.onCloseSaved] - () => void
    * @param {Function} options.onNewTab - () => void
+   * @param {Function} [options.getWorkspacePath] - () => string|null
    */
-  constructor({ container, tabManager, onSelect, onClose, onNewTab }) {
+  constructor({ container, tabManager, onSelect, onClose, onCloseOthers, onCloseToRight, onCloseSaved, onNewTab, getWorkspacePath }) {
     this.container = container;
     this.tabManager = tabManager;
     this.onSelect = onSelect;
     this.onClose = onClose;
+    this.onCloseOthers = onCloseOthers;
+    this.onCloseToRight = onCloseToRight;
+    this.onCloseSaved = onCloseSaved;
     this.onNewTab = onNewTab;
+    this.getWorkspacePath = getWorkspacePath;
 
     this.draggedIndex = null;
 
     this.tabManager.onChange(() => this.render());
     this.render();
+  }
+
+  showTabContextMenu(doc, index, e) {
+    let relPath = null;
+    const wsPath = this.getWorkspacePath ? this.getWorkspacePath() : null;
+    if (doc.path && wsPath) {
+      const normDoc = doc.path.replace(/\\/g, '/').toLowerCase();
+      const normWs = wsPath.replace(/\\/g, '/').toLowerCase().replace(/\/+$/, '');
+      if (normDoc.startsWith(normWs + '/')) {
+        relPath = doc.path.slice(wsPath.length).replace(/^[\\/]+/, '');
+      }
+    }
+
+    const items = [
+      {
+        label: 'Close Tab',
+        shortcut: 'Ctrl+W',
+        action: () => this.onClose(doc.id),
+      },
+      {
+        label: 'Close Others',
+        disabled: this.tabManager.documents.length <= 1,
+        action: () => {
+          if (this.onCloseOthers) this.onCloseOthers(doc.id);
+          else this.tabManager.removeOthers(doc.id);
+        },
+      },
+      {
+        label: 'Close to the Right',
+        disabled: index >= this.tabManager.documents.length - 1,
+        action: () => {
+          if (this.onCloseToRight) this.onCloseToRight(doc.id);
+          else this.tabManager.removeToRight(doc.id);
+        },
+      },
+      {
+        label: 'Close Saved',
+        disabled: !this.tabManager.documents.some(d => !d.dirty),
+        action: () => {
+          if (this.onCloseSaved) this.onCloseSaved();
+          else this.tabManager.removeSaved();
+        },
+      },
+      { divider: true },
+      {
+        label: 'Copy Path',
+        disabled: !doc.path,
+        action: () => {
+          if (doc.path) navigator.clipboard.writeText(doc.path);
+        },
+      },
+      {
+        label: 'Copy Relative Path',
+        disabled: !relPath,
+        action: () => {
+          if (relPath) navigator.clipboard.writeText(relPath);
+        },
+      },
+      {
+        label: 'Reveal in File Explorer',
+        disabled: !doc.path,
+        action: () => {
+          if (doc.path) window.shellAPI?.showItemInFolder?.(doc.path);
+        },
+      },
+    ];
+
+    contextMenu.show({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      target: 'tab',
+      contextData: { doc, index },
+    });
+  }
+
+  showBackgroundContextMenu(e) {
+    const items = [
+      {
+        label: 'New Tab',
+        shortcut: 'Ctrl+N',
+        action: () => this.onNewTab(),
+      },
+      {
+        label: 'Close Saved',
+        disabled: !this.tabManager.documents.some(d => !d.dirty),
+        action: () => {
+          if (this.onCloseSaved) this.onCloseSaved();
+          else this.tabManager.removeSaved();
+        },
+      },
+    ];
+
+    contextMenu.show({
+      x: e.clientX,
+      y: e.clientY,
+      items,
+      target: 'tabbar:empty',
+    });
   }
 
   render() {
@@ -99,7 +208,20 @@ export class TabBarUI {
         this.onSelect(doc.id);
       });
 
+      // Context menu
+      tabEl.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.showTabContextMenu(doc, index, e);
+      });
+
       tabList.appendChild(tabEl);
+    });
+
+    tabList.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('.tab-item')) return;
+      e.preventDefault();
+      this.showBackgroundContextMenu(e);
     });
 
     // Add "+" button for new tab
