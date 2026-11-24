@@ -79733,12 +79733,14 @@ $$
      * @param {Object} options.pluginManager - window.pluginManager API
      * @param {Function} [options.showConfirm] - (message, okLabel) => Promise<boolean>
      * @param {Function} [options.onClose] - () => void
+     * @param {boolean} [options.embedded] - Whether mounted inside a parent container (e.g. Settings tab)
      */
-    constructor({ container, pluginManager, showConfirm: showConfirm2, onClose }) {
+    constructor({ container, pluginManager, showConfirm: showConfirm2, onClose, embedded = false }) {
       this.container = container;
       this.pluginManager = pluginManager;
       this.showConfirm = showConfirm2;
       this.onClose = onClose;
+      this.embedded = embedded;
       this.isOpen = false;
       this.plugins = [];
       this.settingsMap = /* @__PURE__ */ new Map();
@@ -79755,6 +79757,9 @@ $$
       this.previousActiveElement = null;
       this.unsubscribePluginsChanged = null;
       this.unsubscribeSettingsChanged = null;
+      this._renderSeq = 0;
+      this._isDevMode = null;
+      this._detailViewMounted = false;
       this.box = this.container.querySelector("#plugins-box");
       if (!this.box) {
         this.box = document.createElement("div");
@@ -79771,7 +79776,9 @@ $$
       `;
         document.head.appendChild(style2);
       }
-      this._bindOverlayEvents();
+      if (!this.embedded) {
+        this._bindOverlayEvents();
+      }
     }
     /**
      * Attach backdrop, keyboard trap, and drag-and-drop events to the container and modal box.
@@ -79865,9 +79872,12 @@ $$
       if (this.isOpen) return;
       this.isOpen = true;
       this.selectedPluginId = null;
+      this._detailViewMounted = false;
       this.detailTab = "overview";
       this.previousActiveElement = document.activeElement;
-      this.container.classList.remove("hidden");
+      if (!this.embedded) {
+        this.container.classList.remove("hidden");
+      }
       this.loading = true;
       this.render();
       if (this.pluginManager?.onPluginsChanged) {
@@ -79893,7 +79903,10 @@ $$
       if (!this.isOpen) return;
       this.isOpen = false;
       this.selectedPluginId = null;
-      this.container.classList.add("hidden");
+      this._detailViewMounted = false;
+      if (!this.embedded) {
+        this.container.classList.add("hidden");
+      }
       if (this.unsubscribePluginsChanged) {
         this.unsubscribePluginsChanged();
         this.unsubscribePluginsChanged = null;
@@ -79955,7 +79968,9 @@ $$
     handlePluginsChanged(updatedPlugins) {
       if (Array.isArray(updatedPlugins)) {
         this.plugins = updatedPlugins;
-        this.render();
+        if (this.inFlightActions.size === 0) {
+          this.render();
+        }
       }
     }
     /**
@@ -80075,7 +80090,6 @@ $$
       const prevEnabled = plugin.enabled;
       const prevActive = plugin.active;
       const prevError = plugin.error;
-      const wasInDetailView = this.selectedPluginId === plugin.name;
       plugin.enabled = enable;
       if (enable) {
         plugin.active = true;
@@ -80083,7 +80097,16 @@ $$
       } else {
         plugin.active = false;
       }
-      this.render();
+      const activeSwitch = this.box.querySelector(
+        this.selectedPluginId ? ".plugin-detail-hero .plugin-toggle-switch" : `.plugin-row[data-plugin-id="${plugin.name}"] .plugin-toggle-switch`
+      );
+      if (activeSwitch) {
+        activeSwitch.setAttribute("aria-checked", String(enable));
+        activeSwitch.title = enable ? "Click to disable" : "Click to enable";
+        activeSwitch.disabled = true;
+      } else {
+        await this.render();
+      }
       try {
         const res = enable ? await this.pluginManager.enable(plugin.name) : await this.pluginManager.disable(plugin.name);
         if (res && res.success === false) {
@@ -80091,25 +80114,20 @@ $$
           plugin.active = prevActive;
           plugin.error = res.error || prevError;
           this.showToast(`Failed to ${enable ? "enable" : "disable"} ${plugin.name}: ${res.error}`, "error");
-          this.render();
         } else {
           this.showToast(`Plugin "${plugin.name}" ${enable ? "enabled" : "disabled"}.`, "success");
           if (enable) {
             await this.loadSettings();
           }
-          if (!enable) {
-            this.selectedPluginId = null;
-          }
-          this.render();
         }
       } catch (err) {
         plugin.enabled = prevEnabled;
         plugin.active = prevActive;
         plugin.error = err.message;
         this.showToast(`Action failed: ${err.message}`, "error");
-        this.render();
       } finally {
         this.inFlightActions.delete(plugin.name);
+        await this.render();
       }
     }
     /**
@@ -80436,20 +80454,31 @@ ${error}`);
       closeBtn.focus();
     }
     /**
+     * Cached check for developer mode.
+     */
+    async getDevMode() {
+      if (this._isDevMode === null) {
+        this._isDevMode = window.appAPI?.isDevMode ? await window.appAPI.isDevMode() : false;
+      }
+      return this._isDevMode;
+    }
+    /**
      * Main render method. Renders either the plugin list or dedicated plugin detail section.
      */
     async render() {
+      const seq = ++this._renderSeq;
       if (this.selectedPluginId) {
-        await this._renderDetailView();
+        await this._renderDetailView(seq);
       } else {
-        this._renderListView();
+        this._renderListView(seq);
       }
     }
     /**
      * Render the main plugins list view.
      * @private
      */
-    _renderListView() {
+    _renderListView(seq) {
+      if (seq !== void 0 && seq !== this._renderSeq) return;
       const contentEl = this.box.querySelector(".plugins-content");
       const prevScrollTop = contentEl ? contentEl.scrollTop : 0;
       const isSearchFocused = document.activeElement?.classList?.contains("plugins-search-input");
@@ -80490,13 +80519,15 @@ ${error}`);
       installGithubBtn.appendChild(installGithubText);
       installGithubBtn.addEventListener("click", () => this.installFromGitHub());
       headerActions.appendChild(installGithubBtn);
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "plugins-close-btn";
-      closeBtn.title = "Close (Esc)";
-      closeBtn.setAttribute("aria-label", "Close dialog");
-      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-      closeBtn.addEventListener("click", () => this.close());
-      headerActions.appendChild(closeBtn);
+      if (!this.embedded) {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "plugins-close-btn";
+        closeBtn.title = "Close (Esc)";
+        closeBtn.setAttribute("aria-label", "Close dialog");
+        closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+        closeBtn.addEventListener("click", () => this.close());
+        headerActions.appendChild(closeBtn);
+      }
       header3.appendChild(headerActions);
       this.box.appendChild(header3);
       const toolbar = document.createElement("div");
@@ -80816,12 +80847,17 @@ ${error}`);
      * Render the dedicated detail section for this.selectedPluginId.
      * @private
      */
-    async _renderDetailView() {
+    async _renderDetailView(seq) {
+      if (seq !== void 0 && seq !== this._renderSeq) return;
+      const prevScrollTop = this.box.querySelector(".plugins-content")?.scrollTop || 0;
+      const wasDetailAlreadyOpen = this._detailViewMounted;
+      this._detailViewMounted = true;
       this.box.replaceChildren();
       const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
       if (!plugin) {
         this.selectedPluginId = null;
-        this._renderListView();
+        this._detailViewMounted = false;
+        this._renderListView(seq);
         return;
       }
       const inFlight = this.inFlightActions.has(plugin.name);
@@ -80839,6 +80875,7 @@ ${error}`);
       backBtn.title = "Back to plugin list (Esc)";
       backBtn.addEventListener("click", () => {
         this.selectedPluginId = null;
+        this._detailViewMounted = false;
         this.render();
       });
       leftWrap.appendChild(backBtn);
@@ -80854,20 +80891,22 @@ ${error}`);
       header3.appendChild(leftWrap);
       const headerActions = document.createElement("div");
       headerActions.className = "plugins-header-actions";
-      const closeBtn = document.createElement("button");
-      closeBtn.className = "plugins-close-btn";
-      closeBtn.title = "Close (Esc)";
-      closeBtn.setAttribute("aria-label", "Close dialog");
-      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-      closeBtn.addEventListener("click", () => this.close());
-      headerActions.appendChild(closeBtn);
+      if (!this.embedded) {
+        const closeBtn = document.createElement("button");
+        closeBtn.className = "plugins-close-btn";
+        closeBtn.title = "Close (Esc)";
+        closeBtn.setAttribute("aria-label", "Close dialog");
+        closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+        closeBtn.addEventListener("click", () => this.close());
+        headerActions.appendChild(closeBtn);
+      }
       header3.appendChild(headerActions);
       this.box.appendChild(header3);
       this._updateToast();
       const tabBar = document.createElement("div");
       tabBar.className = "plugin-detail-tabs";
       tabBar.setAttribute("role", "tablist");
-      tabBar.style.cssText = "display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;";
+      tabBar.style.cssText = "display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;";
       const tabs = [
         { id: "overview", label: "Overview", icon: LayoutDashboard },
         { id: "settings", label: "Settings", icon: Settings2 },
@@ -81494,7 +81533,8 @@ ${error}`);
       reloadSection.appendChild(reloadBtn);
       managePanel.appendChild(reloadSection);
       if (window.appAPI?.isDevMode) {
-        const isDev = await window.appAPI.isDevMode();
+        const isDev = await this.getDevMode();
+        if (seq !== void 0 && seq !== this._renderSeq) return;
         if (isDev) {
           const devReloadSection = document.createElement("div");
           devReloadSection.className = "plugin-detail-section";
@@ -81544,8 +81584,19 @@ ${error}`);
       this._renderRegistryPanel(registryPanel);
       panelsContainer.appendChild(registryPanel);
       content3.appendChild(panelsContainer);
-      this.box.appendChild(content3);
-      backBtn.focus();
+      if (seq !== void 0 && seq !== this._renderSeq) return;
+      const existingContent = this.box.querySelector(".plugins-content");
+      if (existingContent) {
+        existingContent.replaceWith(content3);
+      } else {
+        this.box.appendChild(content3);
+      }
+      if (prevScrollTop) {
+        content3.scrollTop = prevScrollTop;
+      }
+      if (!wasDetailAlreadyOpen) {
+        backBtn.focus();
+      }
     }
     /**
      * Render the Registry panel with available plugins from registry index.
@@ -81685,12 +81736,14 @@ ${error}`);
       this.renderContentPane();
       return true;
     }
-    open() {
+    open(initialTabId = null) {
       this.previousFocus = document.activeElement;
       document.body.classList.add("settings-dialog-open");
       this.element.classList.remove("hidden");
       this.element.setAttribute("aria-hidden", "false");
-      if (!this.activeTabId && this.tabs.length > 0) {
+      if (initialTabId && this.tabs.some((t2) => t2.id === initialTabId)) {
+        this.activeTabId = initialTabId;
+      } else if (!this.activeTabId && this.tabs.length > 0) {
         this.activeTabId = this.tabs[0].id;
       }
       this.renderTabList();
@@ -81704,7 +81757,7 @@ ${error}`);
         }
       }
       this.trapFocus();
-      this.focusFirstTab();
+      this.focusTabButton(this.activeTabId) || this.focusFirstTab();
       document.addEventListener("keydown", this.boundHandleKeyDown);
       document.addEventListener("mousedown", this.boundHandleClickOutside);
       window.dispatchEvent(new CustomEvent("settings:open"));
@@ -82081,7 +82134,7 @@ ${error}`);
             <span>Default folder</span>
             <div style="display:flex; gap:8px;">
               <input type="text" id="setting-default-folder" placeholder="Select folder..." readonly style="flex:1;" />
-              <button type="button" id="btn-select-folder">Browse\u2026</button>
+              <button type="button" class="settings-btn" id="btn-select-folder">Browse\u2026</button>
             </div>
           </label>
         </fieldset>
@@ -82103,24 +82156,80 @@ ${error}`);
   var generalTab = new GeneralTab();
 
   // src/ui/settingsTabs/appearanceTab.js
-  var ACCENTS = {
-    blue: { dark: "#7cb8f0", light: "#2970c8" },
-    steel: { dark: "#90aac8", light: "#3a5878" },
-    sky: { dark: "#80d0e8", light: "#1888a8" },
-    sage: { dark: "#90c8a0", light: "#2a7a48" },
-    mint: { dark: "#80e0c0", light: "#0a8060" },
-    olive: { dark: "#b0c880", light: "#506820" },
-    rose: { dark: "#f0a0b0", light: "#b83050" },
-    coral: { dark: "#f0907a", light: "#c04030" },
-    blush: { dark: "#e8b0c8", light: "#a03870" },
-    lavender: { dark: "#b8a8f0", light: "#5040b8" },
-    mauve: { dark: "#d0a0d0", light: "#883888" },
-    violet: { dark: "#c0a0e8", light: "#6030b0" },
-    peach: { dark: "#f0b890", light: "#b05820" },
-    sand: { dark: "#d4b896", light: "#7a5030" },
-    amber: { dark: "#e8c870", light: "#987010" },
-    slate: { dark: "#a0b8c8", light: "#305068" }
+  var PALETTES = {
+    pastel: {
+      id: "pastel",
+      label: "Pastel",
+      accents: {
+        blue: { label: "Blue", dark: "#7cb8f0", light: "#2970c8" },
+        steel: { label: "Steel", dark: "#90aac8", light: "#3a5878" },
+        sky: { label: "Sky", dark: "#80d0e8", light: "#1888a8" },
+        sage: { label: "Sage", dark: "#90c8a0", light: "#2a7a48" },
+        mint: { label: "Mint", dark: "#80e0c0", light: "#0a8060" },
+        olive: { label: "Olive", dark: "#b0c880", light: "#506820" },
+        rose: { label: "Rose", dark: "#f0a0b0", light: "#b83050" },
+        coral: { label: "Coral", dark: "#f0907a", light: "#c04030" },
+        blush: { label: "Blush", dark: "#e8b0c8", light: "#a03870" },
+        lavender: { label: "Lavender", dark: "#b8a8f0", light: "#5040b8" },
+        mauve: { label: "Mauve", dark: "#d0a0d0", light: "#883888" },
+        violet: { label: "Violet", dark: "#c0a0e8", light: "#6030b0" },
+        peach: { label: "Peach", dark: "#f0b890", light: "#b05820" },
+        sand: { label: "Sand", dark: "#d4b896", light: "#7a5030" },
+        amber: { label: "Amber", dark: "#e8c870", light: "#987010" },
+        slate: { label: "Slate", dark: "#a0b8c8", light: "#305068" }
+      }
+    },
+    vibrant: {
+      id: "vibrant",
+      label: "Vibrant",
+      accents: {
+        electric: { label: "Electric Blue", dark: "#3b82f6", light: "#1d4ed8" },
+        emerald: { label: "Emerald", dark: "#10b981", light: "#047857" },
+        crimson: { label: "Crimson", dark: "#ef4444", light: "#b91c1c" },
+        sunset: { label: "Sunset Orange", dark: "#f97316", light: "#c2410c" },
+        royal: { label: "Royal Purple", dark: "#a855f7", light: "#7e22ce" },
+        cyan: { label: "Vibrant Cyan", dark: "#06b6d4", light: "#0e7490" },
+        fuchsia: { label: "Fuchsia", dark: "#d946ef", light: "#a21caf" },
+        gold: { label: "Goldenrod", dark: "#eab308", light: "#a16207" }
+      }
+    },
+    earth: {
+      id: "earth",
+      label: "Earth & Warm",
+      accents: {
+        terracotta: { label: "Terracotta", dark: "#d97757", light: "#9a3412" },
+        moss: { label: "Forest Moss", dark: "#709775", light: "#3b5a3e" },
+        ochre: { label: "Ochre Clay", dark: "#c68b59", light: "#78350f" },
+        copper: { label: "Rustic Copper", dark: "#b86b53", light: "#7c2d12" },
+        clay: { label: "Warm Clay", dark: "#b4846c", light: "#6d4c41" },
+        forest: { label: "Deep Forest", dark: "#588157", light: "#2d4a2d" }
+      }
+    },
+    neon: {
+      id: "neon",
+      label: "Cyber & Neon",
+      accents: {
+        neonGreen: { label: "Neon Green", dark: "#39ff14", light: "#15803d" },
+        laserPink: { label: "Laser Pink", dark: "#ff007f", light: "#be123c" },
+        cyberCyan: { label: "Cyber Cyan", dark: "#00f0ff", light: "#0369a1" },
+        neonAmber: { label: "Neon Amber", dark: "#ffb703", light: "#b45309" },
+        neonViolet: { label: "Electric Violet", dark: "#bf00ff", light: "#6b21a8" }
+      }
+    },
+    minimal: {
+      id: "minimal",
+      label: "Monochrome",
+      accents: {
+        graphite: { label: "Graphite", dark: "#888888", light: "#444444" },
+        silver: { label: "Cool Silver", dark: "#b0b0b0", light: "#555555" },
+        charcoal: { label: "Charcoal", dark: "#666666", light: "#222222" },
+        pearl: { label: "Pearl White", dark: "#d0d0d0", light: "#666666" }
+      }
+    }
   };
+  var ACCENTS = Object.values(PALETTES).reduce((acc, pal) => {
+    return { ...acc, ...pal.accents };
+  }, {});
   var THEMES = [
     { value: "theme-dark", label: "Dark", class: "dark" },
     { value: "theme-light", label: "Light", class: "light" },
@@ -82143,6 +82252,7 @@ ${error}`);
       this.element = null;
       this.currentAccent = "blue";
       this.currentTheme = "theme-dark";
+      this.selectedPalette = "pastel";
       this.customColors = {};
     }
     async onActivate() {
@@ -82158,18 +82268,18 @@ ${error}`);
         this.currentTheme = apiTheme || settingsTheme || window.themeControls?.getTheme() || "theme-dark";
         const settingsAccent = await window.settingsAPI?.get?.("accent");
         this.currentAccent = settingsAccent || window.themeControls?.getAccent() || "blue";
+        for (const [palKey, pal] of Object.entries(PALETTES)) {
+          if (pal.accents[this.currentAccent]) {
+            this.selectedPalette = palKey;
+            break;
+          }
+        }
         this.customColors = {};
         const savedCustom = await window.themeAPI?.getCustomColors?.() || await window.settingsAPI?.get?.("customColors");
         if (savedCustom && typeof savedCustom === "object") {
           this.customColors = { ...savedCustom };
         } else {
-          const CUSTOM_COLOR_KEYS2 = [
-            { key: "--fm-bg", label: "Background" },
-            { key: "--fm-text", label: "Text" },
-            { key: "--fm-accent", label: "Accent" },
-            { key: "--fm-border", label: "Border" }
-          ];
-          for (const { key } of CUSTOM_COLOR_KEYS2) {
+          for (const { key } of CUSTOM_COLOR_KEYS) {
             const value = getComputedStyle(document.documentElement).getPropertyValue(key).trim();
             if (value) this.customColors[key] = value;
           }
@@ -82180,10 +82290,41 @@ ${error}`);
       if (this.element) {
         const themeRadios = this.element.querySelectorAll('input[name="theme"]');
         themeRadios.forEach((r2) => r2.checked = r2.value === this.currentTheme);
-        const accentBtns = this.element.querySelectorAll(".accent-opt");
-        accentBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.accent === this.currentAccent));
+        this.renderAccentSwatches();
         this.renderCustomColorInputs();
+        this.updateCustomSectionVisibility();
       }
+    }
+    renderAccentSwatches() {
+      const container = this.element?.querySelector("#accent-options");
+      if (!container) return;
+      let accentsToRender = {};
+      if (this.selectedPalette === "all") {
+        accentsToRender = ACCENTS;
+      } else if (PALETTES[this.selectedPalette]) {
+        accentsToRender = PALETTES[this.selectedPalette].accents;
+      } else {
+        accentsToRender = PALETTES.pastel.accents;
+      }
+      const isLight = this.currentTheme === "theme-light" || this.currentTheme === "theme-sepia";
+      container.innerHTML = Object.keys(accentsToRender).map((key) => {
+        const color = accentsToRender[key][isLight ? "light" : "dark"] || accentsToRender[key].dark;
+        const label = accentsToRender[key].label || key;
+        const isActive = key === this.currentAccent;
+        return `
+        <button type="button" class="accent-opt ${isActive ? "active" : ""}" data-accent="${key}" style="--c:${color}" title="${label}"></button>
+      `;
+      }).join("");
+      container.querySelectorAll(".accent-opt").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          this.currentAccent = btn.dataset.accent;
+          await this.saveAccent();
+          this.updateAccentSelection();
+        });
+      });
+      this.element?.querySelectorAll(".palette-cat-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.palette === this.selectedPalette);
+      });
     }
     bindEvents() {
       const themeRadios = this.element.querySelectorAll('input[name="theme"]');
@@ -82191,15 +82332,15 @@ ${error}`);
         radio.addEventListener("change", async () => {
           this.currentTheme = radio.value;
           await this.saveTheme();
+          this.renderAccentSwatches();
           this.updateCustomSectionVisibility();
         });
       });
-      const accentBtns = this.element.querySelectorAll(".accent-opt");
-      accentBtns.forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          this.currentAccent = btn.dataset.accent;
-          await this.saveAccent();
-          this.updateAccentSelection();
+      const catBtns = this.element.querySelectorAll(".palette-cat-btn");
+      catBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          this.selectedPalette = btn.dataset.palette;
+          this.renderAccentSwatches();
         });
       });
       const fontSize = this.element.querySelector("#setting-font-size");
@@ -82226,6 +82367,10 @@ ${error}`);
       editorWidth?.addEventListener("change", async () => {
         await this.saveSetting("editorWidth", parseInt(editorWidth.value, 10));
       });
+      const restoreBtn = this.element.querySelector("#btn-restore-appearance");
+      restoreBtn?.addEventListener("click", async () => {
+        await this.restoreDefaults();
+      });
       this.element.querySelectorAll(".custom-color-input").forEach((input) => {
         input.addEventListener("input", () => {
           const key = input.dataset.key;
@@ -82236,7 +82381,49 @@ ${error}`);
           await this.saveCustomColors();
         });
       });
+      this.renderAccentSwatches();
       this.updateCustomSectionVisibility();
+    }
+    async restoreDefaults() {
+      this.currentTheme = "theme-dark";
+      this.currentAccent = "blue";
+      this.selectedPalette = "pastel";
+      this.customColors = {
+        "--fm-bg": "#1a1a1a",
+        "--fm-text": "#d4d4d4",
+        "--fm-accent": "#7cb8f0",
+        "--fm-border": "#2a2a2a"
+      };
+      window.themeControls?.setTheme("theme-dark");
+      window.themeControls?.setAccent("blue");
+      for (const [key, value] of Object.entries(this.customColors)) {
+        window.themeControls?.applyCustomColor(key, value);
+      }
+      await this.saveTheme();
+      await this.saveAccent();
+      await this.saveCustomColors();
+      await this.saveSetting("fontSize", 17);
+      await this.saveSetting("lineHeight", 1.9);
+      await this.saveSetting("editorWidth", 720);
+      if (this.element) {
+        const themeRadios = this.element.querySelectorAll('input[name="theme"]');
+        themeRadios.forEach((r2) => r2.checked = r2.value === "theme-dark");
+        const fontSize = this.element.querySelector("#setting-font-size");
+        const fontSizeVal = this.element.querySelector("#font-size-value");
+        if (fontSize) fontSize.value = "17";
+        if (fontSizeVal) fontSizeVal.textContent = "17px";
+        const lineHeight = this.element.querySelector("#setting-line-height");
+        const lineHeightVal = this.element.querySelector("#line-height-value");
+        if (lineHeight) lineHeight.value = "1.9";
+        if (lineHeightVal) lineHeightVal.textContent = "1.9";
+        const editorWidth = this.element.querySelector("#setting-editor-width");
+        const editorWidthVal = this.element.querySelector("#editor-width-value");
+        if (editorWidth) editorWidth.value = "720";
+        if (editorWidthVal) editorWidthVal.textContent = "720px";
+        this.renderAccentSwatches();
+        this.renderCustomColorInputs();
+        this.updateCustomSectionVisibility();
+      }
     }
     async saveTheme() {
       try {
@@ -82319,11 +82506,15 @@ ${error}`);
         </fieldset>
         <fieldset>
           <legend>Accent Color</legend>
-          <div id="accent-options" class="accent-options-grid">
-            ${Object.keys(ACCENTS).map((key) => `
-              <button type="button" class="accent-opt" data-accent="${key}" style="--c:${ACCENTS[key].dark}" title="${key}"></button>
-            `).join("")}
+          <div class="palette-categories">
+            <button type="button" class="palette-cat-btn ${this.selectedPalette === "pastel" ? "active" : ""}" data-palette="pastel">Pastel</button>
+            <button type="button" class="palette-cat-btn ${this.selectedPalette === "vibrant" ? "active" : ""}" data-palette="vibrant">Vibrant</button>
+            <button type="button" class="palette-cat-btn ${this.selectedPalette === "earth" ? "active" : ""}" data-palette="earth">Earth & Warm</button>
+            <button type="button" class="palette-cat-btn ${this.selectedPalette === "neon" ? "active" : ""}" data-palette="neon">Cyber & Neon</button>
+            <button type="button" class="palette-cat-btn ${this.selectedPalette === "minimal" ? "active" : ""}" data-palette="minimal">Monochrome</button>
+            <button type="button" class="palette-cat-btn ${this.selectedPalette === "all" ? "active" : ""}" data-palette="all">All</button>
           </div>
+          <div id="accent-options" class="accent-options-grid"></div>
         </fieldset>
         <fieldset id="custom-colors-section" style="display:none;">
           <legend>Custom Theme Colors</legend>
@@ -82353,6 +82544,13 @@ ${error}`);
             </div>
           </label>
         </fieldset>
+        <div class="settings-restore-row">
+          <span style="font-size: 12.5px; color: var(--muted);">Reset appearance preferences back to default</span>
+          <button type="button" class="restore-defaults-btn" id="btn-restore-appearance">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Restore Defaults</span>
+          </button>
+        </div>
       </div>
     `;
       return this.element;
@@ -82361,31 +82559,48 @@ ${error}`);
   var appearanceTab = new AppearanceTab();
 
   // src/ui/settingsTabs/pluginsTab.js
-  var pluginsTab = createSettingsTab(
-    "plugins",
-    "Plugins",
-    Plug,
-    () => {
-      const container = document.createElement("div");
-      container.className = "settings-tab-content";
-      container.innerHTML = `
-      <h3>Plugins</h3>
-      <p class="settings-placeholder">Plugin manager will be embedded here in Phase 3.</p>
-      <div class="settings-form">
-        <div class="plugin-manager-placeholder">
-          <p>This will contain the full plugin management UI:</p>
-          <ul>
-            <li>Plugin list with enable/disable toggles</li>
-            <li>Plugin detail view (Overview, Settings, Contributions, Permissions, Location, Manage, Registry)</li>
-            <li>Install from folder / GitHub</li>
-            <li>Hot reload for development</li>
-          </ul>
-        </div>
+  var PluginsTab = class extends SettingsTab {
+    constructor() {
+      super({
+        id: "plugins",
+        label: "Plugins",
+        icon: Plug
+      });
+      this.element = null;
+      this.panelInstance = null;
+    }
+    render() {
+      if (this.element) {
+        return this.element;
+      }
+      this.element = document.createElement("div");
+      this.element.className = "settings-tab-content settings-tab-plugins";
+      this.element.innerHTML = `
+      <div id="settings-plugins-container">
+        <div id="plugins-box"></div>
       </div>
     `;
-      return container;
+      const container = this.element.querySelector("#settings-plugins-container");
+      this.panelInstance = new PluginManagerPanel({
+        container,
+        pluginManager: window.pluginManager,
+        showConfirm: window.showConfirm,
+        embedded: true
+      });
+      return this.element;
     }
-  );
+    async onActivate() {
+      if (this.panelInstance) {
+        await this.panelInstance.open();
+      }
+    }
+    onDeactivate() {
+      if (this.panelInstance) {
+        this.panelInstance.close();
+      }
+    }
+  };
+  var pluginsTab = new PluginsTab();
 
   // src/ui/settingsTabs/shortcutsTab.js
   var shortcutsTab = createSettingsTab(
@@ -85789,30 +86004,75 @@ ${error}`);
   }
   var THEMES2 = ["theme-dark", "theme-light", "theme-sepia"];
   var currentTheme = localStorage.getItem("fm-theme") || "theme-dark";
-  var ACCENTS2 = {
-    // Blues
-    blue: { dark: "#7cb8f0", light: "#2970c8" },
-    steel: { dark: "#90aac8", light: "#3a5878" },
-    sky: { dark: "#80d0e8", light: "#1888a8" },
-    // Greens
-    sage: { dark: "#90c8a0", light: "#2a7a48" },
-    mint: { dark: "#80e0c0", light: "#0a8060" },
-    olive: { dark: "#b0c880", light: "#506820" },
-    // Reds / Pinks
-    rose: { dark: "#f0a0b0", light: "#b83050" },
-    coral: { dark: "#f0907a", light: "#c04030" },
-    blush: { dark: "#e8b0c8", light: "#a03870" },
-    // Purples
-    lavender: { dark: "#b8a8f0", light: "#5040b8" },
-    mauve: { dark: "#d0a0d0", light: "#883888" },
-    violet: { dark: "#c0a0e8", light: "#6030b0" },
-    // Warm neutrals
-    peach: { dark: "#f0b890", light: "#b05820" },
-    sand: { dark: "#d4b896", light: "#7a5030" },
-    amber: { dark: "#e8c870", light: "#987010" },
-    // Cool neutral
-    slate: { dark: "#a0b8c8", light: "#305068" }
+  var PALETTES2 = {
+    pastel: {
+      label: "Pastel",
+      accents: {
+        blue: { label: "Blue", dark: "#7cb8f0", light: "#2970c8" },
+        steel: { label: "Steel", dark: "#90aac8", light: "#3a5878" },
+        sky: { label: "Sky", dark: "#80d0e8", light: "#1888a8" },
+        sage: { label: "Sage", dark: "#90c8a0", light: "#2a7a48" },
+        mint: { label: "Mint", dark: "#80e0c0", light: "#0a8060" },
+        olive: { label: "Olive", dark: "#b0c880", light: "#506820" },
+        rose: { label: "Rose", dark: "#f0a0b0", light: "#b83050" },
+        coral: { label: "Coral", dark: "#f0907a", light: "#c04030" },
+        blush: { label: "Blush", dark: "#e8b0c8", light: "#a03870" },
+        lavender: { label: "Lavender", dark: "#b8a8f0", light: "#5040b8" },
+        mauve: { label: "Mauve", dark: "#d0a0d0", light: "#883888" },
+        violet: { label: "Violet", dark: "#c0a0e8", light: "#6030b0" },
+        peach: { label: "Peach", dark: "#f0b890", light: "#b05820" },
+        sand: { label: "Sand", dark: "#d4b896", light: "#7a5030" },
+        amber: { label: "Amber", dark: "#e8c870", light: "#987010" },
+        slate: { label: "Slate", dark: "#a0b8c8", light: "#305068" }
+      }
+    },
+    vibrant: {
+      label: "Vibrant",
+      accents: {
+        electric: { label: "Electric Blue", dark: "#3b82f6", light: "#1d4ed8" },
+        emerald: { label: "Emerald", dark: "#10b981", light: "#047857" },
+        crimson: { label: "Crimson", dark: "#ef4444", light: "#b91c1c" },
+        sunset: { label: "Sunset Orange", dark: "#f97316", light: "#c2410c" },
+        royal: { label: "Royal Purple", dark: "#a855f7", light: "#7e22ce" },
+        cyan: { label: "Vibrant Cyan", dark: "#06b6d4", light: "#0e7490" },
+        fuchsia: { label: "Fuchsia", dark: "#d946ef", light: "#a21caf" },
+        gold: { label: "Goldenrod", dark: "#eab308", light: "#a16207" }
+      }
+    },
+    earth: {
+      label: "Earth & Warm",
+      accents: {
+        terracotta: { label: "Terracotta", dark: "#d97757", light: "#9a3412" },
+        moss: { label: "Forest Moss", dark: "#709775", light: "#3b5a3e" },
+        ochre: { label: "Ochre Clay", dark: "#c68b59", light: "#78350f" },
+        copper: { label: "Rustic Copper", dark: "#b86b53", light: "#7c2d12" },
+        clay: { label: "Warm Clay", dark: "#b4846c", light: "#6d4c41" },
+        forest: { label: "Deep Forest", dark: "#588157", light: "#2d4a2d" }
+      }
+    },
+    neon: {
+      label: "Cyber & Neon",
+      accents: {
+        neonGreen: { label: "Neon Green", dark: "#39ff14", light: "#15803d" },
+        laserPink: { label: "Laser Pink", dark: "#ff007f", light: "#be123c" },
+        cyberCyan: { label: "Cyber Cyan", dark: "#00f0ff", light: "#0369a1" },
+        neonAmber: { label: "Neon Amber", dark: "#ffb703", light: "#b45309" },
+        neonViolet: { label: "Electric Violet", dark: "#bf00ff", light: "#6b21a8" }
+      }
+    },
+    minimal: {
+      label: "Monochrome",
+      accents: {
+        graphite: { label: "Graphite", dark: "#888888", light: "#444444" },
+        silver: { label: "Cool Silver", dark: "#b0b0b0", light: "#555555" },
+        charcoal: { label: "Charcoal", dark: "#666666", light: "#222222" },
+        pearl: { label: "Pearl White", dark: "#d0d0d0", light: "#666666" }
+      }
+    }
   };
+  var ACCENTS2 = Object.values(PALETTES2).reduce((acc, pal) => {
+    return { ...acc, ...pal.accents };
+  }, {});
   var currentAccent = localStorage.getItem("fm-accent") || "blue";
   function applyAccent(name2) {
     const isLight = currentTheme !== "theme-dark";
@@ -85820,6 +86080,11 @@ ${error}`);
     document.documentElement.style.setProperty("--accent", color);
     document.documentElement.style.setProperty("--selection", `${color}38`);
     document.documentElement.style.setProperty("--selection-active", `${color}55`);
+    if (document.body) {
+      document.body.style.setProperty("--accent", color);
+      document.body.style.setProperty("--selection", `${color}38`);
+      document.body.style.setProperty("--selection-active", `${color}55`);
+    }
     currentAccent = name2;
     localStorage.setItem("fm-accent", name2);
     window.settingsAPI?.set?.("accent", name2).catch(() => {
@@ -86655,6 +86920,7 @@ Just start writing.
     getAccent: () => currentAccent,
     setAccent: (name2) => applyAccent(name2),
     getAccents: () => ACCENTS2,
+    getPalettes: () => PALETTES2,
     getThemes: () => THEMES2,
     applyCustomColor: (key, value) => document.documentElement.style.setProperty(key, value)
   };
@@ -87681,7 +87947,7 @@ Just start writing.
       shortcut: "Ctrl+Shift+P",
       section: "plugins",
       run: () => {
-        pluginManagerPanel.open();
+        settingsDialog.open("plugins");
       },
       enabled: () => true
     });
@@ -87720,19 +87986,31 @@ Just start writing.
     slashMenu = null;
     slashTriggerPos = null;
   }
-  function showSlashMenu() {
-    hideSlashMenu();
-    if (!slashCommands.size) return;
-    slashTriggerPos = view.state.selection.main.head - 1;
-    slashMenu = document.createElement("div");
-    slashMenu.className = "fm-slash-menu";
-    slashMenu.setAttribute("role", "listbox");
-    for (const command3 of slashCommands.values()) {
+  function renderSlashItems(query = "") {
+    if (!slashMenu) return;
+    const q2 = query.trim().toLowerCase();
+    const matches = Array.from(slashCommands.values()).filter((command3) => {
+      if (!q2) return true;
+      const label = (command3.label || "").toLowerCase();
+      const id3 = (command3.id || "").toLowerCase();
+      return label.includes(q2) || id3.includes(q2);
+    });
+    slashMenu.innerHTML = "";
+    if (matches.length === 0) {
+      const empty2 = document.createElement("div");
+      empty2.className = "fm-slash-empty";
+      empty2.textContent = "No matching commands";
+      slashMenu.appendChild(empty2);
+      return;
+    }
+    matches.forEach((command3, idx) => {
       const item = document.createElement("button");
       item.type = "button";
-      item.className = "fm-slash-item";
+      item.className = `fm-slash-item ${idx === 0 ? "active" : ""}`;
       item.textContent = command3.label;
       item.setAttribute("role", "option");
+      item.dataset.commandId = command3.id;
+      item.dataset.pluginId = command3.pluginId;
       item.addEventListener("mousedown", (event) => {
         event.preventDefault();
         const triggerPos = slashTriggerPos;
@@ -87740,13 +88018,47 @@ Just start writing.
         window.pluginManager?.invokeSlashCommand?.(command3.pluginId, command3.id, triggerPos);
       });
       slashMenu.appendChild(item);
-    }
-    document.body.appendChild(slashMenu);
-    const coords = view.coordsAtPos(view.state.selection.main.head);
+    });
+  }
+  function updateSlashPosition() {
+    if (!slashMenu) return;
+    const head = view.state.selection.main.head;
+    const coords = view.coordsAtPos(head);
     if (coords) {
       slashMenu.style.left = `${coords.left}px`;
       slashMenu.style.top = `${coords.bottom + 4}px`;
     }
+  }
+  function updateSlashFilter() {
+    if (!slashMenu || slashTriggerPos === null) return;
+    const head = view.state.selection.main.head;
+    if (head <= slashTriggerPos) {
+      hideSlashMenu();
+      return;
+    }
+    const triggerChar = view.state.doc.sliceString(slashTriggerPos, slashTriggerPos + 1);
+    if (triggerChar !== "/") {
+      hideSlashMenu();
+      return;
+    }
+    const query = view.state.doc.sliceString(slashTriggerPos + 1, head);
+    if (query.includes("\n") || query.includes(" ")) {
+      hideSlashMenu();
+      return;
+    }
+    renderSlashItems(query);
+    updateSlashPosition();
+  }
+  function showSlashMenu() {
+    hideSlashMenu();
+    if (!slashCommands.size) return;
+    slashTriggerPos = view.state.selection.main.head - 1;
+    slashMenu = document.createElement("div");
+    slashMenu.className = "fm-slash-menu";
+    slashMenu.setAttribute("role", "listbox");
+    renderSlashItems("");
+    document.body.appendChild(slashMenu);
+    updateSlashPosition();
     dismissSlashListener = (e) => {
       if (slashMenu && !slashMenu.contains(e.target)) {
         hideSlashMenu();
@@ -87765,22 +88077,23 @@ Just start writing.
         const items = slashMenu.querySelectorAll(".fm-slash-item");
         if (items.length) {
           event.preventDefault();
-          const active = slashMenu.querySelector(".fm-slash-item:focus");
+          const active = slashMenu.querySelector(".fm-slash-item.active") || slashMenu.querySelector(".fm-slash-item");
           let idx = Array.from(items).indexOf(active);
           if (event.key === "ArrowDown") idx = (idx + 1) % items.length;
           else idx = (idx - 1 + items.length) % items.length;
-          items[idx]?.focus();
+          items.forEach((it, i) => it.classList.toggle("active", i === idx));
+          items[idx]?.scrollIntoView({ block: "nearest" });
         }
-      } else if (event.key === "Enter") {
-        const active = slashMenu.querySelector(".fm-slash-item:focus");
+      } else if (event.key === "Enter" || event.key === "Tab") {
+        const active = slashMenu.querySelector(".fm-slash-item.active") || slashMenu.querySelector(".fm-slash-item");
         if (active) {
           event.preventDefault();
-          active.click();
+          active.dispatchEvent(new MouseEvent("mousedown", { cancelable: true }));
         } else {
           hideSlashMenu();
         }
-      } else if (event.key === "Backspace" || event.key === " ") {
-        hideSlashMenu();
+      } else {
+        setTimeout(updateSlashFilter, 0);
       }
     }
   });

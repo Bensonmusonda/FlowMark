@@ -113,7 +113,7 @@ export class GeneralTab extends SettingsTab {
             <span>Default folder</span>
             <div style="display:flex; gap:8px;">
               <input type="text" id="setting-default-folder" placeholder="Select folder..." readonly style="flex:1;" />
-              <button type="button" id="btn-select-folder">Browse…</button>
+              <button type="button" class="settings-btn" id="btn-select-folder">Browse…</button>
             </div>
           </label>
         </fieldset>

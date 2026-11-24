@@ -22,12 +22,14 @@ export class SettingsDialog {
     return true;
   }
 
-  open() {
+  open(initialTabId = null) {
     this.previousFocus = document.activeElement;
     document.body.classList.add('settings-dialog-open');
     this.element.classList.remove('hidden');
     this.element.setAttribute('aria-hidden', 'false');
-    if (!this.activeTabId && this.tabs.length > 0) {
+    if (initialTabId && this.tabs.some(t => t.id === initialTabId)) {
+      this.activeTabId = initialTabId;
+    } else if (!this.activeTabId && this.tabs.length > 0) {
       this.activeTabId = this.tabs[0].id;
     }
     this.renderTabList();
@@ -37,7 +39,7 @@ export class SettingsDialog {
       try { activeTab.onActivate(); } catch (err) { console.error(err); }
     }
     this.trapFocus();
-    this.focusFirstTab();
+    this.focusTabButton(this.activeTabId) || this.focusFirstTab();
     document.addEventListener('keydown', this.boundHandleKeyDown);
     document.addEventListener('mousedown', this.boundHandleClickOutside);
     window.dispatchEvent(new CustomEvent('settings:open'));

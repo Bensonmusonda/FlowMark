@@ -62,12 +62,14 @@ export class PluginManagerPanel {
    * @param {Object} options.pluginManager - window.pluginManager API
    * @param {Function} [options.showConfirm] - (message, okLabel) => Promise<boolean>
    * @param {Function} [options.onClose] - () => void
+   * @param {boolean} [options.embedded] - Whether mounted inside a parent container (e.g. Settings tab)
    */
-  constructor({ container, pluginManager, showConfirm, onClose }) {
+  constructor({ container, pluginManager, showConfirm, onClose, embedded = false }) {
     this.container = container;
     this.pluginManager = pluginManager;
     this.showConfirm = showConfirm;
     this.onClose = onClose;
+    this.embedded = embedded;
 
     this.isOpen = false;
     this.plugins = [];
@@ -85,6 +87,9 @@ export class PluginManagerPanel {
     this.previousActiveElement = null;
     this.unsubscribePluginsChanged = null;
     this.unsubscribeSettingsChanged = null;
+    this._renderSeq = 0;
+    this._isDevMode = null;
+    this._detailViewMounted = false;
 
     this.box = this.container.querySelector('#plugins-box');
     if (!this.box) {
@@ -105,7 +110,9 @@ export class PluginManagerPanel {
       document.head.appendChild(style);
     }
 
-    this._bindOverlayEvents();
+    if (!this.embedded) {
+      this._bindOverlayEvents();
+    }
   }
 
   /**
@@ -216,9 +223,12 @@ export class PluginManagerPanel {
     if (this.isOpen) return;
     this.isOpen = true;
     this.selectedPluginId = null;
+    this._detailViewMounted = false;
     this.detailTab = 'overview';
     this.previousActiveElement = document.activeElement;
-    this.container.classList.remove('hidden');
+    if (!this.embedded) {
+      this.container.classList.remove('hidden');
+    }
     this.loading = true;
 
     // Render initial state
@@ -253,7 +263,10 @@ export class PluginManagerPanel {
     if (!this.isOpen) return;
     this.isOpen = false;
     this.selectedPluginId = null;
-    this.container.classList.add('hidden');
+    this._detailViewMounted = false;
+    if (!this.embedded) {
+      this.container.classList.add('hidden');
+    }
 
     if (this.unsubscribePluginsChanged) {
       this.unsubscribePluginsChanged();
@@ -322,7 +335,9 @@ export class PluginManagerPanel {
   handlePluginsChanged(updatedPlugins) {
     if (Array.isArray(updatedPlugins)) {
       this.plugins = updatedPlugins;
-      this.render();
+      if (this.inFlightActions.size === 0) {
+        this.render();
+      }
     }
   }
 
@@ -461,7 +476,6 @@ export class PluginManagerPanel {
     const prevEnabled = plugin.enabled;
     const prevActive = plugin.active;
     const prevError = plugin.error;
-    const wasInDetailView = this.selectedPluginId === plugin.name;
 
     // Optimistic UI state
     plugin.enabled = enable;
@@ -472,8 +486,19 @@ export class PluginManagerPanel {
       plugin.active = false;
     }
 
-    // Update whichever view is currently visible
-    this.render();
+    // Update switch element in-place to prevent layout jitter
+    const activeSwitch = this.box.querySelector(
+      this.selectedPluginId
+        ? '.plugin-detail-hero .plugin-toggle-switch'
+        : `.plugin-row[data-plugin-id="${plugin.name}"] .plugin-toggle-switch`
+    );
+    if (activeSwitch) {
+      activeSwitch.setAttribute('aria-checked', String(enable));
+      activeSwitch.title = enable ? 'Click to disable' : 'Click to enable';
+      activeSwitch.disabled = true;
+    } else {
+      await this.render();
+    }
 
     try {
       const res = enable
@@ -486,26 +511,20 @@ export class PluginManagerPanel {
         plugin.active = prevActive;
         plugin.error = res.error || prevError;
         this.showToast(`Failed to ${enable ? 'enable' : 'disable'} ${plugin.name}: ${res.error}`, 'error');
-        this.render();
       } else {
         this.showToast(`Plugin "${plugin.name}" ${enable ? 'enabled' : 'disabled'}.`, 'success');
         if (enable) {
           await this.loadSettings();
         }
-        // On successful disable, navigate back to list view
-        if (!enable) {
-          this.selectedPluginId = null;
-        }
-        this.render();
       }
     } catch (err) {
       plugin.enabled = prevEnabled;
       plugin.active = prevActive;
       plugin.error = err.message;
       this.showToast(`Action failed: ${err.message}`, 'error');
-      this.render();
     } finally {
       this.inFlightActions.delete(plugin.name);
+      await this.render();
     }
   }
 
@@ -878,13 +897,24 @@ export class PluginManagerPanel {
   }
 
   /**
+   * Cached check for developer mode.
+   */
+  async getDevMode() {
+    if (this._isDevMode === null) {
+      this._isDevMode = window.appAPI?.isDevMode ? await window.appAPI.isDevMode() : false;
+    }
+    return this._isDevMode;
+  }
+
+  /**
    * Main render method. Renders either the plugin list or dedicated plugin detail section.
    */
   async render() {
+    const seq = ++this._renderSeq;
     if (this.selectedPluginId) {
-      await this._renderDetailView();
+      await this._renderDetailView(seq);
     } else {
-      this._renderListView();
+      this._renderListView(seq);
     }
   }
 
@@ -892,7 +922,8 @@ export class PluginManagerPanel {
    * Render the main plugins list view.
    * @private
    */
-  _renderListView() {
+  _renderListView(seq) {
+    if (seq !== undefined && seq !== this._renderSeq) return;
     const contentEl = this.box.querySelector('.plugins-content');
     const prevScrollTop = contentEl ? contentEl.scrollTop : 0;
     const isSearchFocused = document.activeElement?.classList?.contains('plugins-search-input');
@@ -945,13 +976,15 @@ export class PluginManagerPanel {
     installGithubBtn.addEventListener('click', () => this.installFromGitHub());
     headerActions.appendChild(installGithubBtn);
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'plugins-close-btn';
-    closeBtn.title = 'Close (Esc)';
-    closeBtn.setAttribute('aria-label', 'Close dialog');
-    closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-    closeBtn.addEventListener('click', () => this.close());
-    headerActions.appendChild(closeBtn);
+    if (!this.embedded) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'plugins-close-btn';
+      closeBtn.title = 'Close (Esc)';
+      closeBtn.setAttribute('aria-label', 'Close dialog');
+      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+      closeBtn.addEventListener('click', () => this.close());
+      headerActions.appendChild(closeBtn);
+    }
 
     header.appendChild(headerActions);
     this.box.appendChild(header);
@@ -1360,13 +1393,19 @@ export class PluginManagerPanel {
    * Render the dedicated detail section for this.selectedPluginId.
    * @private
    */
-  async _renderDetailView() {
+  async _renderDetailView(seq) {
+    if (seq !== undefined && seq !== this._renderSeq) return;
+    const prevScrollTop = this.box.querySelector('.plugins-content')?.scrollTop || 0;
+    const wasDetailAlreadyOpen = this._detailViewMounted;
+    this._detailViewMounted = true;
+
     this.box.replaceChildren();
 
     const plugin = this.plugins.find((p) => p.name === this.selectedPluginId);
     if (!plugin) {
       this.selectedPluginId = null;
-      this._renderListView();
+      this._detailViewMounted = false;
+      this._renderListView(seq);
       return;
     }
 
@@ -1391,6 +1430,7 @@ export class PluginManagerPanel {
     backBtn.title = 'Back to plugin list (Esc)';
     backBtn.addEventListener('click', () => {
       this.selectedPluginId = null;
+      this._detailViewMounted = false;
       this.render();
     });
     leftWrap.appendChild(backBtn);
@@ -1411,13 +1451,15 @@ export class PluginManagerPanel {
     const headerActions = document.createElement('div');
     headerActions.className = 'plugins-header-actions';
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'plugins-close-btn';
-    closeBtn.title = 'Close (Esc)';
-    closeBtn.setAttribute('aria-label', 'Close dialog');
-    closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
-    closeBtn.addEventListener('click', () => this.close());
-    headerActions.appendChild(closeBtn);
+    if (!this.embedded) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'plugins-close-btn';
+      closeBtn.title = 'Close (Esc)';
+      closeBtn.setAttribute('aria-label', 'Close dialog');
+      closeBtn.appendChild(createIcon(X, { width: 16, height: 16 }));
+      closeBtn.addEventListener('click', () => this.close());
+      headerActions.appendChild(closeBtn);
+    }
 
     header.appendChild(headerActions);
     this.box.appendChild(header);
@@ -1429,7 +1471,7 @@ export class PluginManagerPanel {
     const tabBar = document.createElement('div');
     tabBar.className = 'plugin-detail-tabs';
     tabBar.setAttribute('role', 'tablist');
-    tabBar.style.cssText = 'display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;';
+    tabBar.style.cssText = 'display: flex; flex-wrap: nowrap; gap: 4px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none;';
 
     const tabs = [
       { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -2175,7 +2217,8 @@ export class PluginManagerPanel {
 
     // Dev Mode: Hot Reload (only shown when FLOWMARK_DEV=1)
     if (window.appAPI?.isDevMode) {
-      const isDev = await window.appAPI.isDevMode();
+      const isDev = await this.getDevMode();
+      if (seq !== undefined && seq !== this._renderSeq) return;
       if (isDev) {
         const devReloadSection = document.createElement('div');
         devReloadSection.className = 'plugin-detail-section';
@@ -2234,10 +2277,23 @@ export class PluginManagerPanel {
     panelsContainer.appendChild(registryPanel);
 
     content.appendChild(panelsContainer);
-    this.box.appendChild(content);
+    if (seq !== undefined && seq !== this._renderSeq) return;
 
-    // Focus back button on entering detail view
-    backBtn.focus();
+    const existingContent = this.box.querySelector('.plugins-content');
+    if (existingContent) {
+      existingContent.replaceWith(content);
+    } else {
+      this.box.appendChild(content);
+    }
+
+    if (prevScrollTop) {
+      content.scrollTop = prevScrollTop;
+    }
+
+    // Only focus back button on initial entry into detail view
+    if (!wasDetailAlreadyOpen) {
+      backBtn.focus();
+    }
   }
 
   /**

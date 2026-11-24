@@ -1,30 +1,53 @@
-import { createSettingsTab } from './index.js';
+import { SettingsTab } from './index.js';
 import { Plug } from 'lucide';
+import { PluginManagerPanel } from '../plugins-panel.js';
 
-export const pluginsTab = createSettingsTab(
-  'plugins',
-  'Plugins',
-  Plug,
-  () => {
-    const container = document.createElement('div');
-    container.className = 'settings-tab-content';
-    container.innerHTML = `
-      <h3>Plugins</h3>
-      <p class="settings-placeholder">Plugin manager will be embedded here in Phase 3.</p>
-      <div class="settings-form">
-        <div class="plugin-manager-placeholder">
-          <p>This will contain the full plugin management UI:</p>
-          <ul>
-            <li>Plugin list with enable/disable toggles</li>
-            <li>Plugin detail view (Overview, Settings, Contributions, Permissions, Location, Manage, Registry)</li>
-            <li>Install from folder / GitHub</li>
-            <li>Hot reload for development</li>
-          </ul>
-        </div>
+export class PluginsTab extends SettingsTab {
+  constructor() {
+    super({
+      id: 'plugins',
+      label: 'Plugins',
+      icon: Plug,
+    });
+    this.element = null;
+    this.panelInstance = null;
+  }
+
+  render() {
+    if (this.element) {
+      return this.element;
+    }
+    this.element = document.createElement('div');
+    this.element.className = 'settings-tab-content settings-tab-plugins';
+    this.element.innerHTML = `
+      <div id="settings-plugins-container">
+        <div id="plugins-box"></div>
       </div>
     `;
-    return container;
-  }
-);
 
+    const container = this.element.querySelector('#settings-plugins-container');
+    this.panelInstance = new PluginManagerPanel({
+      container,
+      pluginManager: window.pluginManager,
+      showConfirm: window.showConfirm,
+      embedded: true,
+    });
+
+    return this.element;
+  }
+
+  async onActivate() {
+    if (this.panelInstance) {
+      await this.panelInstance.open();
+    }
+  }
+
+  onDeactivate() {
+    if (this.panelInstance) {
+      this.panelInstance.close();
+    }
+  }
+}
+
+export const pluginsTab = new PluginsTab();
 export default pluginsTab;
