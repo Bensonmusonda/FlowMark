@@ -4,7 +4,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 ::selection {
-  background: var(--selection, rgba(124, 184, 240, 0.28));
+  background: var(--selection, color-mix(in srgb, var(--accent) 28%, transparent));
   color: inherit;
 }
 
@@ -14,6 +14,7 @@ input, select, textarea {
 
 /* ── Base: dark (default) ── */
 :root {
+  color-scheme: dark;
   accent-color: var(--accent);
   --bg:         #1a1a1a;
   --bg-surface: #222;
@@ -25,8 +26,8 @@ input, select, textarea {
   --danger:     #e06c75;
   --danger-bg:  rgba(224,108,117,0.12);
   --heading:    #f0f0f0;
-  --selection:  rgba(124,184,240,0.28);
-  --selection-active: rgba(124,184,240,0.45);
+  --selection:  color-mix(in srgb, var(--accent) 28%, transparent);
+  --selection-active: color-mix(in srgb, var(--accent) 45%, transparent);
   --font-prose: 'Merriweather', 'Georgia', 'Cambria', serif;
   --font-mono:  'Cascadia Code', 'Fira Code', 'Consolas', monospace;
   --font-ui:    'Segoe UI', system-ui, sans-serif;
@@ -41,6 +42,7 @@ input, select, textarea {
 
 /* ── Base: light ── */
 body.theme-light {
+  color-scheme: light;
   --bg:         #ffffff;
   --bg-surface: #f5f5f5;
   --border:     #e3e3e3;
@@ -50,12 +52,13 @@ body.theme-light {
   --danger:     #c53929;
   --danger-bg:  rgba(197,57,41,0.10);
   --heading:    #000000;
-  --selection:  rgba(41,112,200,0.20);
-  --selection-active: rgba(41,112,200,0.35);
+  --selection:  color-mix(in srgb, var(--accent) 22%, transparent);
+  --selection-active: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* ── Base: sepia ── */
 body.theme-sepia {
+  color-scheme: light;
   --bg:         #f4efe4;
   --bg-surface: #faf6ee;
   --border:     #ddd5c0;
@@ -65,8 +68,8 @@ body.theme-sepia {
   --danger:     #a8382b;
   --danger-bg:  rgba(168,56,43,0.10);
   --heading:    #1e1812;
-  --selection:  rgba(152,112,16,0.20);
-  --selection-active: rgba(152,112,16,0.35);
+  --selection:  color-mix(in srgb, var(--accent) 22%, transparent);
+  --selection-active: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 /* ── Base: custom theme (uses --fm-* variables) ── */
@@ -79,8 +82,8 @@ body.theme-custom {
   --muted:      var(--fm-muted, #555);
   --accent:     var(--fm-accent, #7cb8f0);
   --heading:    var(--fm-heading, #f0f0f0);
-  --selection:  var(--fm-selection, rgba(124,184,240,0.28));
-  --selection-active: var(--fm-selection-active, rgba(124,184,240,0.45));
+  --selection:  var(--fm-selection, color-mix(in srgb, var(--accent) 28%, transparent));
+  --selection-active: var(--fm-selection-active, color-mix(in srgb, var(--accent) 45%, transparent));
 }
 
 html, body {
@@ -626,7 +629,7 @@ body.sidebar-collapsed .sidebar-nav {
 
 .settings-tab-button.active {
   color: var(--accent);
-  background: rgba(124, 184, 240, 0.1);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   font-weight: 600;
 }
 
@@ -738,11 +741,27 @@ body.sidebar-collapsed .sidebar-nav {
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 
+.settings-form select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding-right: 32px;
+}
+
+.settings-form select option {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
 .settings-form input:focus,
 .settings-form select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(124, 184, 240, 0.2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 .settings-form input[type="range"] {
@@ -757,6 +776,9 @@ body.sidebar-collapsed .sidebar-nav {
   border-radius: 8px;
   padding: 16px;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .settings-form legend {
@@ -766,15 +788,51 @@ body.sidebar-collapsed .sidebar-nav {
 }
 
 .checkbox-label {
+  display: flex;
   flex-direction: row !important;
   align-items: center;
   gap: 10px;
   font-weight: normal !important;
+  cursor: pointer;
+  user-select: none;
 }
 
 .checkbox-label input {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.settings-btn,
+.about-links button {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.settings-btn:hover,
+.about-links button:hover {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-surface));
+  border-color: var(--accent);
+}
+
+.settings-btn:focus-visible,
+.about-links button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .range-value {
@@ -815,7 +873,7 @@ body.sidebar-collapsed .sidebar-nav {
 
 .theme-option:has(input:checked) {
   border-color: var(--accent);
-  background: rgba(124, 184, 240, 0.08);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .theme-preview {
@@ -860,7 +918,7 @@ body.sidebar-collapsed .sidebar-nav {
 }
 
 .palette-cat-btn.active {
-  background: rgba(124, 184, 240, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   border-color: var(--accent);
   color: var(--accent);
   font-weight: 600;
@@ -1938,7 +1996,7 @@ input::selection, textarea::selection {
 .cm-lang-badge.is-copied {
   color: var(--accent);
   border-color: var(--accent);
-  background: rgba(124, 184, 240, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 /* ── GFM tables ────────────────────────────────────────────────────────────── */
@@ -2160,7 +2218,7 @@ body.theme-sepia .fm-table th.is-editing {
 .cm-math-card.is-editing {
   width: 100%;
   border-color: var(--accent);
-  background: rgba(124, 184, 240, 0.05);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   text-align: left;
 }
 .cm-math-card.is-editing .cm-math-copy { display: none; }
@@ -3082,7 +3140,7 @@ body.theme-sepia .qa-btn:hover { background: var(--border); }
   color: var(--text);
 }
 .plugins-toast-success {
-  background: rgba(124, 184, 240, 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   border: 1px solid var(--accent);
   color: var(--accent);
 }

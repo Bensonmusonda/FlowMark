@@ -2933,6 +2933,11 @@ function applyAccent(name) {
   document.documentElement.style.setProperty('--accent', color);
   document.documentElement.style.setProperty('--selection', `${color}38`);
   document.documentElement.style.setProperty('--selection-active', `${color}55`);
+  if (document.body) {
+    document.body.style.setProperty('--accent', color);
+    document.body.style.setProperty('--selection', `${color}38`);
+    document.body.style.setProperty('--selection-active', `${color}55`);
+  }
   currentAccent = name;
   localStorage.setItem('fm-accent', name);
   window.settingsAPI?.set?.('accent', name).catch(() => {});

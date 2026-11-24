@@ -82081,7 +82081,7 @@ ${error}`);
             <span>Default folder</span>
             <div style="display:flex; gap:8px;">
               <input type="text" id="setting-default-folder" placeholder="Select folder..." readonly style="flex:1;" />
-              <button type="button" id="btn-select-folder">Browse\u2026</button>
+              <button type="button" class="settings-btn" id="btn-select-folder">Browse\u2026</button>
             </div>
           </label>
         </fieldset>
@@ -86010,6 +86010,11 @@ ${error}`);
     document.documentElement.style.setProperty("--accent", color);
     document.documentElement.style.setProperty("--selection", `${color}38`);
     document.documentElement.style.setProperty("--selection-active", `${color}55`);
+    if (document.body) {
+      document.body.style.setProperty("--accent", color);
+      document.body.style.setProperty("--selection", `${color}38`);
+      document.body.style.setProperty("--selection-active", `${color}55`);
+    }
     currentAccent = name2;
     localStorage.setItem("fm-accent", name2);
     window.settingsAPI?.set?.("accent", name2).catch(() => {
