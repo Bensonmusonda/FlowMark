@@ -1,91 +1,93 @@
-# FlowMark Development Roadmap
+# FlowMark Product & Architectural Roadmap
 
-This document outlines the execution roadmap for FlowMark, prioritizing core editor ergonomics and stability before structural UI expansions.
-
----
-
-## Stage 1 — Fluid Editor Polish (Core Interaction Fixes)
-**Goal:** Eliminate visual jitter, selection snapping, and syntax explosions to deliver a seamless writing feel.
-**Reference Document:** `EDITOR_ISSUES_AUDIT.md`
-
-### 1.1 Fix Selection Snapping & Layout Reflow
-- [x] **Freeze Concealment on Active Drag:** When `!view.state.selection.main.empty`, freeze syntax concealment states so formatting (`**`, `*`, `~~`, links) never collapses or expands mid-drag.
-- [x] **Protect Block Embeds During Selection:** Prevent tables, callouts, and math blocks from collapsing into raw markdown pipes on passive mouse drag selections.
-- [x] **Debounce Selection IPC:** Debounce `window.editorAPI.notifySelectionChange` (50–100ms) to stop IPC flooding during rapid mouse movements.
-
-### 1.2 Fix List & Task Item Syntax Explosion
-- [x] **Decouple Bullet & Checkbox from `lineIsActive`:** Do not destroy styled bullets (`.cm-list-mark-active::before { content: none }`) merely because the caret is on that line.
-- [x] **Persistent Checkbox Widget:** Keep `<input type="checkbox">` rendered and clickable while typing on a task line; only reveal raw `[ ]` if the caret is positioned directly between/around the brackets.
-- [x] **Localized Inline Reveal:** Ensure clicking a link or bold text inside a list item only reveals that specific token's syntax, not the entire list item prefix and markers.
-
-### 1.3 Ergonomic Quick Wins
-- [x] **External Links on Ctrl+Click:** Add a listener in `editor-wrap` targeting markdown links (`[text](url)`) to call `shell.openExternal(url)`.
-- [x] **Heading Marker Scaling:** Style `HeaderMark` (`#`) with a fixed, muted scale (`0.7em`, opacity 0.4) so entering heading lines does not cause a horizontal text jump.
+This document serves as the single source of truth for FlowMark's current architecture, floating component design patterns, feature gap analysis, and future implementation roadmap.
 
 ---
 
-## Stage 2 — Milestone Commit & Repository Cleanup
-**Goal:** Lock in Phase 4-5 features and Stage 1 fixes in git.
+## 1. FlowMark Architectural Overview
 
-- [x] Remove temporary diagnostic files (`test-bindings.js`, `test-electron.js`, `test-electron-full.js`, `test-main.js`).
-- [x] Verify test suite passes (`npm test` — 207 tests passing).
-- [x] Create milestone commit: `feat: complete Phases 4-5 and Stage 1 editor polish`.
+FlowMark is an Electron-based distraction-free markdown workstation engineered around **CodeMirror 6** with an emphasis on hybrid in-line rendering, high-performance typography, and a secure, sandboxed plugin system.
 
----
-
-## Stage 3 — Core Workspace & Sidebar Architecture (Phase 6)
-**Goal:** Native multi-file workspace and folder explorer built into the core editor.
-
-- [x] **Collapsible, Resizable Sidebar:**
-  - [x] Layout container (`#sidebar`) with splitter drag-handle.
-  - [x] Keyboard toggle (`Ctrl+B`) and Zen mode integration (`body.zen #sidebar { display: none }`).
-- [x] **File & Folder Tree Explorer:**
-  - [x] "Open Folder" command $\rightarrow$ native directory picker.
-  - [x] Hierarchical tree rendering of `.md` files and folders with expand/collapse.
-  - [x] Active tab ↔ active tree item synchronization.
-  - [x] File/folder creation, inline renaming, and deletion.
-  - [x] Persist open workspace directory across restarts in `session.json`.
-- [x] **File System Watcher:** Integrate `fs.watch` in main process to update the tree and refresh clean open documents on external file changes.
+### Core Architectural Pillars
+- **In-Line Hybrid Markdown**: Real-time concealment and widget rendering (callouts, table formatting, frontmatter cards, KaTeX math blocks, and emoji/fence completions) without the cognitive load of a split preview pane.
+- **Unified Workspace Chrome**:
+  - Horizontal scrollable tab bar with mousewheel redirection.
+  - Collapsible, resizable left file tree explorer (`Ctrl+B`).
+  - Collapsible, resizable right utility pane for extensions, AI, and document metadata.
+  - Pure HTML context menu system with submenus and keyboard accelerators across the Editor, Tab bar, and File Tree.
+  - Settings dialog with modular tabs (General, Appearance, Plugins, Shortcuts, Privacy, About).
+- **Sandboxed Plugin Isolation**: Plugins run in an isolated process with zero direct access to Electron or Node.js primitives. Every request passes through manifest permission gating (`editor.read`, `editor.write`, `ui.sidebarPanel`, `ui.customView`, `ui.floatingWidgets`, `slashCommands`), with automatic cleanup upon plugin disable.
 
 ---
 
-## Stage 4 — Plugin System Extensions (Panels & Custom Views)
-**Goal:** Extend the sandboxed plugin system to hook into the new workspace and tab surfaces.
-**Reference Document:** `PLUGIN_IDEAS.md`
+## 2. Floating Component Architectural Approaches
 
-- [x] **Right-Side Utility Pane Shell:**
-  - Add a resizable right-side pane to the core workspace layout.
-  - Keep the pane hidden until an option in the workspace navigation activates it.
-  - Render a blank placeholder while no plugin or core view owns the pane.
-  - Reserve the pane for future views such as AI assistants, outlines, backlinks, and plugin panels.
-  - Do not assign a default active option or show the pane at startup.
-- [x] **Sidebar Activity Bar & Panel API:**
-  - Allow sandboxed plugins to register panels in either sidebar with `flowmarkPlugin.ui.registerSidebarPanel({ id, title, icon, entry, location })`; `location` defaults to `right` and can be `left`.
-  - Left-side plugin panels appear beside the built-in Explorer in the existing activity rail; load each iframe on first activation and preserve its mounted state when switching views.
-  - Resolve plugin icon names through a bounded Lucide icon set and render panel entries in sandboxed iframes; unknown icon names use a fallback.
-  - Examples: Table of Contents / Outline, Tag Explorer, Backlinks, Calendar.
-- [x] **Local Plugin Installation:**
-  - Add `Plugins > Install Plugin from Folder...` with a native folder picker and manifest validation.
-  - Copy and load the selected plugin through the sandbox host; ZIP installation and online catalogs remain out of scope.
-- [x] **Custom Tab Views API:**
-  - Let plugins register and explicitly open non-Markdown tabs through `flowmarkPlugin.views.open(viewId, { name, state })`.
-  - Send `{ type: 'flowmark:custom-view:init', viewId, state }` to the sandboxed iframe; persist updates posted as `{ type: 'flowmark:custom-view:state', viewId, state }` (JSON, maximum 256 KB).
-  - Preserve Markdown editor state when switching between view types, and keep editor-only save/export operations unavailable in custom tabs.
-  - Keep extension-based automatic file routing separate; registering a view does not change ordinary file opening.
-- [ ] **Plugin-Extensible Inline Markdown Renderers:**
-  - Let plugins register renderers for named fenced-code languages; Mermaid is one example, not a special case.
-  - Pass each matching block's source to a plugin-owned sandboxed renderer and show its output as an inline preview without changing the Markdown document.
-  - Preserve editing by revealing the raw fence and source while the caret is inside the block; fall back to source when no renderer is registered or rendering fails, and clean up previews when blocks leave view.
-- [ ] **Host-Managed Plugin Overlays:**
-  - Let plugins request bounded floating UI anchored to host-defined surfaces, including tabs, without granting access to FlowMark's DOM.
-  - Render plugin content in a sandboxed frame; have the host control positioning, size, focus, dismissal, and cleanup when the anchor or workspace changes.
-- [x] **Slash Command & Smart Paste Extensions:**
-  - Floating `/` insert menu and clipboard conversion hooks.
+Floating components in FlowMark provide lightweight, context-aware tools directly above the editing canvas without consuming permanent sidebar or toolbar real estate.
 
-## Future — Appearance & Theme Packs
-**Goal:** Support shareable application themes without treating themes as executable plugins.
+### Approach A: Canvas-Anchored Declarative Toolbars (Implemented in `feat/floating-widget-system`)
+- **Container**: Layered inside `#editor-wrap` (`position: absolute; inset: 0; pointer-events: none;`) ensuring the toolbar moves dynamically when sidebars/panes resize and never clips into other UI panels.
+- **Layout & Docking**: `.dock-right` or `.dock-left` strips with vertical tool buttons, Lucide icons, hover tooltips, and click-to-run commands.
+- **Collapse Mechanics**: Smooth CSS transform (`translateX(calc(100% - 24px))`) leaving a sleek 20px chevron toggle handle visible at the viewport edge.
+- **Dismiss & Palette Binding**: Dismissing with the close handle hides the toolbar and automatically registers a command (`view:toggleWidget:<id>`) in `CommandRegistry` to reopen it anytime.
+- **Best For**: Quick-insert symbol palettes, formatting strips, Zen-mode floating action bars.
 
-- [ ] **Declarative Theme Packs:**
-  - Define themes as data mapped to approved design tokens and editor syntax colors, with no executable code or arbitrary application-wide CSS.
-  - Support light/dark variants, preview and restore, and validate contrast and missing-token fallbacks.
-  - Keep theme installation and selection separate from plugin permissions and activation; package infrastructure may be shared.
+### Approach B: Sandboxed Iframe Floating Panes (Implemented in `feat/floating-widget-system`)
+- **Structure**: Floating cards hosting sandboxed `<iframe>` panels with script execution permitted (`sandbox="allow-scripts"`).
+- **Security & IPC**: Plugin sends HTML entry point; plugin host resolves file URLs; iframe communicates strictly via structured messaging.
+- **Best For**: Mini scratchpads, quick-reference cheat sheets, live word frequency analyzers, floating AI prompt chips.
+
+### Approach C: Selection-Attached Bubble / Floating Menus (Future Extension)
+- **Mechanics**: CodeMirror 6 `ViewPlugin` or `tooltip` extension attached directly to the active text selection range.
+- **Behavior**: Appears immediately above highlighted text on mouse-up; dismisses on caret movement or Escape.
+- **Controls**: Bold, Italic, Strikethrough, Code, Link, and Heading level toggles.
+- **Best For**: Mouse-centric editing, tablet/touch ergonomics, Typora/Medium-style floating formatting.
+
+### Approach D: Draggable & Dockable Floating Windows (Future Extension)
+- **Mechanics**: Absolute positioning with pointer drag handles (`mousedown`/`mousemove`/`mouseup` bounds clamping) and snap-to-edge docking.
+- **State Persistence**: Position (`x, y, collapsed, dockedEdge`) persisted across sessions per workspace in `session.json`.
+- **Best For**: Detached Excalidraw mini-canvases, floating media players, persistent sticky notes.
+
+---
+
+## 3. Product Gap Analysis (Missing Capabilities)
+
+To rival top-tier editors (Obsidian, Typora, MarkText), FlowMark needs the following capabilities:
+
+| Gap Area | Missing Capability | Impact & Urgency |
+| :--- | :--- | :--- |
+| **Navigation** | **Document Outline / TOC** | **High**: Long documents require a live `# Headings` tree in the utility pane with active scroll tracking. |
+| **Search** | **Global Workspace Search** | **High**: Ripgrep-style multi-file search across all `.md` files in the open folder. |
+| **Media** | **Image Drag & Drop / Paste** | **High**: Auto-saving clipboard images to `./assets/` and auto-generating markdown links. |
+| **Knowledge** | **Wikilinks (`[[Note]]`)** | **Medium**: Auto-completing `[[...]]` links to workspace notes and `Ctrl+Click` navigation. |
+| **Visuals** | **Mermaid Diagram Rendering** | **Medium**: Rendering fenced ````mermaid```` blocks into interactive SVG diagrams inline. |
+| **Publishing** | **PDF & Styled HTML Export** | **Medium**: Exporting clean, styled documents adhering to the active editor theme. |
+
+---
+
+## 4. UI Polish & Backlog Items
+
+- **Appearance Settings Reset**: Add a "Restore Defaults" button in `appearanceTab.js` to reset theme, accent color, font family, and font size.
+- **Expanded Color Palettes**: Supplement the pastel theme palette with vibrant, earth tone, and monochrome sets.
+- **Focus Ring & Accent Consistency**: Audit and replace remaining system blue focus rings (`:focus-visible`) with `--accent` tokens.
+- **Settings Layout Spacing**: Improve vertical rhythm between form elements in `privacyTab.js` and `generalTab.js`.
+- **Slash Command Fuzzy Search**: Dynamically filter slash commands by label or command ID prefix as the user types after `/`.
+
+---
+
+## 5. Prioritized Development Roadmap
+
+### Phase 1: Floating Reference Plugin & Writing Ergonomics
+1. **Quick-Insert Symbol Palette Plugin**: Build the reference vertical symbol palette plugin to validate the floating toolbar platform APIs.
+2. **Clipboard Image Paste & Drag-and-Drop**: Intercept paste/drop events, persist image files to `assets/`, and insert markdown syntax.
+
+### Phase 2: Navigation & Multi-File Discovery
+1. **Document Outline Panel (TOC)**: Parse document headings via Lezer syntax tree, display hierarchical list in the right Utility Pane, and support click-to-scroll.
+2. **Global Workspace Search**: Multi-file text search indexing open workspace files with regex support and preview snippets.
+
+### Phase 3: Visuals & Knowledge
+1. **Live Mermaid Rendering**: Embed Mermaid.js renderer for fenced ````mermaid```` blocks.
+2. **Wikilinks Auto-Completion & Resolution**: Support `[[Document]]` completions and click-to-open across workspace files.
+
+### Phase 4: Sharing & Community
+1. **PDF & HTML Export Engine**: Electron print-to-PDF and standalone HTML generator with bundled KaTeX and theme CSS.
+2. **Plugin Distribution & Settings UI**: Individual plugin settings tab panels in the Settings dialog.
