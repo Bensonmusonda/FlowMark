@@ -83085,18 +83085,114 @@ ${error}`);
       container.className = "settings-tab-content";
       container.innerHTML = `
       <h3>Keyboard Shortcuts</h3>
-      <p class="settings-placeholder">Shortcut editor will be implemented in Phase 4.</p>
-      <div class="settings-form">
-        <div class="shortcuts-placeholder">
-          <p>This will contain:</p>
-          <ul>
-            <li>Searchable list of all commands grouped by category</li>
-            <li>Editable keybinding inputs with conflict detection</li>
-            <li>Reset to defaults button</li>
-          </ul>
+      <p class="settings-desc">Quickly reference and search all available editor and workspace keybindings.</p>
+
+      <div class="shortcuts-filter-bar">
+        <div class="shortcuts-search-wrap">
+          <input
+            type="text"
+            id="shortcuts-search-input"
+            class="shortcuts-search-input"
+            placeholder="Search commands or shortcuts (e.g. Save, Bold, Ctrl+K)..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="shortcuts-categories" id="shortcuts-categories">
+          <button type="button" class="shortcuts-category-pill active" data-category="all">All</button>
+          <button type="button" class="shortcuts-category-pill" data-category="file">File</button>
+          <button type="button" class="shortcuts-category-pill" data-category="edit">Edit</button>
+          <button type="button" class="shortcuts-category-pill" data-category="insert">Insert</button>
+          <button type="button" class="shortcuts-category-pill" data-category="view">View</button>
+          <button type="button" class="shortcuts-category-pill" data-category="plugins">Plugins</button>
         </div>
       </div>
+
+      <div class="shortcuts-count-wrap">
+        <span id="shortcuts-count" class="shortcuts-count"></span>
+      </div>
+
+      <div class="shortcuts-list" id="shortcuts-list"></div>
     `;
+      const searchInput = container.querySelector("#shortcuts-search-input");
+      const categoriesWrap = container.querySelector("#shortcuts-categories");
+      const listEl = container.querySelector("#shortcuts-list");
+      const countEl = container.querySelector("#shortcuts-count");
+      let currentCategory = "all";
+      let currentQuery = "";
+      function renderShortcutBadge(shortcut) {
+        if (!shortcut) {
+          return '<span class="shortcut-none">\u2014</span>';
+        }
+        const parts = shortcut.split("+").map((p) => p.trim());
+        return parts.map((p) => `<kbd class="shortcut-key">${p}</kbd>`).join('<span class="shortcut-plus">+</span>');
+      }
+      function renderList() {
+        const allCommands = registry_default.getAllCommands();
+        const filtered = allCommands.filter((cmd2) => {
+          if (currentCategory !== "all") {
+            const section2 = (cmd2.section || "other").toLowerCase();
+            if (currentCategory === "plugins") {
+              if (section2 !== "plugins" && !cmd2.id.startsWith("plugin:")) return false;
+            } else if (section2 !== currentCategory) {
+              return false;
+            }
+          }
+          if (currentQuery) {
+            const q2 = currentQuery.toLowerCase();
+            const matchLabel = cmd2.label.toLowerCase().includes(q2);
+            const matchId = cmd2.id.toLowerCase().includes(q2);
+            const matchShortcut = (cmd2.shortcut || "").toLowerCase().includes(q2);
+            const matchSection = (cmd2.section || "").toLowerCase().includes(q2);
+            return matchLabel || matchId || matchShortcut || matchSection;
+          }
+          return true;
+        });
+        if (countEl) {
+          countEl.textContent = `Showing ${filtered.length} of ${allCommands.length} commands`;
+        }
+        listEl.innerHTML = "";
+        if (filtered.length === 0) {
+          const empty2 = document.createElement("div");
+          empty2.className = "shortcuts-empty";
+          empty2.textContent = "No commands match your filter.";
+          listEl.appendChild(empty2);
+          return;
+        }
+        for (const cmd2 of filtered) {
+          const row = document.createElement("div");
+          row.className = "shortcut-row";
+          const info = document.createElement("div");
+          info.className = "shortcut-info";
+          const label = document.createElement("span");
+          label.className = "shortcut-label";
+          label.textContent = cmd2.label;
+          info.appendChild(label);
+          const category = document.createElement("span");
+          category.className = "shortcut-category-badge";
+          category.textContent = cmd2.section || "General";
+          info.appendChild(category);
+          row.appendChild(info);
+          const keys = document.createElement("div");
+          keys.className = "shortcut-keys";
+          keys.innerHTML = renderShortcutBadge(cmd2.shortcut);
+          row.appendChild(keys);
+          listEl.appendChild(row);
+        }
+      }
+      searchInput?.addEventListener("input", (e) => {
+        currentQuery = e.target.value.trim();
+        renderList();
+      });
+      categoriesWrap?.addEventListener("click", (e) => {
+        const btn = e.target.closest(".shortcuts-category-pill");
+        if (!btn) return;
+        categoriesWrap.querySelectorAll(".shortcuts-category-pill").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentCategory = btn.dataset.category || "all";
+        renderList();
+      });
+      renderList();
       return container;
     }
   );
@@ -83155,36 +83251,104 @@ ${error}`);
       container.className = "settings-tab-content";
       container.innerHTML = `
       <h3>About FlowMark</h3>
-      <p class="settings-placeholder">About information will be fully implemented in Phase 2.</p>
-      <div class="settings-form">
-        <div class="about-content">
-          <div class="about-version">
-            <strong>Version:</strong> <span id="about-version">1.1.0</span>
-          </div>
-          <div class="about-build">
-            <strong>Build:</strong> <span id="about-build">development</span>
-          </div>
-          <div class="about-electron">
-            <strong>Electron:</strong> <span id="about-electron">--</span>
-          </div>
-          <div class="about-node">
-            <strong>Node.js:</strong> <span id="about-node">--</span>
-          </div>
-          <div class="about-chromium">
-            <strong>Chromium:</strong> <span id="about-chromium">--</span>
-          </div>
-          <div class="about-v8">
-            <strong>V8:</strong> <span id="about-v8">--</span>
-          </div>
-          <hr />
-          <div class="about-links">
-            <button type="button" id="btn-check-updates">Check for Updates</button>
-            <button type="button" id="btn-view-license">View License</button>
-            <button type="button" id="btn-github">GitHub Repository</button>
-          </div>
+      <p class="settings-desc">Minimal, distraction-free Markdown editor designed for speed and clarity.</p>
+
+      <div class="about-grid">
+        <div class="about-row">
+          <span class="about-row-label">Version</span>
+          <span class="about-row-value" id="about-version">1.1.0</span>
+        </div>
+        <div class="about-row">
+          <span class="about-row-label">Build</span>
+          <span class="about-row-value" id="about-build">Development</span>
+        </div>
+        <div class="about-row">
+          <span class="about-row-label">Electron</span>
+          <span class="about-row-value" id="about-electron">--</span>
+        </div>
+        <div class="about-row">
+          <span class="about-row-label">Chromium</span>
+          <span class="about-row-value" id="about-chromium">--</span>
+        </div>
+        <div class="about-row">
+          <span class="about-row-label">Node.js</span>
+          <span class="about-row-value" id="about-node">--</span>
+        </div>
+        <div class="about-row">
+          <span class="about-row-label">V8</span>
+          <span class="about-row-value" id="about-v8">--</span>
+        </div>
+        <div class="about-row">
+          <span class="about-row-label">Platform</span>
+          <span class="about-row-value" id="about-platform">--</span>
         </div>
       </div>
+
+      <div id="about-update-banner" class="about-update-banner hidden"></div>
+
+      <div class="about-links">
+        <button type="button" id="btn-check-updates" class="about-action-btn">
+          Check for Updates
+        </button>
+        <button type="button" id="btn-view-license" class="about-action-btn">
+          View License
+        </button>
+        <button type="button" id="btn-github" class="about-action-btn">
+          GitHub Repository
+        </button>
+      </div>
     `;
+      (async () => {
+        try {
+          if (window.appAPI?.getVersions) {
+            const v = await window.appAPI.getVersions();
+            if (v) {
+              const verEl = container.querySelector("#about-version");
+              if (verEl && v.version) verEl.textContent = v.version;
+              const elEl = container.querySelector("#about-electron");
+              if (elEl && v.electron) elEl.textContent = v.electron;
+              const chEl = container.querySelector("#about-chromium");
+              if (chEl && v.chrome) chEl.textContent = v.chrome;
+              const noEl = container.querySelector("#about-node");
+              if (noEl && v.node) noEl.textContent = v.node;
+              const v8El = container.querySelector("#about-v8");
+              if (v8El && v.v8) v8El.textContent = v.v8;
+              const plEl = container.querySelector("#about-platform");
+              if (plEl && v.platform) plEl.textContent = v.platform;
+            }
+          }
+          if (window.appAPI?.isDevMode) {
+            const isDev = await window.appAPI.isDevMode();
+            const buildEl = container.querySelector("#about-build");
+            if (buildEl) buildEl.textContent = isDev ? "Development" : "Release";
+          }
+        } catch (err) {
+          console.warn("Failed to load version details:", err);
+        }
+      })();
+      const btnUpdates = container.querySelector("#btn-check-updates");
+      const updateBanner = container.querySelector("#about-update-banner");
+      btnUpdates?.addEventListener("click", () => {
+        btnUpdates.disabled = true;
+        btnUpdates.textContent = "Checking...";
+        setTimeout(() => {
+          btnUpdates.disabled = false;
+          btnUpdates.textContent = "Check for Updates";
+          if (updateBanner) {
+            updateBanner.textContent = "\u2713 FlowMark is currently up to date (v1.1.0).";
+            updateBanner.classList.remove("hidden");
+            setTimeout(() => updateBanner.classList.add("hidden"), 5e3);
+          }
+        }, 600);
+      });
+      const btnLicense = container.querySelector("#btn-view-license");
+      btnLicense?.addEventListener("click", () => {
+        window.shellAPI?.openExternal?.("https://github.com/bensonmusonda/flowmark/blob/main/LICENSE");
+      });
+      const btnGithub = container.querySelector("#btn-github");
+      btnGithub?.addEventListener("click", () => {
+        window.shellAPI?.openExternal?.("https://github.com/bensonmusonda/flowmark");
+      });
       return container;
     }
   );

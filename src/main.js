@@ -738,6 +738,15 @@ ipcMain.handle('plugins:smartPaste', async (_, data) =>
 
 ipcMain.handle('app:isDevMode', () => process.env.FLOWMARK_DEV === '1');
 
+ipcMain.handle('app:getVersions', () => ({
+  version: app.getVersion(),
+  electron: process.versions.electron,
+  node: process.versions.node,
+  chrome: process.versions.chrome,
+  v8: process.versions.v8,
+  platform: `${process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux'} (${process.arch})`,
+}));
+
 ipcMain.handle('plugins:getRegistry', async () => {
   const fs = require('fs');
   const path = require('path');

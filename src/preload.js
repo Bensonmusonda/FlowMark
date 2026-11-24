@@ -226,6 +226,7 @@ contextBridge.exposeInMainWorld('themeAPI', {
 
 contextBridge.exposeInMainWorld('appAPI', {
   isDevMode: () => ipcRenderer.invoke('app:isDevMode'),
+  getVersions: () => ipcRenderer.invoke('app:getVersions'),
 });
 
 contextBridge.exposeInMainWorld('pluginRegistryAPI', {
