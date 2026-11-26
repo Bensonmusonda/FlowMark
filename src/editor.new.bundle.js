@@ -78700,6 +78700,17 @@ $$
     ["path", { d: "M19 12H5" }]
   ];
 
+  // node_modules/lucide/dist/esm/icons/blocks.mjs
+  var Blocks = [
+    [
+      "path",
+      {
+        d: "M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2"
+      }
+    ],
+    ["rect", { x: "14", y: "2", width: "8", height: "8", rx: "1" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/book-open.mjs
   var BookOpen = [
     ["path", { d: "M12 5v16" }],
@@ -79263,8 +79274,10 @@ $$
     hr: Minus2,
     minus: Minus2,
     sparkles: Sparkles,
-    chevronLeft: ChevronLeft,
-    chevronRight: ChevronRight,
+    chevronleft: ChevronLeft,
+    chevronright: ChevronRight,
+    "chevron-left": ChevronLeft,
+    "chevron-right": ChevronRight,
     close: X,
     grip: GripVertical
   };
@@ -80636,7 +80649,7 @@ $$
         this.nav.appendChild(button);
       };
       addButton("workspace", FolderRoot, "Explorer");
-      addButton("extensions", Puzzle, "Extensions");
+      addButton("extensions", Blocks, "Extensions");
       for (const [id3, panel] of this.panels) {
         addButton(id3, resolvePluginPanelIcon(panel.icon, Folder), panel.title || "Plugin panel");
       }
@@ -92161,6 +92174,7 @@ jszip/dist/jszip.min.js:
 lucide/dist/esm/defaultAttributes.mjs:
 lucide/dist/esm/createElement.mjs:
 lucide/dist/esm/icons/arrow-left.mjs:
+lucide/dist/esm/icons/blocks.mjs:
 lucide/dist/esm/icons/book-open.mjs:
 lucide/dist/esm/icons/bot.mjs:
 lucide/dist/esm/icons/brain.mjs:

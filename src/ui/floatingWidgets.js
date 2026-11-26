@@ -42,8 +42,10 @@ const TOOLBAR_ICONS = {
   hr: Minus,
   minus: Minus,
   sparkles: Sparkles,
-  chevronLeft: ChevronLeft,
-  chevronRight: ChevronRight,
+  chevronleft: ChevronLeft,
+  chevronright: ChevronRight,
+  'chevron-left': ChevronLeft,
+  'chevron-right': ChevronRight,
   close: X,
   grip: GripVertical,
 };

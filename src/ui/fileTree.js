@@ -11,7 +11,7 @@ import {
   Trash2,
   FolderRoot,
   Settings,
-  Puzzle,
+  Blocks,
 } from 'lucide';
 import { resolvePluginPanelIcon } from './pluginPanelIcons.js';
 import { contextMenu } from './contextMenu.js';
@@ -422,7 +422,7 @@ export class FileTreeUI {
     };
 
     addButton('workspace', FolderRoot, 'Explorer');
-    addButton('extensions', Puzzle, 'Extensions');
+    addButton('extensions', Blocks, 'Extensions');
     for (const [id, panel] of this.panels) {
       addButton(id, resolvePluginPanelIcon(panel.icon, Folder), panel.title || 'Plugin panel');
     }
