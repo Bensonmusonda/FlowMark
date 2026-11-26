@@ -2321,7 +2321,9 @@ export class PluginManagerPanel {
       // Load registry index via IPC
       const registry = await window.pluginRegistryAPI?.getRegistry?.() || {};
 
-      const entries = Object.entries(registry);
+      const entries = Array.isArray(registry?.extensions)
+        ? registry.extensions.map(ext => [ext.id, ext])
+        : Object.entries(registry);
       if (entries.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'plugin-registry-empty';

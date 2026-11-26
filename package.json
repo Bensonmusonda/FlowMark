@@ -1,6 +1,6 @@
 {
     "name": "flowmark",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Minimal distraction-free markdown editor",
     "main": "src/main.js",
     "author": "Benson Musonda",
@@ -24,11 +24,13 @@
         },
         "files": [
             "src/**/*",
+            "icons/**/*",
             "package.json",
             "LICENSE",
             "README.md"
         ],
         "win": {
+            "icon": "icons/flowmark_dark.ico",
             "signAndEditExecutable": false,
             "target": [
                 {
@@ -48,7 +50,9 @@
         "nsis": {
             "oneClick": false,
             "perMachine": false,
-            "allowToChangeInstallationDirectory": true
+            "allowToChangeInstallationDirectory": true,
+            "installerIcon": "icons/flowmark_dark.ico",
+            "uninstallerIcon": "icons/flowmark_dark.ico"
         }
     },
     "devDependencies": {

@@ -31,6 +31,7 @@ function createWindow() {
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#1a1a1a',
+    icon: path.join(__dirname, '..', 'icons', 'flowmark_dark.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -577,41 +578,118 @@ ipcMain.handle('plugins:install', async (_, sourcePath) => {
   }
 });
 
-ipcMain.handle('plugins:installFromGitHubZip', async (_, zipBase64) => {
-  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+const EXTENSIONS_REGISTRY_URL = 'https://raw.githubusercontent.com/Bensonmusonda/flowmark-extensions/main/registry.json';
+const ALLOWED_EXTENSION_HOSTS = new Set([
+  'github.com',
+  'objects.githubusercontent.com',
+  'raw.githubusercontent.com',
+  'codeload.github.com',
+]);
+
+async function extractPluginZipToTempDir(buffer) {
+  const os = require('os');
+  const JSZip = require('jszip');
+
+  const zip = new JSZip();
+  await zip.loadAsync(buffer);
+
+  const fileEntries = Object.entries(zip.files).filter(([, entry]) => !entry.dir);
+  if (fileEntries.length === 0) throw new Error('Zip archive is empty');
+
+  // Support both root-level plugin.json and single top-level directory (e.g. GitHub repo zip)
+  let stripPrefix = '';
+  const hasRootManifest = fileEntries.some(([name]) => name === 'plugin.json');
+  if (!hasRootManifest) {
+    const nestedManifest = fileEntries.find(([name]) => /^[^/]+\/plugin\.json$/.test(name));
+    if (nestedManifest) {
+      stripPrefix = nestedManifest[0].slice(0, nestedManifest[0].indexOf('/') + 1);
+    }
+  }
+
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flowmark-plugin-'));
+  const resolvedTmp = path.resolve(tmpDir);
+
   try {
-    const os = require('os');
-    const path = require('path');
-    const fs = require('fs');
-    const JSZip = require('jszip');
-    
-    const zip = new JSZip();
-    const buffer = Buffer.from(zipBase64, 'base64');
-    await zip.loadAsync(buffer);
-    
-    const rootFolders = Object.keys(zip.files).filter(name => name.endsWith('/'));
-    if (rootFolders.length === 0) throw new Error('Zip does not contain a root folder');
-    const rootFolder = rootFolders[0].slice(0, -1);
-    
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'flowmark-plugin-'));
-    
-    for (const [name, file] of Object.entries(zip.files)) {
-      if (file.dir) continue;
-      const relativePath = name.startsWith(rootFolder + '/') ? name.slice(rootFolder.length + 1) : name;
-      const destPath = path.join(tmpDir, relativePath);
+    for (const [name, entry] of fileEntries) {
+      const normalized = name.replace(/\\/g, '/');
+      if (stripPrefix && !normalized.startsWith(stripPrefix)) continue;
+      const relativePath = stripPrefix ? normalized.slice(stripPrefix.length) : normalized;
+      if (!relativePath) continue;
+
+      const destPath = path.resolve(tmpDir, relativePath);
+      const relCheck = path.relative(resolvedTmp, destPath);
+      if (relCheck.startsWith('..') || path.isAbsolute(relCheck)) {
+        throw new Error(`Unsafe path in plugin archive: ${relativePath}`);
+      }
+
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
-      const content = await file.async('nodebuffer');
+      const content = await entry.async('nodebuffer');
       fs.writeFileSync(destPath, content);
     }
-    
-    const pluginId = await pluginHost.installPlugin(tmpDir);
-    
+    return tmpDir;
+  } catch (err) {
     fs.rmSync(tmpDir, { recursive: true, force: true });
-    
+    throw err;
+  }
+}
+
+ipcMain.handle('plugins:installFromGitHubZip', async (_, zipBase64) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  let tmpDir = null;
+  try {
+    const buffer = Buffer.from(zipBase64, 'base64');
+    tmpDir = await extractPluginZipToTempDir(buffer);
+    const pluginId = await pluginHost.installPlugin(tmpDir);
     win.webContents.send('plugins:changed', pluginHost.getPluginsList());
     return { success: true, pluginId };
   } catch (err) {
     return { success: false, error: err.message };
+  } finally {
+    if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});
+
+ipcMain.handle('plugins:installFromUrl', async (_, payload = {}) => {
+  if (!pluginHost) return { success: false, error: 'Plugin host not initialized' };
+  let tmpDir = null;
+  try {
+    const { url, pluginId: expectedId, update = false } = payload;
+    if (!url || typeof url !== 'string') throw new Error('Download URL is required');
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'https:' || !ALLOWED_EXTENSION_HOSTS.has(parsed.hostname)) {
+      throw new Error(`Untrusted extension download host: ${parsed.hostname}`);
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    let response;
+    try {
+      response = await fetch(url, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'FlowMark-Extension-Client' },
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (!response.ok) {
+      throw new Error(`Failed to download extension (HTTP ${response.status})`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    tmpDir = await extractPluginZipToTempDir(Buffer.from(arrayBuffer));
+
+    const manifest = await pluginHost.loadManifest(tmpDir);
+    if (expectedId && manifest.name !== expectedId) {
+      throw new Error(`Manifest name "${manifest.name}" does not match expected "${expectedId}"`);
+    }
+
+    const installedId = await pluginHost.installPlugin(tmpDir, { replace: Boolean(update) });
+    win.webContents.send('plugins:changed', pluginHost.getPluginsList());
+    return { success: true, pluginId: installedId, version: manifest.version };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : String(err) };
+  } finally {
+    if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
 
@@ -748,15 +826,64 @@ ipcMain.handle('app:getVersions', () => ({
 }));
 
 ipcMain.handle('plugins:getRegistry', async () => {
-  const fs = require('fs');
-  const path = require('path');
-  const registryPath = path.join(__dirname, 'plugins', 'registry-index.json');
+  const cachePath = path.join(app.getPath('userData'), 'extensions-registry-cache.json');
+  const localFallbackPath = path.join(__dirname, 'plugins', 'registry-index.json');
+
   try {
-    const content = fs.readFileSync(registryPath, 'utf8');
-    return JSON.parse(content);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    let response;
+    try {
+      response = await fetch(EXTENSIONS_REGISTRY_URL, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'FlowMark-Extension-Client', 'Cache-Control': 'no-cache' },
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && Array.isArray(data.extensions)) {
+        try {
+          fs.writeFileSync(cachePath, JSON.stringify(data, null, 2), 'utf8');
+        } catch (_) {}
+        return { ...data, source: 'github', offline: false };
+      }
+    }
   } catch (err) {
-    console.error('[main] Failed to load registry:', err);
-    return {};
+    console.warn('[main] GitHub registry fetch failed, falling back to cache:', err.message);
+  }
+
+  try {
+    if (fs.existsSync(cachePath)) {
+      const cached = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+      if (cached && Array.isArray(cached.extensions)) {
+        return { ...cached, source: 'cache', offline: true };
+      }
+    }
+  } catch (_) {}
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(localFallbackPath, 'utf8'));
+    if (Array.isArray(raw.extensions)) {
+      return { ...raw, source: 'local', offline: true };
+    }
+    // Legacy map format fallback
+    const extensions = Object.entries(raw || {}).map(([id, item]) => ({
+      id,
+      name: item.name || id,
+      version: item.version || '1.0.0',
+      description: item.description || '',
+      author: item.author || 'FlowMark',
+      homepage: item.repo || '',
+      permissions: item.permissions || [],
+      tags: [],
+    }));
+    return { version: 1, extensions, source: 'local', offline: true };
+  } catch (err) {
+    console.error('[main] Failed to load fallback registry:', err);
+    return { version: 1, extensions: [], source: 'empty', offline: true };
   }
 });
 

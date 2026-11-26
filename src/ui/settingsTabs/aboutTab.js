@@ -9,8 +9,13 @@ export const aboutTab = createSettingsTab(
     const container = document.createElement('div');
     container.className = 'settings-tab-content';
     container.innerHTML = `
-      <h3>About FlowMark</h3>
-      <p class="settings-desc">Minimal, distraction-free Markdown editor designed for speed and clarity.</p>
+      <div class="about-header">
+        <img class="about-app-icon" src="../icons/trans_64.png" alt="FlowMark" width="40" height="40" draggable="false" />
+        <div class="about-header-text">
+          <h3>About FlowMark</h3>
+          <p class="settings-desc">Minimal, distraction-free Markdown editor designed for speed and clarity.</p>
+        </div>
+      </div>
 
       <div class="about-grid">
         <div class="about-row">

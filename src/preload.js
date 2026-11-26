@@ -56,6 +56,7 @@ contextBridge.exposeInMainWorld('pluginManager', {
   installFromFolder: () => ipcRenderer.invoke('plugins:installFromFolder'),
   install: (sourcePath) => ipcRenderer.invoke('plugins:install', sourcePath),
   installFromGitHubZip: (zipBase64) => ipcRenderer.invoke('plugins:installFromGitHubZip', zipBase64),
+  installFromUrl: (opts) => ipcRenderer.invoke('plugins:installFromUrl', opts),
   uninstall: (name) => ipcRenderer.invoke('plugins:uninstall', name),
   getSettings: (pluginId) => ipcRenderer.invoke('plugins:settings:get', pluginId),
   setSetting: (pluginIdOrKey, keyOrValue, maybeValue) => {

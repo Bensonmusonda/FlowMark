@@ -921,10 +921,16 @@ class PluginSandboxHost {
   /**
    * Install plugin from directory
    */
-  async installPlugin(sourcePath) {
+  async installPlugin(sourcePath, { replace = false } = {}) {
     const manifest = await this.loadManifest(sourcePath);
     const pluginId = manifest.name;
-    if (this.plugins.has(pluginId)) throw new Error(`Plugin already installed: ${pluginId}`);
+    if (this.plugins.has(pluginId)) {
+      if (replace) {
+        await this.uninstallPlugin(pluginId);
+      } else {
+        throw new Error(`Plugin already installed: ${pluginId}`);
+      }
+    }
 
     const pluginsDir = path.join(app.getPath('userData'), 'plugins');
     fs.mkdirSync(pluginsDir, { recursive: true });

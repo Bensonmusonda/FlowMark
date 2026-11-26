@@ -11,9 +11,11 @@ import {
   Trash2,
   FolderRoot,
   Settings,
+  Puzzle,
 } from 'lucide';
 import { resolvePluginPanelIcon } from './pluginPanelIcons.js';
 import { contextMenu } from './contextMenu.js';
+import { ExtensionsSidebarView } from './extensionsSidebar.js';
 
 function normalizedPath(value) {
   return String(value || '').replace(/\\/g, '/').toLowerCase();
@@ -52,6 +54,11 @@ export class FileTreeUI {
       this.showBackgroundContextMenu(e);
     });
     this.viewContainer.appendChild(this.workspaceView);
+    this.extensionsView = document.createElement('div');
+    this.extensionsView.className = 'sidebar-panel sidebar-extensions-view';
+    this.extensionsView.hidden = true;
+    this.extensionsSidebar = new ExtensionsSidebarView({ container: this.extensionsView });
+    this.viewContainer.appendChild(this.extensionsView);
     this.container.replaceChildren(this.nav, this.viewContainer);
     this.renderNavigation();
     this.render();
@@ -402,6 +409,7 @@ export class FileTreeUI {
     };
 
     addButton('workspace', FolderRoot, 'Explorer');
+    addButton('extensions', Puzzle, 'Extensions');
     for (const [id, panel] of this.panels) {
       addButton(id, resolvePluginPanelIcon(panel.icon, Folder), panel.title || 'Plugin panel');
     }
@@ -450,6 +458,8 @@ export class FileTreeUI {
 
   updateActiveView() {
     this.workspaceView.hidden = this.activeViewId !== 'workspace';
+    this.extensionsView.hidden = this.activeViewId !== 'extensions';
+    if (this.activeViewId === 'extensions') this.extensionsSidebar.activate();
     for (const [id, panelView] of this.panelViews) {
       panelView.hidden = id !== this.activeViewId;
     }
