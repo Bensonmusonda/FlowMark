@@ -3119,23 +3119,33 @@ function switchDocument(fromDoc, toDoc) {
       document.getElementById('editor').classList.add('hidden');
       renderCustomView(toDoc);
     } else {
+      const wasHidden = document.getElementById('editor').classList.contains('hidden');
       document.getElementById('custom-view').classList.add('hidden');
       document.getElementById('custom-view').replaceChildren();
       document.getElementById('editor').classList.remove('hidden');
       view.setState(toDoc.editorState);
-      view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
       const isLight = isLightTheme();
       const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
       view.dispatch({ effects: [
         themeCompartment.reconfigure(makeTheme(color)),
         highlightCompartment.reconfigure(makeHighlight(!isLight, color)),
       ]});
+      updateDocumentTitleInput();
+      view.requestMeasure();
       view.focus();
+      const targetScrollTop = toDoc.scrollPosition || 0;
+      view.scrollDOM.scrollTop = targetScrollTop;
+      if (wasHidden || targetScrollTop === 0) {
+        requestAnimationFrame(() => {
+          if (tabManager.activeDocument === toDoc) {
+            view.scrollDOM.scrollTop = targetScrollTop;
+          }
+        });
+      }
     }
     updateAppName();
     updatePlaceholder();
     updateWordCount();
-    updateDocumentTitleInput();
   } else {
     document.getElementById('editor').classList.add('hidden');
     document.getElementById('custom-view').classList.add('hidden');
@@ -3193,11 +3203,11 @@ async function closeSaved() {
 
 function newFile(initialContent = '') {
   hideWelcome();
-  const state = createEditorState(initialContent);
   const doc = new Document({
-    editorState: state,
+    editorState: null,
     dirty: false,
   });
+  doc.editorState = createEditorState(initialContent, buildTitleData(doc));
   tabManager.add(doc, true);
   sessionManager.scheduleSave();
 }
@@ -3220,26 +3230,33 @@ function openFilePath(filePath, content = '') {
   const active = tabManager.activeDocument;
   if (active && !active.path && !active.dirty && active.getText().trim() === '') {
     active.setPath(filePath);
-    active.editorState = createEditorState(content);
+    active.editorState = createEditorState(content, buildTitleData(active));
+    active.scrollPosition = 0;
     active.markDirty(false);
     view.setState(active.editorState);
     updateAppName();
     updatePlaceholder();
     updateWordCount();
     updateDocumentTitleInput();
+    view.requestMeasure();
+    view.scrollDOM.scrollTop = 0;
+    requestAnimationFrame(() => {
+      if (tabManager.activeDocument === active) {
+        view.scrollDOM.scrollTop = 0;
+      }
+    });
     tabBarUI.render();
     sessionManager.scheduleSave();
     return;
   }
 
-  const state = createEditorState(content);
   const doc = new Document({
     path: filePath,
-    editorState: state,
+    editorState: null,
     dirty: false,
   });
+  doc.editorState = createEditorState(content, buildTitleData(doc));
   tabManager.add(doc, true);
-  updateDocumentTitleInput();
   sessionManager.scheduleSave();
 }
 
@@ -3376,7 +3393,7 @@ class TitleInputWidget extends WidgetType {
   // Tell CM6 to ignore all events inside this widget so native click, focus,
   // selection, and typing on the input work without editor interference.
   ignoreEvent() { return true; }
-  get estimatedHeight() { return -1; }
+  get estimatedHeight() { return 68; }
 }
 
 const titleDecoField = StateField.define({
@@ -3521,11 +3538,14 @@ function getEditorExtensions() {
   ];
 }
 
-function createEditorState(initialContent = '') {
-  return EditorState.create({
+function createEditorState(initialContent = '', titleData = null) {
+  const state = EditorState.create({
     doc: initialContent,
     extensions: getEditorExtensions(),
   });
+  return titleData
+    ? state.update({ effects: setTitleDataEffect.of(titleData) }).state
+    : state;
 }
 
 const startDoc = `# Welcome to FlowMark
@@ -3640,20 +3660,21 @@ window.executePluginEditorCommand = (commandId) => {
   return CommandRegistry.execute(commandId, view, view.state);
 };
 
+function buildTitleData(doc) {
+  if (!doc) return { value: '', placeholder: 'Untitled', hidden: true };
+  const isUntitled = !doc.path && /^Untitled(\s+\d+)?(\.md)?$/i.test(doc.name);
+  const cleanName = (doc.name || 'Untitled').replace(/\.md$/i, '');
+  return {
+    value: isUntitled ? '' : cleanName,
+    placeholder: isUntitled ? cleanName : 'Untitled',
+    hidden: false,
+  };
+}
+
 function updateDocumentTitleInput() {
   const activeDoc = tabManager.activeDocument;
-  if (!activeDoc) {
-    view.dispatch({ effects: setTitleDataEffect.of({ value: '', placeholder: 'Untitled', hidden: true }) });
-    return;
-  }
-  const isUntitled = !activeDoc.path && /^Untitled(\s+\d+)?(\.md)?$/i.test(activeDoc.name);
-  const cleanName = activeDoc.name.replace(/\.md$/i, '');
   view.dispatch({
-    effects: setTitleDataEffect.of({
-      value: isUntitled ? '' : cleanName,
-      placeholder: isUntitled ? cleanName : 'Untitled',
-      hidden: false,
-    }),
+    effects: setTitleDataEffect.of(buildTitleData(activeDoc)),
   });
 }
 
@@ -4038,12 +4059,13 @@ async function handleWorkspaceChange(change) {
       const result = await window.fileAPI.openWorkspaceFile(relativePath);
       if (result && !result.canceled && !doc.dirty && doc.getState() === stateBeforeRead) {
         const scrollTop = doc.id === tabManager.activeId ? view.scrollDOM.scrollTop : doc.scrollPosition;
-        doc.setState(createEditorState(result.content));
+        doc.setState(createEditorState(result.content, buildTitleData(doc)));
         if (doc.id === tabManager.activeId) {
           view.setState(doc.editorState);
           view.scrollDOM.scrollTop = scrollTop;
           updateWordCount();
           updatePlaceholder();
+          updateDocumentTitleInput();
         }
       }
     } catch (error) {

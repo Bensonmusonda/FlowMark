@@ -225,8 +225,21 @@ export class FileTreeUI {
   }
 
   setActivePath(filePath) {
-    this.activePath = filePath || null;
-    this.render();
+    const nextPath = filePath || null;
+    if (this.activePath === nextPath) return;
+    this.activePath = nextPath;
+
+    const treeRoot = this.workspaceView.querySelector('.file-tree');
+    if (!treeRoot) {
+      this.render();
+      return;
+    }
+
+    const target = normalizedPath(this.activePath);
+    for (const button of treeRoot.querySelectorAll('.tree-file > .tree-row > .tree-entry')) {
+      const isMatch = Boolean(target) && button.dataset.normalizedPath === target;
+      button.classList.toggle('active', isMatch);
+    }
   }
 
   createIcon(name) {
@@ -378,15 +391,9 @@ export class FileTreeUI {
       }
     }
     this.workspaceView.appendChild(treeRoot);
+    treeRoot.scrollTop = previousScrollTop;
+    treeRoot.scrollLeft = previousScrollLeft;
     this.updateActiveView();
-
-    requestAnimationFrame(() => {
-      const nextTree = this.workspaceView.querySelector('.file-tree');
-      if (nextTree) {
-        nextTree.scrollTop = previousScrollTop;
-        nextTree.scrollLeft = previousScrollLeft;
-      }
-    });
   }
 
   renderNavigation() {
@@ -542,9 +549,13 @@ export class FileTreeUI {
       const separator = this.rootPath.includes('\\') ? '\\' : '/';
       const root = this.rootPath.replace(/[\\/]+$/, '');
       const absolutePath = `${root}${separator}${entry.relativePath}`;
+      const normAbsolutePath = normalizedPath(absolutePath);
+      if (entry.type === 'file') {
+        select.dataset.normalizedPath = normAbsolutePath;
+      }
       select.className = 'tree-entry' +
         (entry.type === 'directory' && this.selectedDirectory === entry.relativePath ? ' active' : '') +
-        (entry.type === 'file' && normalizedPath(this.activePath) === normalizedPath(absolutePath)
+        (entry.type === 'file' && normalizedPath(this.activePath) === normAbsolutePath
           ? ' active'
           : '');
       select.type = 'button';

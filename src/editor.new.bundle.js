@@ -80473,8 +80473,19 @@ $$
       });
     }
     setActivePath(filePath) {
-      this.activePath = filePath || null;
-      this.render();
+      const nextPath = filePath || null;
+      if (this.activePath === nextPath) return;
+      this.activePath = nextPath;
+      const treeRoot = this.workspaceView.querySelector(".file-tree");
+      if (!treeRoot) {
+        this.render();
+        return;
+      }
+      const target = normalizedPath(this.activePath);
+      for (const button of treeRoot.querySelectorAll(".tree-file > .tree-row > .tree-entry")) {
+        const isMatch = Boolean(target) && button.dataset.normalizedPath === target;
+        button.classList.toggle("active", isMatch);
+      }
     }
     createIcon(name2) {
       const iconNodes = {
@@ -80611,14 +80622,9 @@ $$
         }
       }
       this.workspaceView.appendChild(treeRoot);
+      treeRoot.scrollTop = previousScrollTop;
+      treeRoot.scrollLeft = previousScrollLeft;
       this.updateActiveView();
-      requestAnimationFrame(() => {
-        const nextTree = this.workspaceView.querySelector(".file-tree");
-        if (nextTree) {
-          nextTree.scrollTop = previousScrollTop;
-          nextTree.scrollLeft = previousScrollLeft;
-        }
-      });
     }
     renderNavigation() {
       const focusedId = this.nav.contains(document.activeElement) ? document.activeElement.dataset.sidebarPanelId : null;
@@ -80754,7 +80760,11 @@ $$
         const separator2 = this.rootPath.includes("\\") ? "\\" : "/";
         const root = this.rootPath.replace(/[\\/]+$/, "");
         const absolutePath = `${root}${separator2}${entry.relativePath}`;
-        select.className = "tree-entry" + (entry.type === "directory" && this.selectedDirectory === entry.relativePath ? " active" : "") + (entry.type === "file" && normalizedPath(this.activePath) === normalizedPath(absolutePath) ? " active" : "");
+        const normAbsolutePath = normalizedPath(absolutePath);
+        if (entry.type === "file") {
+          select.dataset.normalizedPath = normAbsolutePath;
+        }
+        select.className = "tree-entry" + (entry.type === "directory" && this.selectedDirectory === entry.relativePath ? " active" : "") + (entry.type === "file" && normalizedPath(this.activePath) === normAbsolutePath ? " active" : "");
         select.type = "button";
         select.textContent = entry.name;
         select.title = entry.relativePath;
@@ -89947,23 +89957,33 @@ ${content3}</tr>
         document.getElementById("editor").classList.add("hidden");
         renderCustomView(toDoc);
       } else {
+        const wasHidden = document.getElementById("editor").classList.contains("hidden");
         document.getElementById("custom-view").classList.add("hidden");
         document.getElementById("custom-view").replaceChildren();
         document.getElementById("editor").classList.remove("hidden");
         view.setState(toDoc.editorState);
-        view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
         const isLight = isLightTheme();
         const color = ACCENTS2[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
         view.dispatch({ effects: [
           themeCompartment.reconfigure(makeTheme(color)),
           highlightCompartment.reconfigure(makeHighlight(!isLight, color))
         ] });
+        updateDocumentTitleInput();
+        view.requestMeasure();
         view.focus();
+        const targetScrollTop = toDoc.scrollPosition || 0;
+        view.scrollDOM.scrollTop = targetScrollTop;
+        if (wasHidden || targetScrollTop === 0) {
+          requestAnimationFrame(() => {
+            if (tabManager.activeDocument === toDoc) {
+              view.scrollDOM.scrollTop = targetScrollTop;
+            }
+          });
+        }
       }
       updateAppName();
       updatePlaceholder();
       updateWordCount();
-      updateDocumentTitleInput();
     } else {
       document.getElementById("editor").classList.add("hidden");
       document.getElementById("custom-view").classList.add("hidden");
@@ -90016,11 +90036,11 @@ ${content3}</tr>
   }
   function newFile(initialContent = "") {
     hideWelcome();
-    const state = createEditorState(initialContent);
     const doc2 = new Document({
-      editorState: state,
+      editorState: null,
       dirty: false
     });
+    doc2.editorState = createEditorState(initialContent, buildTitleData(doc2));
     tabManager.add(doc2, true);
     sessionManager.scheduleSave();
   }
@@ -90039,25 +90059,32 @@ ${content3}</tr>
     const active = tabManager.activeDocument;
     if (active && !active.path && !active.dirty && active.getText().trim() === "") {
       active.setPath(filePath);
-      active.editorState = createEditorState(content3);
+      active.editorState = createEditorState(content3, buildTitleData(active));
+      active.scrollPosition = 0;
       active.markDirty(false);
       view.setState(active.editorState);
       updateAppName();
       updatePlaceholder();
       updateWordCount();
       updateDocumentTitleInput();
+      view.requestMeasure();
+      view.scrollDOM.scrollTop = 0;
+      requestAnimationFrame(() => {
+        if (tabManager.activeDocument === active) {
+          view.scrollDOM.scrollTop = 0;
+        }
+      });
       tabBarUI.render();
       sessionManager.scheduleSave();
       return;
     }
-    const state = createEditorState(content3);
     const doc2 = new Document({
       path: filePath,
-      editorState: state,
+      editorState: null,
       dirty: false
     });
+    doc2.editorState = createEditorState(content3, buildTitleData(doc2));
     tabManager.add(doc2, true);
-    updateDocumentTitleInput();
     sessionManager.scheduleSave();
   }
   async function saveFile() {
@@ -90175,7 +90202,7 @@ ${content3}</tr>
       return true;
     }
     get estimatedHeight() {
-      return -1;
+      return 68;
     }
   };
   var titleDecoField = StateField.define({
@@ -90342,11 +90369,12 @@ ${content3}</tr>
       })
     ];
   }
-  function createEditorState(initialContent = "") {
-    return EditorState.create({
+  function createEditorState(initialContent = "", titleData = null) {
+    const state = EditorState.create({
       doc: initialContent,
       extensions: getEditorExtensions()
     });
+    return titleData ? state.update({ effects: setTitleDataEffect.of(titleData) }).state : state;
   }
   var startDoc = `# Welcome to FlowMark
 
@@ -90452,20 +90480,20 @@ Just start writing.
     requireActiveMarkdownDocument();
     return registry_default.execute(commandId, view, view.state);
   };
+  function buildTitleData(doc2) {
+    if (!doc2) return { value: "", placeholder: "Untitled", hidden: true };
+    const isUntitled = !doc2.path && /^Untitled(\s+\d+)?(\.md)?$/i.test(doc2.name);
+    const cleanName = (doc2.name || "Untitled").replace(/\.md$/i, "");
+    return {
+      value: isUntitled ? "" : cleanName,
+      placeholder: isUntitled ? cleanName : "Untitled",
+      hidden: false
+    };
+  }
   function updateDocumentTitleInput() {
     const activeDoc = tabManager.activeDocument;
-    if (!activeDoc) {
-      view.dispatch({ effects: setTitleDataEffect.of({ value: "", placeholder: "Untitled", hidden: true }) });
-      return;
-    }
-    const isUntitled = !activeDoc.path && /^Untitled(\s+\d+)?(\.md)?$/i.test(activeDoc.name);
-    const cleanName = activeDoc.name.replace(/\.md$/i, "");
     view.dispatch({
-      effects: setTitleDataEffect.of({
-        value: isUntitled ? "" : cleanName,
-        placeholder: isUntitled ? cleanName : "Untitled",
-        hidden: false
-      })
+      effects: setTitleDataEffect.of(buildTitleData(activeDoc))
     });
   }
   view.dom.addEventListener("keydown", (e) => {
@@ -90805,12 +90833,13 @@ Just start writing.
         const result = await window.fileAPI.openWorkspaceFile(relativePath);
         if (result && !result.canceled && !doc2.dirty && doc2.getState() === stateBeforeRead) {
           const scrollTop = doc2.id === tabManager.activeId ? view.scrollDOM.scrollTop : doc2.scrollPosition;
-          doc2.setState(createEditorState(result.content));
+          doc2.setState(createEditorState(result.content, buildTitleData(doc2)));
           if (doc2.id === tabManager.activeId) {
             view.setState(doc2.editorState);
             view.scrollDOM.scrollTop = scrollTop;
             updateWordCount();
             updatePlaceholder();
+            updateDocumentTitleInput();
           }
         }
       } catch (error) {
