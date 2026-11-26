@@ -1,6 +1,6 @@
 {
     "name": "flowmark",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Minimal distraction-free markdown editor",
     "main": "src/main.js",
     "author": "Benson Musonda",
