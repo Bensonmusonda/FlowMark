@@ -17998,12 +17998,12 @@
     if (config2.icons)
       content3.push({
         render(completion) {
-          let icon = document.createElement("div");
-          icon.classList.add("cm-completionIcon");
+          let icon2 = document.createElement("div");
+          icon2.classList.add("cm-completionIcon");
           if (completion.type)
-            icon.classList.add(...completion.type.split(/\s+/g).map((cls) => "cm-completionIcon-" + cls));
-          icon.setAttribute("aria-hidden", "true");
-          return icon;
+            icon2.classList.add(...completion.type.split(/\s+/g).map((cls) => "cm-completionIcon-" + cls));
+          icon2.setAttribute("aria-hidden", "true");
+          return icon2;
         },
         position: 20
       });
@@ -78759,6 +78759,13 @@ $$
   // node_modules/lucide/dist/esm/icons/chevron-right.mjs
   var ChevronRight = [["path", { d: "m9 18 6-6-6-6" }]];
 
+  // node_modules/lucide/dist/esm/icons/circle-arrow-up.mjs
+  var CircleArrowUp = [
+    ["circle", { cx: "12", cy: "12", r: "10" }],
+    ["path", { d: "m16 12-4-4-4 4" }],
+    ["path", { d: "M12 16V8" }]
+  ];
+
   // node_modules/lucide/dist/esm/icons/circle-exclamation-point.mjs
   var CircleExclamationPoint = [
     ["circle", { cx: "12", cy: "12", r: "10" }],
@@ -78790,6 +78797,20 @@ $$
   var Copy = [
     ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2" }],
     ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/download.mjs
+  var Download = [
+    ["path", { d: "M12 15V3" }],
+    ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" }],
+    ["path", { d: "m7 10 5 5 5-5" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/external-link.mjs
+  var ExternalLink = [
+    ["path", { d: "M15 3h6v6" }],
+    ["path", { d: "M10 14 21 3" }],
+    ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" }]
   ];
 
   // node_modules/lucide/dist/esm/icons/file-plus-corner.mjs
@@ -79049,6 +79070,12 @@ $$
     ["path", { d: "M15 8V2" }],
     ["path", { d: "M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z" }],
     ["path", { d: "M9 8V2" }]
+  ];
+
+  // node_modules/lucide/dist/esm/icons/power.mjs
+  var Power = [
+    ["path", { d: "M12 2v10" }],
+    ["path", { d: "M18.4 6.6a9 9 0 1 1-12.77.04" }]
   ];
 
   // node_modules/lucide/dist/esm/icons/puzzle.mjs
@@ -79893,6 +79920,403 @@ $$
   };
   var tabs_default = TabBarUI;
 
+  // src/ui/extensionsSidebar.js
+  function icon(Component, size = 14) {
+    return createElement(Component, {
+      width: size,
+      height: size,
+      "aria-hidden": "true",
+      focusable: "false"
+    });
+  }
+  function compareSemver(a2 = "0.0.0", b = "0.0.0") {
+    const pa = String(a2).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+    const pb = String(b).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+    for (let i = 0; i < 3; i++) {
+      if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+      if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+    }
+    return 0;
+  }
+  var ExtensionsSidebarView = class {
+    constructor({ container }) {
+      this.container = container;
+      this.installed = [];
+      this.registry = [];
+      this.registryOffline = false;
+      this.searchQuery = "";
+      this.loadingRegistry = false;
+      this.busyIds = /* @__PURE__ */ new Set();
+      this.statusMessage = null;
+      this.initialized = false;
+      this.unsubscribe = null;
+      this.renderShell();
+    }
+    activate() {
+      if (!this.initialized) {
+        this.initialized = true;
+        if (window.pluginManager?.onPluginsChanged) {
+          this.unsubscribe = window.pluginManager.onPluginsChanged((plugins) => {
+            this.installed = Array.isArray(plugins) ? plugins : [];
+            this.renderLists();
+          });
+        }
+        this.refreshAll();
+      } else {
+        this.loadInstalled();
+      }
+    }
+    async refreshAll() {
+      await Promise.all([this.loadInstalled(), this.loadRegistry()]);
+    }
+    async loadInstalled() {
+      try {
+        const list2 = await window.pluginManager?.getPlugins?.();
+        this.installed = Array.isArray(list2) ? list2 : [];
+      } catch (_) {
+        this.installed = [];
+      }
+      this.renderLists();
+    }
+    async loadRegistry() {
+      this.loadingRegistry = true;
+      this.renderLists();
+      try {
+        const data2 = await window.pluginRegistryAPI?.getRegistry?.();
+        if (Array.isArray(data2?.extensions)) {
+          this.registry = data2.extensions;
+          this.registryOffline = Boolean(data2.offline);
+        } else if (data2 && typeof data2 === "object") {
+          this.registry = Object.entries(data2).map(([id3, item]) => ({ id: id3, ...item }));
+          this.registryOffline = true;
+        } else {
+          this.registry = [];
+        }
+      } catch (_) {
+        this.registryOffline = true;
+      } finally {
+        this.loadingRegistry = false;
+        this.renderLists();
+      }
+    }
+    setStatus(text6, isError = false) {
+      this.statusMessage = text6 ? { text: text6, isError } : null;
+      this.renderStatus();
+      if (text6) {
+        clearTimeout(this._statusTimer);
+        this._statusTimer = setTimeout(() => {
+          this.statusMessage = null;
+          this.renderStatus();
+        }, 3500);
+      }
+    }
+    renderShell() {
+      this.container.replaceChildren();
+      const header3 = document.createElement("div");
+      header3.className = "sidebar-heading";
+      const title = document.createElement("span");
+      title.className = "sidebar-title";
+      title.textContent = "Extensions";
+      header3.appendChild(title);
+      const refreshBtn = document.createElement("button");
+      refreshBtn.type = "button";
+      refreshBtn.className = "sidebar-icon-button";
+      refreshBtn.title = "Refresh Extensions Registry";
+      refreshBtn.setAttribute("aria-label", "Refresh Extensions Registry");
+      refreshBtn.appendChild(icon(RefreshCw, 14));
+      refreshBtn.addEventListener("click", () => this.refreshAll());
+      header3.appendChild(refreshBtn);
+      const localBtn = document.createElement("button");
+      localBtn.type = "button";
+      localBtn.className = "sidebar-icon-button";
+      localBtn.title = "Install from Local Folder...";
+      localBtn.setAttribute("aria-label", "Install from Local Folder");
+      localBtn.appendChild(icon(FolderPlus, 14));
+      localBtn.addEventListener("click", async () => {
+        const res = await window.pluginManager?.installFromFolder?.();
+        if (res?.success) {
+          this.setStatus(`Installed "${res.pluginId}"`);
+          await this.loadInstalled();
+        } else if (res?.error && res.error !== "Canceled") {
+          this.setStatus(res.error, true);
+        }
+      });
+      header3.appendChild(localBtn);
+      this.container.appendChild(header3);
+      const searchWrap = document.createElement("div");
+      searchWrap.className = "ext-search-wrap";
+      searchWrap.appendChild(icon(Search, 13));
+      const searchInput = document.createElement("input");
+      searchInput.type = "text";
+      searchInput.className = "ext-search-input";
+      searchInput.placeholder = "Search extensions...";
+      searchInput.setAttribute("aria-label", "Search extensions");
+      searchInput.addEventListener("input", (e) => {
+        this.searchQuery = e.target.value.trim().toLowerCase();
+        this.renderLists();
+      });
+      searchWrap.appendChild(searchInput);
+      this.container.appendChild(searchWrap);
+      this.statusEl = document.createElement("div");
+      this.statusEl.className = "ext-status-banner hidden";
+      this.container.appendChild(this.statusEl);
+      this.bodyEl = document.createElement("div");
+      this.bodyEl.className = "ext-sidebar-body";
+      this.container.appendChild(this.bodyEl);
+    }
+    renderStatus() {
+      if (!this.statusEl) return;
+      if (!this.statusMessage) {
+        this.statusEl.className = "ext-status-banner hidden";
+        this.statusEl.textContent = "";
+        return;
+      }
+      this.statusEl.className = `ext-status-banner${this.statusMessage.isError ? " error" : ""}`;
+      this.statusEl.textContent = this.statusMessage.text;
+    }
+    matchesQuery(ext) {
+      if (!this.searchQuery) return true;
+      const haystack = [
+        ext.id,
+        ext.name,
+        ext.displayName,
+        ext.description,
+        ext.author,
+        ...Array.isArray(ext.tags) ? ext.tags : []
+      ].join(" ").toLowerCase();
+      return haystack.includes(this.searchQuery);
+    }
+    renderLists() {
+      if (!this.bodyEl) return;
+      this.bodyEl.replaceChildren();
+      const installedMap = new Map(this.installed.map((p) => [p.name, p]));
+      const registryMap = new Map(this.registry.map((r2) => [r2.id, r2]));
+      const installedFiltered = this.installed.filter((p) => this.matchesQuery(p));
+      const installedSection = document.createElement("div");
+      installedSection.className = "ext-section";
+      const installedHeader = document.createElement("div");
+      installedHeader.className = "ext-section-title";
+      installedHeader.textContent = `Installed (${installedFiltered.length})`;
+      installedSection.appendChild(installedHeader);
+      if (installedFiltered.length === 0) {
+        const empty2 = document.createElement("div");
+        empty2.className = "ext-empty";
+        empty2.textContent = this.searchQuery ? "No matching installed extensions." : "No extensions installed yet.";
+        installedSection.appendChild(empty2);
+      } else {
+        for (const plugin of installedFiltered) {
+          installedSection.appendChild(this.createInstalledCard(plugin, registryMap.get(plugin.name)));
+        }
+      }
+      this.bodyEl.appendChild(installedSection);
+      const discoverFiltered = this.registry.filter((r2) => this.matchesQuery(r2));
+      const discoverSection = document.createElement("div");
+      discoverSection.className = "ext-section";
+      const discoverHeader = document.createElement("div");
+      discoverHeader.className = "ext-section-title";
+      discoverHeader.textContent = this.registryOffline ? "Marketplace (Offline Cache)" : "Marketplace";
+      discoverSection.appendChild(discoverHeader);
+      if (this.loadingRegistry && this.registry.length === 0) {
+        const loading = document.createElement("div");
+        loading.className = "ext-empty";
+        loading.textContent = "Fetching extensions from GitHub...";
+        discoverSection.appendChild(loading);
+      } else if (discoverFiltered.length === 0) {
+        const empty2 = document.createElement("div");
+        empty2.className = "ext-empty";
+        empty2.textContent = this.searchQuery ? "No matching marketplace extensions." : "No extensions found in registry.";
+        discoverSection.appendChild(empty2);
+      } else {
+        for (const item of discoverFiltered) {
+          discoverSection.appendChild(this.createRegistryCard(item, installedMap.get(item.id)));
+        }
+      }
+      this.bodyEl.appendChild(discoverSection);
+    }
+    createInstalledCard(plugin, registryEntry) {
+      const card = document.createElement("div");
+      card.className = `ext-card${plugin.active ? " is-active" : ""}`;
+      const top3 = document.createElement("div");
+      top3.className = "ext-card-top";
+      const titleWrap = document.createElement("div");
+      titleWrap.className = "ext-card-title-wrap";
+      const nameEl = document.createElement("span");
+      nameEl.className = "ext-card-name";
+      nameEl.textContent = plugin.displayName || plugin.name;
+      titleWrap.appendChild(nameEl);
+      const verEl = document.createElement("span");
+      verEl.className = "ext-card-version";
+      verEl.textContent = `v${plugin.version || "1.0.0"}`;
+      titleWrap.appendChild(verEl);
+      top3.appendChild(titleWrap);
+      const badge = document.createElement("span");
+      badge.className = `ext-state-dot${plugin.active ? " active" : plugin.error ? " error" : ""}`;
+      badge.title = plugin.active ? "Enabled" : plugin.error ? `Error: ${plugin.error}` : "Disabled";
+      top3.appendChild(badge);
+      card.appendChild(top3);
+      if (plugin.description) {
+        const desc = document.createElement("div");
+        desc.className = "ext-card-desc";
+        desc.textContent = plugin.description;
+        card.appendChild(desc);
+      }
+      const actions = document.createElement("div");
+      actions.className = "ext-card-actions";
+      const isBusy = this.busyIds.has(plugin.name);
+      const toggleBtn = document.createElement("button");
+      toggleBtn.type = "button";
+      toggleBtn.className = "ext-btn";
+      toggleBtn.disabled = isBusy;
+      toggleBtn.appendChild(icon(Power, 12));
+      toggleBtn.appendChild(document.createTextNode(plugin.active ? " Disable" : " Enable"));
+      toggleBtn.addEventListener("click", async () => {
+        this.busyIds.add(plugin.name);
+        this.renderLists();
+        try {
+          if (plugin.active) await window.pluginManager?.disable?.(plugin.name);
+          else await window.pluginManager?.enable?.(plugin.name);
+          await this.loadInstalled();
+        } catch (err) {
+          this.setStatus(err.message || "Action failed", true);
+        } finally {
+          this.busyIds.delete(plugin.name);
+          this.renderLists();
+        }
+      });
+      actions.appendChild(toggleBtn);
+      if (registryEntry?.downloadUrl && compareSemver(registryEntry.version, plugin.version) > 0) {
+        const updateBtn = document.createElement("button");
+        updateBtn.type = "button";
+        updateBtn.className = "ext-btn ext-btn-primary";
+        updateBtn.disabled = isBusy;
+        updateBtn.appendChild(icon(CircleArrowUp, 12));
+        updateBtn.appendChild(document.createTextNode(` Update v${registryEntry.version}`));
+        updateBtn.addEventListener("click", () => this.installFromRegistry(registryEntry, true));
+        actions.appendChild(updateBtn);
+      }
+      const uninstallBtn = document.createElement("button");
+      uninstallBtn.type = "button";
+      uninstallBtn.className = "ext-btn ext-btn-icon";
+      uninstallBtn.title = "Uninstall";
+      uninstallBtn.setAttribute("aria-label", `Uninstall ${plugin.name}`);
+      uninstallBtn.disabled = isBusy;
+      uninstallBtn.appendChild(icon(Trash, 12));
+      uninstallBtn.addEventListener("click", async () => {
+        this.busyIds.add(plugin.name);
+        this.renderLists();
+        try {
+          await window.pluginManager?.uninstall?.(plugin.name);
+          this.setStatus(`Uninstalled "${plugin.name}"`);
+          await this.loadInstalled();
+        } catch (err) {
+          this.setStatus(err.message || "Uninstall failed", true);
+        } finally {
+          this.busyIds.delete(plugin.name);
+          this.renderLists();
+        }
+      });
+      actions.appendChild(uninstallBtn);
+      card.appendChild(actions);
+      return card;
+    }
+    createRegistryCard(item, installedPlugin) {
+      const card = document.createElement("div");
+      card.className = "ext-card";
+      const top3 = document.createElement("div");
+      top3.className = "ext-card-top";
+      const titleWrap = document.createElement("div");
+      titleWrap.className = "ext-card-title-wrap";
+      const nameEl = document.createElement("span");
+      nameEl.className = "ext-card-name";
+      nameEl.textContent = item.name || item.id;
+      titleWrap.appendChild(nameEl);
+      const verEl = document.createElement("span");
+      verEl.className = "ext-card-version";
+      verEl.textContent = `v${item.version || "1.0.0"}`;
+      titleWrap.appendChild(verEl);
+      top3.appendChild(titleWrap);
+      card.appendChild(top3);
+      if (item.author) {
+        const authorEl = document.createElement("div");
+        authorEl.className = "ext-card-author";
+        authorEl.textContent = `by ${item.author}`;
+        card.appendChild(authorEl);
+      }
+      if (item.description) {
+        const desc = document.createElement("div");
+        desc.className = "ext-card-desc";
+        desc.textContent = item.description;
+        card.appendChild(desc);
+      }
+      if (Array.isArray(item.permissions) && item.permissions.length > 0) {
+        const perms = document.createElement("div");
+        perms.className = "ext-perms";
+        for (const p of item.permissions.slice(0, 3)) {
+          const pill = document.createElement("span");
+          pill.className = "ext-perm-pill";
+          pill.textContent = p;
+          perms.appendChild(pill);
+        }
+        card.appendChild(perms);
+      }
+      const actions = document.createElement("div");
+      actions.className = "ext-card-actions";
+      const isBusy = this.busyIds.has(item.id);
+      if (installedPlugin) {
+        const installedBadge = document.createElement("span");
+        installedBadge.className = "ext-installed-pill";
+        installedBadge.appendChild(icon(Check, 12));
+        installedBadge.appendChild(document.createTextNode(" Installed"));
+        actions.appendChild(installedBadge);
+      } else if (item.downloadUrl) {
+        const installBtn = document.createElement("button");
+        installBtn.type = "button";
+        installBtn.className = "ext-btn ext-btn-primary";
+        installBtn.disabled = isBusy;
+        installBtn.appendChild(icon(Download, 12));
+        installBtn.appendChild(document.createTextNode(isBusy ? " Installing..." : " Install"));
+        installBtn.addEventListener("click", () => this.installFromRegistry(item, false));
+        actions.appendChild(installBtn);
+      }
+      if (item.homepage) {
+        const linkBtn = document.createElement("button");
+        linkBtn.type = "button";
+        linkBtn.className = "ext-btn ext-btn-icon";
+        linkBtn.title = "Open on GitHub";
+        linkBtn.setAttribute("aria-label", "Open on GitHub");
+        linkBtn.appendChild(icon(ExternalLink, 12));
+        linkBtn.addEventListener("click", () => {
+          window.shellAPI?.openExternal?.(item.homepage);
+        });
+        actions.appendChild(linkBtn);
+      }
+      card.appendChild(actions);
+      return card;
+    }
+    async installFromRegistry(item, isUpdate) {
+      this.busyIds.add(item.id);
+      this.renderLists();
+      try {
+        const res = await window.pluginManager?.installFromUrl?.({
+          url: item.downloadUrl,
+          pluginId: item.id,
+          update: isUpdate
+        });
+        if (res?.success) {
+          this.setStatus(`${isUpdate ? "Updated" : "Installed"} "${item.name || item.id}"`);
+          await this.loadInstalled();
+        } else {
+          this.setStatus(res?.error || "Installation failed", true);
+        }
+      } catch (err) {
+        this.setStatus(err.message || "Installation failed", true);
+      } finally {
+        this.busyIds.delete(item.id);
+        this.renderLists();
+      }
+    }
+  };
+
   // src/ui/fileTree.js
   function normalizedPath(value) {
     return String(value || "").replace(/\\/g, "/").toLowerCase();
@@ -79930,6 +80354,11 @@ $$
         this.showBackgroundContextMenu(e);
       });
       this.viewContainer.appendChild(this.workspaceView);
+      this.extensionsView = document.createElement("div");
+      this.extensionsView.className = "sidebar-panel sidebar-extensions-view";
+      this.extensionsView.hidden = true;
+      this.extensionsSidebar = new ExtensionsSidebarView({ container: this.extensionsView });
+      this.viewContainer.appendChild(this.extensionsView);
       this.container.replaceChildren(this.nav, this.viewContainer);
       this.renderNavigation();
       this.render();
@@ -80096,8 +80525,8 @@ $$
       };
       return this.createLucideIcon(iconNodes[name2] || Folder);
     }
-    createLucideIcon(icon) {
-      return createElement(icon, {
+    createLucideIcon(icon2) {
+      return createElement(icon2, {
         width: 20,
         height: 20,
         "aria-hidden": "true",
@@ -80228,7 +80657,7 @@ $$
     renderNavigation() {
       const focusedId = this.nav.contains(document.activeElement) ? document.activeElement.dataset.sidebarPanelId : null;
       this.nav.replaceChildren();
-      const addButton = (id3, icon, title) => {
+      const addButton = (id3, icon2, title) => {
         const button = document.createElement("button");
         const active = this.activeViewId === id3;
         button.type = "button";
@@ -80242,11 +80671,12 @@ $$
           button.title = collapsed ? "Expand workspace" : "Collapse workspace";
           button.setAttribute("aria-expanded", collapsed ? "false" : "true");
         }
-        button.appendChild(this.createLucideIcon(icon));
+        button.appendChild(this.createLucideIcon(icon2));
         button.addEventListener("click", () => this.selectView(id3));
         this.nav.appendChild(button);
       };
       addButton("workspace", FolderRoot, "Explorer");
+      addButton("extensions", Puzzle, "Extensions");
       for (const [id3, panel] of this.panels) {
         addButton(id3, resolvePluginPanelIcon(panel.icon, Folder), panel.title || "Plugin panel");
       }
@@ -80286,6 +80716,8 @@ $$
     }
     updateActiveView() {
       this.workspaceView.hidden = this.activeViewId !== "workspace";
+      this.extensionsView.hidden = this.activeViewId !== "extensions";
+      if (this.activeViewId === "extensions") this.extensionsSidebar.activate();
       for (const [id3, panelView] of this.panelViews) {
         panelView.hidden = id3 !== this.activeViewId;
       }
@@ -80556,7 +80988,7 @@ $$
     renderActivities() {
       if (!this.activityBar) return;
       this.activityBar.replaceChildren();
-      const addButton = (id3, title, icon) => {
+      const addButton = (id3, title, icon2) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "utility-activity-button";
@@ -80564,7 +80996,7 @@ $$
         button.title = title;
         button.setAttribute("aria-label", title);
         button.setAttribute("aria-pressed", !this.pane.hidden && this.activeId === id3 ? "true" : "false");
-        button.appendChild(createElement(icon, {
+        button.appendChild(createElement(icon2, {
           width: 18,
           height: 18,
           "aria-hidden": "true",
@@ -82511,7 +82943,7 @@ ${error}`);
       section2.appendChild(desc);
       try {
         const registry = await window.pluginRegistryAPI?.getRegistry?.() || {};
-        const entries = Object.entries(registry);
+        const entries = Array.isArray(registry?.extensions) ? registry.extensions.map((ext) => [ext.id, ext]) : Object.entries(registry);
         if (entries.length === 0) {
           const empty2 = document.createElement("div");
           empty2.className = "plugin-registry-empty";
@@ -82919,11 +83351,11 @@ ${error}`);
     }
   };
   var settingsTabRegistry = new SettingsTabRegistry();
-  function createSettingsTab(id3, label, icon, renderFn) {
+  function createSettingsTab(id3, label, icon2, renderFn) {
     return {
       id: id3,
       label,
-      icon,
+      icon: icon2,
       component: renderFn
     };
   }
@@ -83671,8 +84103,13 @@ ${error}`);
       const container = document.createElement("div");
       container.className = "settings-tab-content";
       container.innerHTML = `
-      <h3>About FlowMark</h3>
-      <p class="settings-desc">Minimal, distraction-free Markdown editor designed for speed and clarity.</p>
+      <div class="about-header">
+        <img class="about-app-icon" src="../icons/trans_64.png" alt="FlowMark" width="40" height="40" draggable="false" />
+        <div class="about-header-text">
+          <h3>About FlowMark</h3>
+          <p class="settings-desc">Minimal, distraction-free Markdown editor designed for speed and clarity.</p>
+        </div>
+      </div>
 
       <div class="about-grid">
         <div class="about-row">
@@ -88178,7 +88615,15 @@ Just start writing.
   });
   var floatingWidgetManager = new FloatingWidgetManager({
     container: document.getElementById("floating-widget-layer"),
-    commandRegistry: registry_default,
+    commandRegistry: {
+      registerCommand: (id3, def) => registry_default.registerCommand(id3, def),
+      unregisterCommand: (id3) => registry_default.unregisterCommand(id3),
+      execute: (id3) => {
+        const ok = registry_default.execute(id3, view, view.state);
+        view.focus();
+        return ok;
+      }
+    },
     onAction: (channel, data2) => {
       window.pluginManager?.emit?.(channel, data2);
     }
@@ -88760,7 +89205,9 @@ Just start writing.
         list2.appendChild(li);
       });
     }
-    welcome.classList.remove("hidden");
+    if (!tabManager.activeDocument) {
+      welcome.classList.remove("hidden");
+    }
   }
   function hideWelcome() {
     welcome.classList.add("hidden");
@@ -88768,7 +89215,6 @@ Just start writing.
   document.getElementById("welcome-actions").addEventListener("click", (e) => {
     const action = e.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
-    hideWelcome();
     if (action === "new") newFile();
     if (action === "open") openFile();
   });
@@ -88797,13 +89243,13 @@ Just start writing.
   }
   function hideQuickOpen() {
     quickOpen.classList.add("hidden");
-    view.focus();
+    if (tabManager.activeDocument) view.focus();
   }
   async function openRecentFile(filePath) {
-    hideWelcome();
     hideQuickOpen();
     const existing = tabManager.getByPath(filePath);
     if (existing) {
+      hideWelcome();
       tabManager.setActive(existing.id);
       return;
     }
@@ -89475,11 +89921,14 @@ lucide/dist/esm/icons/check.mjs:
 lucide/dist/esm/icons/chevron-down.mjs:
 lucide/dist/esm/icons/chevron-left.mjs:
 lucide/dist/esm/icons/chevron-right.mjs:
+lucide/dist/esm/icons/circle-arrow-up.mjs:
 lucide/dist/esm/icons/circle-exclamation-point.mjs:
 lucide/dist/esm/icons/circle-x.mjs:
 lucide/dist/esm/icons/code-xml.mjs:
 lucide/dist/esm/icons/code.mjs:
 lucide/dist/esm/icons/copy.mjs:
+lucide/dist/esm/icons/download.mjs:
+lucide/dist/esm/icons/external-link.mjs:
 lucide/dist/esm/icons/file-plus-corner.mjs:
 lucide/dist/esm/icons/file.mjs:
 lucide/dist/esm/icons/folder-open.mjs:
@@ -89508,6 +89957,7 @@ lucide/dist/esm/icons/panel-left.mjs:
 lucide/dist/esm/icons/panel-right.mjs:
 lucide/dist/esm/icons/pencil.mjs:
 lucide/dist/esm/icons/plug.mjs:
+lucide/dist/esm/icons/power.mjs:
 lucide/dist/esm/icons/puzzle.mjs:
 lucide/dist/esm/icons/quote.mjs:
 lucide/dist/esm/icons/refresh-cw.mjs:

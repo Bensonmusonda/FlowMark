@@ -4053,7 +4053,15 @@ const utilityPane = new UtilityPane({
 
 const floatingWidgetManager = new FloatingWidgetManager({
   container: document.getElementById('floating-widget-layer'),
-  commandRegistry: CommandRegistry,
+  commandRegistry: {
+    registerCommand: (id, def) => CommandRegistry.registerCommand(id, def),
+    unregisterCommand: (id) => CommandRegistry.unregisterCommand(id),
+    execute: (id) => {
+      const ok = CommandRegistry.execute(id, view, view.state);
+      view.focus();
+      return ok;
+    },
+  },
   onAction: (channel, data) => {
     window.pluginManager?.emit?.(channel, data);
   },
@@ -4723,7 +4731,9 @@ async function showWelcome() {
       list.appendChild(li);
     });
   }
-  welcome.classList.remove('hidden');
+  if (!tabManager.activeDocument) {
+    welcome.classList.remove('hidden');
+  }
 }
 
 function hideWelcome() {
@@ -4733,7 +4743,6 @@ function hideWelcome() {
 document.getElementById('welcome-actions').addEventListener('click', e => {
   const action = e.target.closest('[data-action]')?.dataset.action;
   if (!action) return;
-  hideWelcome();
   if (action === 'new')  newFile();
   if (action === 'open') openFile();
 });
@@ -4768,14 +4777,14 @@ async function showQuickOpen() {
 
 function hideQuickOpen() {
   quickOpen.classList.add('hidden');
-  view.focus();
+  if (tabManager.activeDocument) view.focus();
 }
 
 async function openRecentFile(filePath) {
-  hideWelcome();
   hideQuickOpen();
   const existing = tabManager.getByPath(filePath);
   if (existing) {
+    hideWelcome();
     tabManager.setActive(existing.id);
     return;
   }
