@@ -79929,10 +79929,20 @@ $$
       focusable: "false"
     });
   }
+  function compareSemver(a2 = "0.0.0", b = "0.0.0") {
+    const pa = String(a2).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+    const pb = String(b).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+    for (let i = 0; i < 3; i++) {
+      if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+      if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+    }
+    return 0;
+  }
   var ExtensionsSidebarView = class {
-    constructor({ container, onOpenExtension } = {}) {
+    constructor({ container, onOpenExtension, onUpdateCountChange } = {}) {
       this.container = container;
       this.onOpenExtension = onOpenExtension;
+      this.onUpdateCountChange = onUpdateCountChange;
       this.installed = [];
       this.registry = [];
       this.registryOffline = false;
@@ -79943,6 +79953,9 @@ $$
       this.initialized = false;
       this.unsubscribe = null;
       this.renderShell();
+      if (typeof window !== "undefined" && window.pluginRegistryAPI?.getRegistry) {
+        setTimeout(() => this.activate(), 1500);
+      }
     }
     activate() {
       if (!this.initialized) {
@@ -80124,16 +80137,38 @@ $$
         }
       }
       this.bodyEl.appendChild(discoverSection);
+      let updateCount = 0;
+      for (const plugin of this.installed) {
+        const reg = registryMap.get(plugin.name);
+        if (reg?.downloadUrl && compareSemver(reg.version, plugin.version) > 0) {
+          updateCount++;
+        }
+      }
+      this.onUpdateCountChange?.(updateCount);
     }
-    createCardElement({ title, description, author, onOpen }) {
+    createCardElement({ title, description, author, hasUpdate = false, onOpen }) {
       const card = document.createElement("div");
       card.className = "ext-card";
       card.setAttribute("role", "button");
       card.tabIndex = 0;
-      const nameEl = document.createElement("div");
-      nameEl.className = "ext-card-name";
-      nameEl.textContent = title;
-      card.appendChild(nameEl);
+      if (hasUpdate) {
+        const head = document.createElement("div");
+        head.className = "ext-card-head";
+        const nameEl = document.createElement("div");
+        nameEl.className = "ext-card-name";
+        nameEl.textContent = title;
+        head.appendChild(nameEl);
+        const badge = document.createElement("span");
+        badge.className = "ext-card-update-badge";
+        badge.textContent = "Update";
+        head.appendChild(badge);
+        card.appendChild(head);
+      } else {
+        const nameEl = document.createElement("div");
+        nameEl.className = "ext-card-name";
+        nameEl.textContent = title;
+        card.appendChild(nameEl);
+      }
       if (description) {
         const desc = document.createElement("div");
         desc.className = "ext-card-desc";
@@ -80156,10 +80191,14 @@ $$
     createInstalledCard(plugin, registryEntry) {
       const title = plugin.displayName || plugin.name;
       const author = plugin.author || registryEntry?.author || "FlowMark";
+      const hasUpdate = Boolean(
+        registryEntry?.downloadUrl && compareSemver(registryEntry.version, plugin.version) > 0
+      );
       return this.createCardElement({
         title,
         description: plugin.description,
         author,
+        hasUpdate,
         onOpen: () => this.onOpenExtension?.({
           id: plugin.name,
           name: title,
@@ -80266,9 +80305,11 @@ $$
       this.extensionsView = document.createElement("div");
       this.extensionsView.className = "sidebar-panel sidebar-extensions-view";
       this.extensionsView.hidden = true;
+      this.extensionUpdateCount = 0;
       this.extensionsSidebar = new ExtensionsSidebarView({
         container: this.extensionsView,
-        onOpenExtension: this.onOpenExtension
+        onOpenExtension: this.onOpenExtension,
+        onUpdateCountChange: (count2) => this.setExtensionUpdateCount(count2)
       });
       this.viewContainer.appendChild(this.extensionsView);
       this.container.replaceChildren(this.nav, this.viewContainer);
@@ -80584,6 +80625,13 @@ $$
           button.setAttribute("aria-expanded", collapsed ? "false" : "true");
         }
         button.appendChild(this.createLucideIcon(icon3));
+        if (id3 === "extensions" && this.extensionUpdateCount > 0) {
+          const badge = document.createElement("span");
+          badge.className = "sidebar-nav-badge";
+          badge.textContent = String(this.extensionUpdateCount);
+          button.title = `Extensions (${this.extensionUpdateCount} update${this.extensionUpdateCount === 1 ? "" : "s"} available)`;
+          button.appendChild(badge);
+        }
         button.addEventListener("click", () => this.selectView(id3));
         this.nav.appendChild(button);
       };
@@ -80614,6 +80662,12 @@ $$
       if (focusedId) {
         [...this.nav.querySelectorAll(".sidebar-nav-button")].find((button) => button.dataset.sidebarPanelId === focusedId)?.focus();
       }
+    }
+    setExtensionUpdateCount(count2) {
+      const next2 = Number(count2) || 0;
+      if (this.extensionUpdateCount === next2) return;
+      this.extensionUpdateCount = next2;
+      this.renderNavigation();
     }
     selectView(id3) {
       const collapsed = document.body.classList.contains("sidebar-collapsed");
@@ -84971,7 +85025,7 @@ ${content3}</tr>
       focusable: "false"
     });
   }
-  function compareSemver(a2 = "0.0.0", b = "0.0.0") {
+  function compareSemver2(a2 = "0.0.0", b = "0.0.0") {
     const pa = String(a2).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
     const pb = String(b).replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
     for (let i = 0; i < 3; i++) {
@@ -85069,7 +85123,7 @@ ${content3}</tr>
         }
       });
       actions.appendChild(toggleBtn);
-      if (data2.downloadUrl && data2.registryVersion && compareSemver(data2.registryVersion, data2.version) > 0) {
+      if (data2.downloadUrl && data2.registryVersion && compareSemver2(data2.registryVersion, data2.version) > 0) {
         const updateBtn = document.createElement("button");
         updateBtn.type = "button";
         updateBtn.className = "ext-btn ext-btn-primary";

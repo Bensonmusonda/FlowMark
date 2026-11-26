@@ -58,9 +58,11 @@ export class FileTreeUI {
     this.extensionsView = document.createElement('div');
     this.extensionsView.className = 'sidebar-panel sidebar-extensions-view';
     this.extensionsView.hidden = true;
+    this.extensionUpdateCount = 0;
     this.extensionsSidebar = new ExtensionsSidebarView({
       container: this.extensionsView,
       onOpenExtension: this.onOpenExtension,
+      onUpdateCountChange: (count) => this.setExtensionUpdateCount(count),
     });
     this.viewContainer.appendChild(this.extensionsView);
     this.container.replaceChildren(this.nav, this.viewContainer);
@@ -408,6 +410,13 @@ export class FileTreeUI {
         button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       }
       button.appendChild(this.createLucideIcon(icon));
+      if (id === 'extensions' && this.extensionUpdateCount > 0) {
+        const badge = document.createElement('span');
+        badge.className = 'sidebar-nav-badge';
+        badge.textContent = String(this.extensionUpdateCount);
+        button.title = `Extensions (${this.extensionUpdateCount} update${this.extensionUpdateCount === 1 ? '' : 's'} available)`;
+        button.appendChild(badge);
+      }
       button.addEventListener('click', () => this.selectView(id));
       this.nav.appendChild(button);
     };
@@ -446,6 +455,13 @@ export class FileTreeUI {
         .find(button => button.dataset.sidebarPanelId === focusedId)
         ?.focus();
     }
+  }
+
+  setExtensionUpdateCount(count) {
+    const next = Number(count) || 0;
+    if (this.extensionUpdateCount === next) return;
+    this.extensionUpdateCount = next;
+    this.renderNavigation();
   }
 
   selectView(id) {

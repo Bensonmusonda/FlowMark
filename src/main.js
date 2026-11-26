@@ -854,7 +854,6 @@ ipcMain.handle('plugins:getReadme', async (_, payload = {}) => {
         } catch (_) {}
       }
     }
-    return { found: false, content: '' };
   }
 
   const remoteUrl = resolveReadmeUrl(readmeUrl, homepage);

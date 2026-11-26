@@ -14,10 +14,21 @@ function icon(Component, size = 14) {
   });
 }
 
+function compareSemver(a = '0.0.0', b = '0.0.0') {
+  const pa = String(a).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) > (pb[i] || 0)) return 1;
+    if ((pa[i] || 0) < (pb[i] || 0)) return -1;
+  }
+  return 0;
+}
+
 export class ExtensionsSidebarView {
-  constructor({ container, onOpenExtension } = {}) {
+  constructor({ container, onOpenExtension, onUpdateCountChange } = {}) {
     this.container = container;
     this.onOpenExtension = onOpenExtension;
+    this.onUpdateCountChange = onUpdateCountChange;
     this.installed = [];
     this.registry = [];
     this.registryOffline = false;
@@ -28,6 +39,9 @@ export class ExtensionsSidebarView {
     this.initialized = false;
     this.unsubscribe = null;
     this.renderShell();
+    if (typeof window !== 'undefined' && window.pluginRegistryAPI?.getRegistry) {
+      setTimeout(() => this.activate(), 1500);
+    }
   }
 
   activate() {
@@ -235,18 +249,41 @@ export class ExtensionsSidebarView {
       }
     }
     this.bodyEl.appendChild(discoverSection);
+
+    let updateCount = 0;
+    for (const plugin of this.installed) {
+      const reg = registryMap.get(plugin.name);
+      if (reg?.downloadUrl && compareSemver(reg.version, plugin.version) > 0) {
+        updateCount++;
+      }
+    }
+    this.onUpdateCountChange?.(updateCount);
   }
 
-  createCardElement({ title, description, author, onOpen }) {
+  createCardElement({ title, description, author, hasUpdate = false, onOpen }) {
     const card = document.createElement('div');
     card.className = 'ext-card';
     card.setAttribute('role', 'button');
     card.tabIndex = 0;
 
-    const nameEl = document.createElement('div');
-    nameEl.className = 'ext-card-name';
-    nameEl.textContent = title;
-    card.appendChild(nameEl);
+    if (hasUpdate) {
+      const head = document.createElement('div');
+      head.className = 'ext-card-head';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'ext-card-name';
+      nameEl.textContent = title;
+      head.appendChild(nameEl);
+      const badge = document.createElement('span');
+      badge.className = 'ext-card-update-badge';
+      badge.textContent = 'Update';
+      head.appendChild(badge);
+      card.appendChild(head);
+    } else {
+      const nameEl = document.createElement('div');
+      nameEl.className = 'ext-card-name';
+      nameEl.textContent = title;
+      card.appendChild(nameEl);
+    }
 
     if (description) {
       const desc = document.createElement('div');
@@ -274,10 +311,14 @@ export class ExtensionsSidebarView {
   createInstalledCard(plugin, registryEntry) {
     const title = plugin.displayName || plugin.name;
     const author = plugin.author || registryEntry?.author || 'FlowMark';
+    const hasUpdate = Boolean(
+      registryEntry?.downloadUrl && compareSemver(registryEntry.version, plugin.version) > 0
+    );
     return this.createCardElement({
       title,
       description: plugin.description,
       author,
+      hasUpdate,
       onOpen: () => this.onOpenExtension?.({
         id: plugin.name,
         name: title,
