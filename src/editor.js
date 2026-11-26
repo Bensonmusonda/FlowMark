@@ -3554,14 +3554,17 @@ view.dom.addEventListener('focusout', (event) => {
 
 // Hooks used by PluginSandboxHost via executeJavaScript
 window.CommandRegistry = CommandRegistry;
-function requireActiveMarkdownDocument() {
+function hasActiveMarkdownDocument() {
   const activeDocument = tabManager.activeDocument;
-  if (!activeDocument || activeDocument.viewType !== 'markdown') {
+  return Boolean(activeDocument && activeDocument.viewType === 'markdown');
+}
+function requireActiveMarkdownDocument() {
+  if (!hasActiveMarkdownDocument()) {
     throw new Error('No active Markdown document');
   }
 }
 window.getEditorContent = () => {
-  requireActiveMarkdownDocument();
+  if (!hasActiveMarkdownDocument()) return '';
   return view.state.doc.toString();
 };
 window.setEditorContent = (text) => {
@@ -3571,7 +3574,7 @@ window.setEditorContent = (text) => {
   });
 };
 window.getEditorSelection = () => {
-  requireActiveMarkdownDocument();
+  if (!hasActiveMarkdownDocument()) return { from: 0, to: 0, empty: true, text: '' };
   const { from, to, empty } = view.state.selection.main;
   return { from, to, empty, text: view.state.sliceDoc(from, to) };
 };

@@ -12,7 +12,10 @@ async function updateStatusBar() {
     }
 
     const content = await flowmarkPlugin.editor.getContent();
-    if (!content) return;
+    if (!content) {
+      await flowmarkPlugin.ui.setStatusBar('', { side: 'left' });
+      return;
+    }
 
     const words = content.trim() ? content.trim().split(/\s+/).length : 0;
     const chars = content.length;

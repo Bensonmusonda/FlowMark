@@ -88167,14 +88167,17 @@ Just start writing.
     });
   });
   window.CommandRegistry = registry_default;
-  function requireActiveMarkdownDocument() {
+  function hasActiveMarkdownDocument() {
     const activeDocument = tabManager.activeDocument;
-    if (!activeDocument || activeDocument.viewType !== "markdown") {
+    return Boolean(activeDocument && activeDocument.viewType === "markdown");
+  }
+  function requireActiveMarkdownDocument() {
+    if (!hasActiveMarkdownDocument()) {
       throw new Error("No active Markdown document");
     }
   }
   window.getEditorContent = () => {
-    requireActiveMarkdownDocument();
+    if (!hasActiveMarkdownDocument()) return "";
     return view.state.doc.toString();
   };
   window.setEditorContent = (text6) => {
@@ -88184,7 +88187,7 @@ Just start writing.
     });
   };
   window.getEditorSelection = () => {
-    requireActiveMarkdownDocument();
+    if (!hasActiveMarkdownDocument()) return { from: 0, to: 0, empty: true, text: "" };
     const { from: from3, to, empty: empty2 } = view.state.selection.main;
     return { from: from3, to, empty: empty2, text: view.state.sliceDoc(from3, to) };
   };
