@@ -1,15 +1,8 @@
 import {
   createElement,
-  Puzzle,
   Search,
   RefreshCw,
   FolderPlus,
-  Download,
-  Trash2,
-  Check,
-  ArrowUpCircle,
-  Power,
-  ExternalLink,
 } from 'lucide';
 
 function icon(Component, size = 14) {
@@ -21,19 +14,10 @@ function icon(Component, size = 14) {
   });
 }
 
-function compareSemver(a = '0.0.0', b = '0.0.0') {
-  const pa = String(a).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
-  const pb = String(b).replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
-  for (let i = 0; i < 3; i++) {
-    if ((pa[i] || 0) > (pb[i] || 0)) return 1;
-    if ((pa[i] || 0) < (pb[i] || 0)) return -1;
-  }
-  return 0;
-}
-
 export class ExtensionsSidebarView {
-  constructor({ container }) {
+  constructor({ container, onOpenExtension } = {}) {
     this.container = container;
+    this.onOpenExtension = onOpenExtension;
     this.installed = [];
     this.registry = [];
     this.registryOffline = false;
@@ -253,187 +237,88 @@ export class ExtensionsSidebarView {
     this.bodyEl.appendChild(discoverSection);
   }
 
-  createInstalledCard(plugin, registryEntry) {
+  createCardElement({ title, description, author, onOpen }) {
     const card = document.createElement('div');
-    card.className = `ext-card${plugin.active ? ' is-active' : ''}`;
+    card.className = 'ext-card';
+    card.setAttribute('role', 'button');
+    card.tabIndex = 0;
 
-    const top = document.createElement('div');
-    top.className = 'ext-card-top';
-
-    const titleWrap = document.createElement('div');
-    titleWrap.className = 'ext-card-title-wrap';
-    const nameEl = document.createElement('span');
+    const nameEl = document.createElement('div');
     nameEl.className = 'ext-card-name';
-    nameEl.textContent = plugin.displayName || plugin.name;
-    titleWrap.appendChild(nameEl);
+    nameEl.textContent = title;
+    card.appendChild(nameEl);
 
-    const verEl = document.createElement('span');
-    verEl.className = 'ext-card-version';
-    verEl.textContent = `v${plugin.version || '1.0.0'}`;
-    titleWrap.appendChild(verEl);
-    top.appendChild(titleWrap);
-
-    const badge = document.createElement('span');
-    badge.className = `ext-state-dot${plugin.active ? ' active' : plugin.error ? ' error' : ''}`;
-    badge.title = plugin.active ? 'Enabled' : plugin.error ? `Error: ${plugin.error}` : 'Disabled';
-    top.appendChild(badge);
-    card.appendChild(top);
-
-    if (plugin.description) {
+    if (description) {
       const desc = document.createElement('div');
       desc.className = 'ext-card-desc';
-      desc.textContent = plugin.description;
+      desc.textContent = description;
       card.appendChild(desc);
     }
 
-    const actions = document.createElement('div');
-    actions.className = 'ext-card-actions';
+    const authorEl = document.createElement('div');
+    authorEl.className = 'ext-card-author';
+    authorEl.textContent = author || 'FlowMark';
+    card.appendChild(authorEl);
 
-    const isBusy = this.busyIds.has(plugin.name);
-
-    const toggleBtn = document.createElement('button');
-    toggleBtn.type = 'button';
-    toggleBtn.className = 'ext-btn';
-    toggleBtn.disabled = isBusy;
-    toggleBtn.appendChild(icon(Power, 12));
-    toggleBtn.appendChild(document.createTextNode(plugin.active ? ' Disable' : ' Enable'));
-    toggleBtn.addEventListener('click', async () => {
-      this.busyIds.add(plugin.name);
-      this.renderLists();
-      try {
-        if (plugin.active) await window.pluginManager?.disable?.(plugin.name);
-        else await window.pluginManager?.enable?.(plugin.name);
-        await this.loadInstalled();
-      } catch (err) {
-        this.setStatus(err.message || 'Action failed', true);
-      } finally {
-        this.busyIds.delete(plugin.name);
-        this.renderLists();
+    card.addEventListener('click', () => onOpen?.());
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onOpen?.();
       }
     });
-    actions.appendChild(toggleBtn);
 
-    if (registryEntry?.downloadUrl && compareSemver(registryEntry.version, plugin.version) > 0) {
-      const updateBtn = document.createElement('button');
-      updateBtn.type = 'button';
-      updateBtn.className = 'ext-btn ext-btn-primary';
-      updateBtn.disabled = isBusy;
-      updateBtn.appendChild(icon(ArrowUpCircle, 12));
-      updateBtn.appendChild(document.createTextNode(` Update v${registryEntry.version}`));
-      updateBtn.addEventListener('click', () => this.installFromRegistry(registryEntry, true));
-      actions.appendChild(updateBtn);
-    }
-
-    const uninstallBtn = document.createElement('button');
-    uninstallBtn.type = 'button';
-    uninstallBtn.className = 'ext-btn ext-btn-icon';
-    uninstallBtn.title = 'Uninstall';
-    uninstallBtn.setAttribute('aria-label', `Uninstall ${plugin.name}`);
-    uninstallBtn.disabled = isBusy;
-    uninstallBtn.appendChild(icon(Trash2, 12));
-    uninstallBtn.addEventListener('click', async () => {
-      this.busyIds.add(plugin.name);
-      this.renderLists();
-      try {
-        await window.pluginManager?.uninstall?.(plugin.name);
-        this.setStatus(`Uninstalled "${plugin.name}"`);
-        await this.loadInstalled();
-      } catch (err) {
-        this.setStatus(err.message || 'Uninstall failed', true);
-      } finally {
-        this.busyIds.delete(plugin.name);
-        this.renderLists();
-      }
-    });
-    actions.appendChild(uninstallBtn);
-
-    card.appendChild(actions);
     return card;
   }
 
+  createInstalledCard(plugin, registryEntry) {
+    const title = plugin.displayName || plugin.name;
+    const author = plugin.author || registryEntry?.author || 'FlowMark';
+    return this.createCardElement({
+      title,
+      description: plugin.description,
+      author,
+      onOpen: () => this.onOpenExtension?.({
+        id: plugin.name,
+        name: title,
+        version: plugin.version || '1.0.0',
+        description: plugin.description || '',
+        author,
+        permissions: plugin.permissions || [],
+        active: Boolean(plugin.active),
+        installed: true,
+        error: plugin.error || null,
+        downloadUrl: registryEntry?.downloadUrl || null,
+        registryVersion: registryEntry?.version || null,
+        homepage: registryEntry?.homepage || null,
+        readmeUrl: registryEntry?.readmeUrl || null,
+      }),
+    });
+  }
+
   createRegistryCard(item, installedPlugin) {
-    const card = document.createElement('div');
-    card.className = 'ext-card';
-
-    const top = document.createElement('div');
-    top.className = 'ext-card-top';
-
-    const titleWrap = document.createElement('div');
-    titleWrap.className = 'ext-card-title-wrap';
-    const nameEl = document.createElement('span');
-    nameEl.className = 'ext-card-name';
-    nameEl.textContent = item.name || item.id;
-    titleWrap.appendChild(nameEl);
-
-    const verEl = document.createElement('span');
-    verEl.className = 'ext-card-version';
-    verEl.textContent = `v${item.version || '1.0.0'}`;
-    titleWrap.appendChild(verEl);
-    top.appendChild(titleWrap);
-    card.appendChild(top);
-
-    if (item.author) {
-      const authorEl = document.createElement('div');
-      authorEl.className = 'ext-card-author';
-      authorEl.textContent = `by ${item.author}`;
-      card.appendChild(authorEl);
-    }
-
-    if (item.description) {
-      const desc = document.createElement('div');
-      desc.className = 'ext-card-desc';
-      desc.textContent = item.description;
-      card.appendChild(desc);
-    }
-
-    if (Array.isArray(item.permissions) && item.permissions.length > 0) {
-      const perms = document.createElement('div');
-      perms.className = 'ext-perms';
-      for (const p of item.permissions.slice(0, 3)) {
-        const pill = document.createElement('span');
-        pill.className = 'ext-perm-pill';
-        pill.textContent = p;
-        perms.appendChild(pill);
-      }
-      card.appendChild(perms);
-    }
-
-    const actions = document.createElement('div');
-    actions.className = 'ext-card-actions';
-
-    const isBusy = this.busyIds.has(item.id);
-    if (installedPlugin) {
-      const installedBadge = document.createElement('span');
-      installedBadge.className = 'ext-installed-pill';
-      installedBadge.appendChild(icon(Check, 12));
-      installedBadge.appendChild(document.createTextNode(' Installed'));
-      actions.appendChild(installedBadge);
-    } else if (item.downloadUrl) {
-      const installBtn = document.createElement('button');
-      installBtn.type = 'button';
-      installBtn.className = 'ext-btn ext-btn-primary';
-      installBtn.disabled = isBusy;
-      installBtn.appendChild(icon(Download, 12));
-      installBtn.appendChild(document.createTextNode(isBusy ? ' Installing...' : ' Install'));
-      installBtn.addEventListener('click', () => this.installFromRegistry(item, false));
-      actions.appendChild(installBtn);
-    }
-
-    if (item.homepage) {
-      const linkBtn = document.createElement('button');
-      linkBtn.type = 'button';
-      linkBtn.className = 'ext-btn ext-btn-icon';
-      linkBtn.title = 'Open on GitHub';
-      linkBtn.setAttribute('aria-label', 'Open on GitHub');
-      linkBtn.appendChild(icon(ExternalLink, 12));
-      linkBtn.addEventListener('click', () => {
-        window.shellAPI?.openExternal?.(item.homepage);
-      });
-      actions.appendChild(linkBtn);
-    }
-
-    card.appendChild(actions);
-    return card;
+    const title = item.name || item.id;
+    const author = item.author || 'Community';
+    return this.createCardElement({
+      title,
+      description: item.description,
+      author,
+      onOpen: () => this.onOpenExtension?.({
+        id: item.id,
+        name: title,
+        version: installedPlugin?.version || item.version || '1.0.0',
+        description: item.description || installedPlugin?.description || '',
+        author,
+        permissions: item.permissions || installedPlugin?.permissions || [],
+        active: Boolean(installedPlugin?.active),
+        installed: Boolean(installedPlugin),
+        error: installedPlugin?.error || null,
+        downloadUrl: item.downloadUrl || null,
+        registryVersion: item.version || null,
+        homepage: item.homepage || null,
+        readmeUrl: item.readmeUrl || null,
+      }),
+    });
   }
 
   async installFromRegistry(item, isUpdate) {

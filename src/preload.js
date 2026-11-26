@@ -74,6 +74,7 @@ contextBridge.exposeInMainWorld('pluginManager', {
   devReload: (pluginId) => ipcRenderer.invoke('plugins:devReload', pluginId),
   openPluginsFolder: () => ipcRenderer.invoke('plugins:openPluginsFolder'),
   getStylesheets: () => ipcRenderer.invoke('plugins:getStylesheets'),
+  getReadme: (payload) => ipcRenderer.invoke('plugins:getReadme', payload),
   invokeCommand: (pluginId, commandId) => ipcRenderer.invoke('plugins:invokeCommand', { pluginId, commandId }),
   invokeSlashCommand: (pluginId, commandId, triggerPos) => ipcRenderer.invoke('plugins:invokeSlashCommand', { pluginId, commandId, triggerPos }),
   applySmartPaste: (data) => ipcRenderer.invoke('plugins:smartPaste', data),

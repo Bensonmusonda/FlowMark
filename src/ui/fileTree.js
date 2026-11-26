@@ -22,7 +22,7 @@ function normalizedPath(value) {
 }
 
 export class FileTreeUI {
-  constructor({ container, onOpenFolder, onOpenFile, onCreate, onRename, onDelete, onDuplicate, onRefresh, onToggleSidebar }) {
+  constructor({ container, onOpenFolder, onOpenFile, onCreate, onRename, onDelete, onDuplicate, onRefresh, onToggleSidebar, onOpenExtension }) {
     this.container = container;
     this.onOpenFolder = onOpenFolder;
     this.onOpenFile = onOpenFile;
@@ -32,6 +32,7 @@ export class FileTreeUI {
     this.onDuplicate = onDuplicate;
     this.onRefresh = onRefresh;
     this.onToggleSidebar = onToggleSidebar;
+    this.onOpenExtension = onOpenExtension;
     this.rootPath = null;
     this.tree = [];
     this.activePath = null;
@@ -57,7 +58,10 @@ export class FileTreeUI {
     this.extensionsView = document.createElement('div');
     this.extensionsView.className = 'sidebar-panel sidebar-extensions-view';
     this.extensionsView.hidden = true;
-    this.extensionsSidebar = new ExtensionsSidebarView({ container: this.extensionsView });
+    this.extensionsSidebar = new ExtensionsSidebarView({
+      container: this.extensionsView,
+      onOpenExtension: this.onOpenExtension,
+    });
     this.viewContainer.appendChild(this.extensionsView);
     this.container.replaceChildren(this.nav, this.viewContainer);
     this.renderNavigation();

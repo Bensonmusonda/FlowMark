@@ -825,6 +825,60 @@ ipcMain.handle('app:getVersions', () => ({
   platform: `${process.platform === 'win32' ? 'Windows' : process.platform === 'darwin' ? 'macOS' : 'Linux'} (${process.arch})`,
 }));
 
+function resolveReadmeUrl(readmeUrl, homepage) {
+  if (typeof readmeUrl === 'string' && /^https:\/\/raw\.githubusercontent\.com\//i.test(readmeUrl.trim())) {
+    return readmeUrl.trim();
+  }
+  if (typeof homepage !== 'string') return null;
+  const trimmed = homepage.trim().replace(/\/+$/, '');
+  const treeMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/i);
+  if (treeMatch) {
+    return `https://raw.githubusercontent.com/${treeMatch[1]}/${treeMatch[2]}/${treeMatch[3]}/${treeMatch[4]}/README.md`;
+  }
+  const repoMatch = trimmed.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)$/i);
+  if (repoMatch) {
+    return `https://raw.githubusercontent.com/${repoMatch[1]}/${repoMatch[2]}/main/README.md`;
+  }
+  return null;
+}
+
+ipcMain.handle('plugins:getReadme', async (_, payload = {}) => {
+  const { id, readmeUrl, homepage } = payload || {};
+  const plugin = id && pluginHost ? pluginHost.plugins.get(id) : null;
+  if (plugin?.path) {
+    for (const fileName of ['README.md', 'readme.md', 'Readme.md']) {
+      const candidate = path.join(plugin.path, fileName);
+      if (fs.existsSync(candidate)) {
+        try {
+          return { found: true, content: fs.readFileSync(candidate, 'utf8') };
+        } catch (_) {}
+      }
+    }
+    return { found: false, content: '' };
+  }
+
+  const remoteUrl = resolveReadmeUrl(readmeUrl, homepage);
+  if (!remoteUrl) return { found: false, content: '' };
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(remoteUrl, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'FlowMark-Extension-Client', 'Cache-Control': 'no-cache' },
+      });
+      if (response.ok) {
+        return { found: true, content: await response.text() };
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (_) {}
+
+  return { found: false, content: '' };
+});
+
 ipcMain.handle('plugins:getRegistry', async () => {
   const cachePath = path.join(app.getPath('userData'), 'extensions-registry-cache.json');
   const localFallbackPath = path.join(__dirname, 'plugins', 'registry-index.json');

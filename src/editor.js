@@ -31,6 +31,7 @@ import TabBarUI from './ui/tabs.js';
 import FileTreeUI from './ui/fileTree.js';
 import { UtilityPane } from './ui/utilityPane.js';
 import { PluginManagerPanel } from './ui/plugins-panel.js';
+import { renderExtensionDetailView } from './ui/extensionDetailView.js';
 import { SettingsDialog } from './ui/settingsDialog.js';
 import { generalTab } from './ui/settingsTabs/generalTab.js';
 import { appearanceTab } from './ui/settingsTabs/appearanceTab.js';
@@ -3009,10 +3010,42 @@ function findCustomViewForDocument(doc) {
   return null;
 }
 
+function openExtensionDetail(extData) {
+  if (!extData?.id) return;
+  const existing = tabManager.documents.find(
+    d => d.viewType === 'extension' && d.viewData?.id === extData.id
+  );
+  if (existing) {
+    existing.viewData = { ...existing.viewData, ...extData };
+    if (tabManager.activeDocument?.id === existing.id) {
+      renderCustomView(existing);
+    } else {
+      tabManager.setActive(existing.id);
+    }
+    return;
+  }
+  const doc = new Document({
+    name: extData.name || extData.id,
+    viewType: 'extension',
+    viewData: extData,
+    dirty: false,
+  });
+  tabManager.add(doc, true);
+}
+
 function renderCustomView(doc) {
   const container = document.getElementById('custom-view');
   container.classList.remove('hidden');
   container.replaceChildren();
+
+  if (doc.viewType === 'extension') {
+    renderExtensionDetailView(container, doc, {
+      onStateChange: async () => {
+        await fileTreeUI?.extensionsSidebar?.loadInstalled?.();
+      },
+    });
+    return;
+  }
 
   const view = findCustomViewForDocument(doc);
   if (!view?.entryUrl) {
@@ -4057,6 +4090,7 @@ fileTreeUI = new FileTreeUI({
   onDuplicate: duplicateWorkspaceItem,
   onRefresh: refreshWorkspaceTree,
   onToggleSidebar: toggleSidebar,
+  onOpenExtension: openExtensionDetail,
 });
 const utilityPane = new UtilityPane({
   pane: document.getElementById('utility-pane'),
@@ -4128,7 +4162,7 @@ window.fileAPI?.onWorkspaceChange?.((change) => {
     console.error('Failed to process workspace change:', error));
 });
 
-let sidebarWidth = 250;
+let sidebarWidth = 290;
 function toggleSidebar() {
   document.body.classList.toggle('sidebar-collapsed');
   const collapsed = document.body.classList.contains('sidebar-collapsed');
@@ -5032,8 +5066,24 @@ async function initPlugins() {
     console.log('[editor] Plugins changed:', plugins);
     applyPluginStyles();
     buildPluginsMenu(plugins);
-    // Restore editor focus after plugin changes to prevent input freeze
-    setTimeout(() => view.focus(), 0);
+    const active = tabManager.activeDocument;
+    if (active?.viewType === 'extension') {
+      const match = Array.isArray(plugins)
+        ? plugins.find(p => p.name === active.viewData?.id)
+        : null;
+      active.viewData = {
+        ...active.viewData,
+        installed: Boolean(match),
+        active: Boolean(match?.active),
+        error: match?.error || null,
+        version: match?.version || active.viewData?.registryVersion || active.viewData?.version,
+        permissions: match?.permissions || active.viewData?.permissions || [],
+      };
+      renderCustomView(active);
+    } else if (active?.viewType === 'markdown') {
+      // Restore editor focus after plugin changes to prevent input freeze
+      setTimeout(() => view.focus(), 0);
+    }
   });
 
   window.uiAPI?.onRegisterSidebarPanel?.((panel) => {
