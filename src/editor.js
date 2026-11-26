@@ -2929,8 +2929,20 @@ const ACCENTS = Object.values(PALETTES).reduce((acc, pal) => {
 
 let currentAccent = localStorage.getItem('fm-accent') || 'blue';
 
+function resolveEffectiveTheme(theme = currentTheme) {
+  if (theme === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'theme-dark' : 'theme-light';
+  }
+  return theme;
+}
+
+function isLightTheme(theme = currentTheme) {
+  const effective = resolveEffectiveTheme(theme);
+  return effective === 'theme-light' || effective === 'theme-sepia';
+}
+
 function applyAccent(name) {
-  const isLight = currentTheme !== 'theme-dark';
+  const isLight = isLightTheme();
   const color = ACCENTS[name]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
   document.documentElement.style.setProperty('--accent', color);
   document.documentElement.style.setProperty('--selection', `${color}38`);
@@ -2963,9 +2975,7 @@ function applyTheme(theme) {
   document.body.classList.remove(...THEMES, 'theme-custom');
   if (theme === 'system') {
     // System theme: detect OS preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const systemTheme = prefersDark ? 'theme-dark' : 'theme-light';
-    document.body.classList.add(systemTheme);
+    document.body.classList.add(resolveEffectiveTheme('system'));
   } else if (theme === 'custom') {
     document.body.classList.add('theme-custom');
   } else if (theme !== 'theme-dark') {
@@ -3081,7 +3091,7 @@ function switchDocument(fromDoc, toDoc) {
       document.getElementById('editor').classList.remove('hidden');
       view.setState(toDoc.editorState);
       view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
-      const isLight = currentTheme !== 'theme-dark';
+      const isLight = isLightTheme();
       const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
       view.dispatch({ effects: [
         themeCompartment.reconfigure(makeTheme(color)),
@@ -3398,7 +3408,7 @@ const frontmatterAutoTrigger = EditorState.transactionFilter.of((tr) => {
 
 // ── Editor Factory & Extensions ───────────────────────────────────────────────
 function getEditorExtensions() {
-  const isLight = currentTheme !== 'theme-dark';
+  const isLight = isLightTheme();
   const color = ACCENTS[currentAccent]?.[isLight ? 'light' : 'dark'] || ACCENTS.blue.dark;
   return [
     history(),

@@ -87569,8 +87569,18 @@ ${error}`);
     return { ...acc, ...pal.accents };
   }, {});
   var currentAccent = localStorage.getItem("fm-accent") || "blue";
+  function resolveEffectiveTheme(theme2 = currentTheme) {
+    if (theme2 === "system") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "theme-dark" : "theme-light";
+    }
+    return theme2;
+  }
+  function isLightTheme(theme2 = currentTheme) {
+    const effective = resolveEffectiveTheme(theme2);
+    return effective === "theme-light" || effective === "theme-sepia";
+  }
   function applyAccent(name2) {
-    const isLight = currentTheme !== "theme-dark";
+    const isLight = isLightTheme();
     const color = ACCENTS2[name2]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
     document.documentElement.style.setProperty("--accent", color);
     document.documentElement.style.setProperty("--selection", `${color}38`);
@@ -87600,9 +87610,7 @@ ${error}`);
   function applyTheme(theme2) {
     document.body.classList.remove(...THEMES2, "theme-custom");
     if (theme2 === "system") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const systemTheme = prefersDark ? "theme-dark" : "theme-light";
-      document.body.classList.add(systemTheme);
+      document.body.classList.add(resolveEffectiveTheme("system"));
     } else if (theme2 === "custom") {
       document.body.classList.add("theme-custom");
     } else if (theme2 !== "theme-dark") {
@@ -87709,7 +87717,7 @@ ${error}`);
         document.getElementById("editor").classList.remove("hidden");
         view.setState(toDoc.editorState);
         view.scrollDOM.scrollTop = toDoc.scrollPosition || 0;
-        const isLight = currentTheme !== "theme-dark";
+        const isLight = isLightTheme();
         const color = ACCENTS2[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
         view.dispatch({ effects: [
           themeCompartment.reconfigure(makeTheme(color)),
@@ -87987,7 +87995,7 @@ ${error}`);
     return tr;
   });
   function getEditorExtensions() {
-    const isLight = currentTheme !== "theme-dark";
+    const isLight = isLightTheme();
     const color = ACCENTS2[currentAccent]?.[isLight ? "light" : "dark"] || ACCENTS2.blue.dark;
     return [
       history(),
